@@ -23,7 +23,8 @@ class AlwaysFreshHandler(SimpleHTTPRequestHandler):
             print("Se ha producido una conexión abortada por el cliente.")
 
 if __name__ == '__main__':
-    server_address = ('', 8080)
+    port = 8080
+    server_address = ('', port)
     httpd = HTTPServer(server_address, AlwaysFreshHandler)
-    print('Servidor iniciado en el puerto 8080...')
+    print(f'Servidor iniciado 127.0.0.1:{port}')
     httpd.serve_forever()
