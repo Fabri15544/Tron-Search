@@ -1,0 +1,133 @@
+/* Resetear estilos predeterminados del navegador */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Estilo para el cuerpo del documento */
+body, body.dark-mode * {
+    font-family: Arial, sans-serif;
+    transition: background-color 0.3s ease; /* Transición suave para el modo oscuro */
+}
+
+/* Modo Oscuro */
+body.dark-mode {
+    background-color: #333; /* Color de fondo en modo oscuro */
+    color: #fff; /* Color de texto en modo oscuro */
+}
+
+/* Encabezado */
+h1, h1.dark-mode {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: inherit; /* Hereda el color del texto del body */
+}
+
+/* Contenedor principal */
+.container, .container.dark-mode {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #A5;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    color: inherit; /* Hereda el color del texto del body */
+}
+
+/* Etiquetas de filtro */
+label, label.dark-mode {
+    font-size: 16px;
+    margin-right: 10px;
+    color: inherit; /* Hereda el color del texto del body */
+}
+
+/* Selectores de filtro */
+select, #busqueda, select.dark-mode, #busqueda.dark-mode {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: inherit; /* Hereda el color del texto del body */
+    background-color: inherit; /* Hereda el fondo del body */
+}
+
+/* Estilo específico para el cuadro de opciones de filtro en modo oscuro */
+select.dark-mode {
+    background-color: #333; /* Color de fondo en modo oscuro */
+    color: #fff; /* Color de texto en modo oscuro */
+}
+
+/* Botones */
+button, button.dark-mode {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+/* Resultados */
+#resultados, #resultados.dark-mode {
+    list-style-type: none;
+    padding: 0;
+}
+
+/* Estilo para cada resultado */
+#resultados li, #resultados li.dark-mode {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    color: inherit; /* Hereda el color del texto del body */
+    background-color: inherit; /* Hereda el fondo del body */
+}
+
+/* Botón de modo oscuro */
+.dark-mode-toggle {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+/* Cambiar los estilos de otros elementos en el modo oscuro si es necesario */
+select.dark-mode-select {
+    background-color: #333; /* Color de fondo en modo oscuro */
+    color: #fff; /* Color de texto en modo oscuro */
+}
+
+.not-found-container {
+    text-align: center; /* Center-align the content horizontally */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50%; /* Center-align the content vertically */
+}
+
+.image-container {
+    display: flex;
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Centra verticalmente */
+    height: 100vh; /* Establece la altura del contenedor al 100% de la ventana gráfica */
+}
+
+/* Estilos para centrar los números de página */
+#pagination{
+    text-align: center;
+}
