@@ -24,7 +24,10 @@ import concurrent.futures
 import argparse  # Importa el módulo argparse
 
 def clear():
-    os.system("cls")
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
 
 # Definir el puerto a escanear (por ejemplo, 80)
 BuscarPuerto = input("¿En qué puerto debo buscar? (Presiona Enter para usar los puertos predeterminados): ")
