@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Mostrar Mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tron</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <div id="map" style="width: 100%; height: 300px;"></div>
+    <script src="logica.js"></script>
+</head>
+<body id="main-container">
+    <div class="container">
+        <h1>Tron Search</h1>
+
+        <!-- Filtro por Puertos -->
+        <label for="puertoFilter">Filtrar por Puerto:</label>
+        <select id="puertoFilter">
+            <option value="">Todos</option>
+            <!-- Agregar opciones de puerto desde la lista -->
+            <script>
+                var ports = [80, 90, 443, 8080, 81, 82, 83, 84, 88, 1813, 8181, 8000, 8001, 9000, 21, 23, 22, 25, 53, 161, 101, 137, 138, 139, 2082, 2083, 3306, 3389];
+                var puertoFilter = document.getElementById("puertoFilter");
+                ports.forEach(function (port) {
+                    var option = document.createElement("option");
+                    option.value = port;
+                    option.textContent = "Puerto " + port;
+                    puertoFilter.appendChild(option);
+                });
+            </script>
+        </select>
+
+        <!-- Filtro por Servicios -->
+        <label for="servicioFilter">Filtrar por Servicio:</label>
+        <select id="servicioFilter">
+            <option value="">Todos</option>
+            <!-- Las opciones de servicio se cargarán desde los datos JSON -->
+        </select>
+
+        <!-- Búsqueda Avanzada -->
+        <label for="busqueda">Búsqueda Avanzada:</label>
+        <input type="text" id="busqueda" placeholder="Ejemplo: 80 AND http">
+
+        <!-- Botón "Filtrar" junto a la Búsqueda Avanzada -->
+        <button onclick="filtrarResultados()">Filtrar</button>
+
+        <!-- Botón "Iniciar Script" -->
+        <button id="startButton" onclick="window.location.href = '/start_script'">Iniciar Script</button>
+
+        <!-- Botón "Detener Script" -->
+        <button id="stopButton" onclick="window.location.href = '/stop_script'">Detener Script</button>
+
+        <!-- Lista de Resultados -->
+        <ul id="resultados">
+            <!-- Aquí se mostrarán los resultados filtrados -->
+        </ul>
+
+        <!-- Botón de modo oscuro -->
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+        <ul id="countryFlags">
+            <!-- Las banderas se mostrarán aquí -->
+        </ul>
+
+        <!-- Pagination Controls -->
+        <div id="pagination"></div>
+
+    </div>
+</body>
+</html>
