@@ -22,4 +22,4 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Cuenta con chequeo de Vulnerabilidades de camaras.
   https://github.com/ezelf/CVE-2018-9995_dvr_credentials. Una de ellas
   Iré agregando más a la lista próximament.
-[![Captura-de-pantalla-13.png]([https://i.postimg.cc/Z5Ghxxvm/Captura-de-pantalla-13.png)](https://postimg.cc/yDy5V9Tp](https://postimg.cc/9w27mRqm)https://postimg.cc/9w27mRqm)
+[![Captura-de-pantalla-13.png](https://i.postimg.cc/9w27mRqm/Captura-de-pantalla-13.png)](https://postimg.cc/9w27mRqm)
