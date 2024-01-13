@@ -11,4 +11,4 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    pip install -r requirements.txt
 
    python tron.py --search <patrón de direcciones IP> [--region <código de región>] [--ciudad <nombre de la ciudad>]
-    python tron.py --search <Nombre a buscar ej : google> [--region <código de región>] [--ciudad <nombre de la ciudad>]
+   python tron.py --search <Nombre a buscar ej : google> [--region <código de región>] [--ciudad <nombre de la ciudad>]
