@@ -12,3 +12,13 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    python tron.py --search <patrón de direcciones IP> [--region <código de región>] [--ciudad <nombre de la ciudad>]
    python tron.py --search <Nombre a buscar ej : google> [--region <código de región>] [--ciudad <nombre de la ciudad>]
+
+## Web-UI
+
+1. **USO DEL LOCALHOST:**
+   Puede filtrar por puertos,servicios, busuqeda avanzada filtro por baner y todo el html
+   Cuenta con un mapa donde vera todos los datos recopilados en un numero total a la region escaneada
+   Cuenta con modo Oscuro.
+   Cuenta con chequeo de Vulnerabilidades de camaras.
+  https://github.com/ezelf/CVE-2018-9995_dvr_credentials. Una de ellas
+  Iré agregando más a la lista próximament.
