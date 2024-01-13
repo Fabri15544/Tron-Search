@@ -16,7 +16,7 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 ## Web-UI
 
 1. **USO DEL LOCALHOST:**
-   Puede filtrar por puertos,servicios, busuqeda avanzada filtro por baner y todo el html
+   Puede filtrar por puertos,servicios, busqueda avanzada filtro por baner y todo el html
    Cuenta con un mapa donde vera todos los datos recopilados en un numero total a la region escaneada
    Cuenta con modo Oscuro.
    Cuenta con chequeo de Vulnerabilidades de camaras.
