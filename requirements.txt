@@ -4,7 +4,6 @@ beautifulsoup4
 bs4
 colorama
 fake-useragent
-fnmatch
 ipython
 json5
 psutil
@@ -14,5 +13,3 @@ selenium
 tqdm
 urllib3
 chromedriver-autoinstaller
-subprocess
-http.server
