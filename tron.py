@@ -29,22 +29,25 @@ def clear():
     else:
         os.system('clear')
 
+
 # Definir el puerto a escanear (por ejemplo, 80)
-BuscarPuerto = input("¿En qué puerto debo buscar? (Presiona Enter para usar los puertos predeterminados): ")
-ports = list(map(int, BuscarPuerto.split())) if BuscarPuerto else [80, 90, 100, 443, 8080, 81, 82, 83, 84, 88, 8010, 1813, 8181, 8000, 8001, 9000, 21, 23, 22, 25, 53, 161, 101, 137, 138, 139, 2002, 2082, 2083, 5000, 5001, 6001, 6002 ,6003, 5002, 37777, 5540, 5900, 3306, 3389, 2051, 8002, 8554, 8002, 8200, 8280, 88, 8002, 9000, 7000, 8500, 6200, 9200, 9876, 10000, 123, 143, 465, 587, 995, 993, 6660, 6661, 6662, 6663, 6664, 6665, 6666, 6667, 6668, 6669, 49152, 49153, 49154, 49155, 49156, 49157, 27017, 27018, 27019, 34567, 4567, 5432, 666, 667, 668, 669, 177, 186, 2200, 6881, 6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6890, 6891, 6892, 6893, 6894, 6895, 6896, 6897, 6898, 6899, 6880, 7001, 7002, 7003, 7004, 7005, 7006, 7007, 7008, 7009, 7010]
-# Crear un objeto ArgumentParser
+ports = [80, 90, 100, 443, 8080, 81, 82, 83, 84, 88, 8010, 1813, 8181, 8000, 8001, 9000, 21, 23, 22, 25, 53, 161, 101, 137, 138, 139, 2002, 2082, 2083, 5000, 5001, 6001, 6002 ,6003, 5002, 37777, 5540, 5900, 3306, 3389, 2051, 8002, 8554, 8002, 8200, 8280, 88, 8002, 9000, 7000, 8500, 6200, 9200, 9876, 10000, 123, 143, 465, 587, 995, 993, 6660, 6661, 6662, 6663, 6664, 6665, 6666, 6667, 6668, 6669, 49152, 49153, 49154, 49155, 49156, 49157, 27017, 27018, 27019, 34567, 4567, 5432, 666, 667, 668, 669, 177, 186, 2200, 6881, 6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6890, 6891, 6892, 6893, 6894, 6895, 6896, 6897, 6898, 6899, 6880, 7001, 7002, 7003, 7004, 7005, 7006, 7007, 7008, 7009, 7010]
+
 parser = argparse.ArgumentParser(description='Escaneo de puertos en direcciones IP')
-print(f"Puertos seleccionados: {ports}")
 
-# Agregar un argumento para el patrón de direcciones IP con el * como comodín
 parser.add_argument('--search', required=True, help='Patrón de direcciones IP a escanear con el * como comodín (ejemplo: 192.168.*.*) busqueda avanzada con google:https://www.exploit-db.com/google-hacking-database')
-
-# Agregar argumentos opcionales para filtrar por región y ciudad
+parser.add_argument('--port', nargs='+', type=int, help='Puerto o puertos a escanear. Presiona Enter para usar los puertos predeterminados.')
 parser.add_argument('--region', help='Filtrar por región ej US,AR,MX')
 parser.add_argument('--ciudad', help='Filtrar por ciudad')
 
-# Obtener los argumentos de la línea de comandos
 args = parser.parse_args()
+
+# Actualizar los puertos si se proporciona un valor a través de --port, de lo contrario, usar los predeterminados
+ports = args.port if args.port else ports
+
+# Ahora, puedes imprimir la variable 'ports'
+print(f"Puertos seleccionados: {ports}")
+
 
 # Ahora, puedes acceder a los argumentos en tu código
 ip_pattern = args.search
@@ -83,6 +86,8 @@ def is_camera(ip, port):
 
         # Buscar la cadena "ETag:" en el banner
         if "ETag:" in banner:
+            return True
+        if 'WWW-Authenticate: Basic realm="index.html"' in banner:
             return True
         if "ID:" in banner:
             return True
@@ -571,10 +576,10 @@ def scan(ip, ports):
 
                     print(f"IP: {formatted_ip}\nServicio: {formatted_service_name}\nBanner: {formatted_banner}\nRegión: {formatted_region}\nCiudad: {formatted_city}\nDominio: {formatted_domain}")
 
-                    if is_camera(ip, port) and "unknown" in formatted_banner:
-                        print(f"{Fore.RED}Not-Found Camera{Style.RESET_ALL}")
-                    else:
+                    if is_camera(ip, port):
                         print(f"{Fore.GREEN}*Found Camera{Style.RESET_ALL}")
+                    else:
+                        print(f"{Fore.RED}Not-Found Camera{Style.RESET_ALL}")
 
                     # Realiza el escaneo de credenciales del DVR
                     credentials_found = scan_dvr_credentials(ip, port)
