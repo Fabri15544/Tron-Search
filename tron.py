@@ -566,7 +566,7 @@ def scan(ip, ports):
                 response_body = get_response_body(ip, port, '/some_endpoint_here')  # Change '/some_endpoint_here' to the actual endpoint
 
                 # Check if the region and city match the filters
-                if country == FiltroRegion or city == FiltroCiudad or country == FiltroRegion and city == FiltroCiudad  or FiltroCiudad is None or FiltroRegion is None:
+                if (FiltroRegion and region == FiltroRegion) or (FiltroCiudad and city == FiltroCiudad) or (FiltroCiudad is None and FiltroRegion is None):
                     formatted_ip = f"{Fore.YELLOW}{ip}{Style.RESET_ALL}:{Fore.YELLOW}{port}{Style.RESET_ALL}"
                     formatted_service_name = f"{Fore.YELLOW}{service_name}{Style.RESET_ALL}"
                     formatted_banner = f"{Fore.CYAN}{banner}{Style.RESET_ALL}"
