@@ -96,6 +96,8 @@ def is_camera(ip, port):
             return True
         if "WWW-Authenticate: Basic realm=\"streaming_server\"" in banner:
             return True
+        if "Server: Hipcam RealServer/V1.0" in banner:
+            return True
         if "Plugin:" in banner:
             return True
         if "Expires:" in banner:
