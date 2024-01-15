@@ -1,4 +1,7 @@
 [![Imagen1](https://i.postimg.cc/jL3ZjGcL/Captura-de-pantalla-10.png)](https://postimg.cc/jL3ZjGc)
+[![Imagen1](https://i.postimg.cc/KR80xZn6/Captura-de-pantalla-11.png)](https://postimg.cc/KR80xZn6)
+[![Imagen1](https://i.postimg.cc/06Dfcrsw/Captura-de-pantalla-12.png)](https://postimg.cc/06Dfcrsw)
+[![Imagen1](https://i.postimg.cc/dhz62rzF/Captura-de-pantalla-13.png)](https://postimg.cc/dhz62rzF)
 [![Imagen1](https://i.postimg.cc/9w27mRqm/Captura-de-pantalla-13.png)](https://postimg.cc/9w27mRqm)
 [![Imagen2](https://i.postimg.cc/w7NggfQk/Nombre-de-la-imagen.png)](https://postimg.cc/w7NggfQk)
 # Escáner de Puertos en Direcciones IP
