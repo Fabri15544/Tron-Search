@@ -491,7 +491,7 @@ def capture_screenshot(ip, port, width=1024, height=768):
         time.sleep(3)
 
         # Tomar una captura de pantalla y guardarla con el formato IP-PORT.png en la ruta raíz
-        screenshot_filename = fr"C:\Users\Razer\Downloads\ShodanEmu-main\ShodanEmu-main\screenshot\{ip}-{port}.png"
+        screenshot_filename = fr"screenshot\{ip}-{port}.png"
         driver.save_screenshot(screenshot_filename)
 
         print(f"Captura de pantalla guardada: {screenshot_filename}")
