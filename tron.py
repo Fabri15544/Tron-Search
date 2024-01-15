@@ -332,6 +332,7 @@ def scan_dvr_credentials(ip, port):
 
     if totUsr > 0:
         print(Colors.GREEN + " [+] Credentials Found:" + Colors.DEFAULT)
+        return True
         credentials_list = []
         for obj in range(0, totUsr):
             _usuario = dataJson["list"][obj]["uid"]
@@ -576,37 +577,16 @@ def scan(ip, ports):
 
                     print(f"IP: {formatted_ip}\nServicio: {formatted_service_name}\nBanner: {formatted_banner}\nRegión: {formatted_region}\nCiudad: {formatted_city}\nDominio: {formatted_domain}")
 
-                    if is_camera(ip, port):
+                    credentials_found = scan_dvr_credentials(ip, port)
+                    
+                    if is_camera(ip, port) or (credentials_found and not isinstance(credentials_found, str)):
                         print(f"{Fore.GREEN}*Found Camera{Style.RESET_ALL}")
+                        if isinstance(credentials_found, str):
+                            hikvision_vulnerable = check_vuln_hikvision(ip, port)
+                            avtech_vulnerable = check_vuln_avtech(ip, port)
+                            tvt_vulnerable = check_vuln_tvt(ip, port)
                     else:
                         print(f"{Fore.RED}Not-Found Camera{Style.RESET_ALL}")
-
-                    # Realiza el escaneo de credenciales del DVR
-                    credentials_found = scan_dvr_credentials(ip, port)
-                        
-
-
-                    # Check Hikvision vulnerability
-                    hikvision_vulnerable = check_vuln_hikvision(ip, port)
-                    cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
-                    if hikvision_vulnerable is not None:
-                        print(hikvision_vulnerable)
-                    else:
-                        print(f"{Fore.RED}Hikvision-Not Vulnerable-ONVIF-HTTP{Style.RESET_ALL}")
-
-                    # Check Avtech vulnerability
-                    avtech_vulnerable = check_vuln_avtech(ip, port)
-                    if avtech_vulnerable is not None:
-                        print(avtech_vulnerable)
-                    else:
-                        print(f"{Fore.RED}Avtech-Not Vulnerable{Style.RESET_ALL}")
-
-                    # Check TVT vulnerability
-                    tvt_vulnerable = check_vuln_tvt(ip, port)
-                    if tvt_vulnerable is not None:
-                        print(tvt_vulnerable)
-                    else:
-                        print(f"{Fore.RED}TVT-Not Vulnerable{Style.RESET_ALL}")
 
                     print("-" * 50)
 
