@@ -4,6 +4,10 @@
 [![Imagen1](https://i.postimg.cc/dhz62rzF/Captura-de-pantalla-13.png)](https://postimg.cc/dhz62rzF)
 [![Imagen1](https://i.postimg.cc/9w27mRqm/Captura-de-pantalla-13.png)](https://postimg.cc/9w27mRqm)
 [![Imagen2](https://i.postimg.cc/w7NggfQk/Nombre-de-la-imagen.png)](https://postimg.cc/w7NggfQk)
+[![Captura de pantalla 14](https://i.postimg.cc/xJQP7YfF/Captura-de-pantalla-14.png)](https://postimg.cc/xJQP7YfF)
+[![Captura de pantalla 15](https://i.postimg.cc/G4BzTqgz/Captura-de-pantalla-15.png)](https://postimg.cc/G4BzTqgz)
+[![Captura de pantalla 8](https://i.postimg.cc/DmFCpQmy/Captura-de-pantalla-8.png)](https://postimg.cc/DmFCpQmy)
+[![Captura de pantalla 9](https://i.postimg.cc/pyZsw9nQ/Captura-de-pantalla-9.png)](https://postimg.cc/pyZsw9nQ)
 # Escáner de Puertos en Direcciones IP
 
 Este script en Python te permite escanear puertos en un rango de direcciones IP utilizando hilos de ejecución para mejorar la velocidad del escaneo. Además, proporciona opciones para filtrar por región y ciudad, y te permite personalizar los puertos a escanear.
