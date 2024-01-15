@@ -37,9 +37,13 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Cuenta con un bypass 401 unauthorized (detecta si es una camara) solo funciona para camaras.
   https://github.com/ezelf/CVE-2018-9995_dvr_credentials. Una de ellas
   Iré agregando más a la lista próximamente.
-2. **PUNTOS A MEJORAR:**
+3. **PUNTOS A MEJORAR:**
+   
    agregar argumento wordlist.
+   
    agregar argumento time para controlar la conexiones(SOCKETS).
+   
    agregar un chequeo de ip/host scaneados para reanudar desde el punto de interrupcion del script.
+   
    agregar conexion proxy
 
