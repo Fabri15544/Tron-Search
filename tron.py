@@ -330,10 +330,10 @@ def scan_dvr_credentials(ip, port):
     print(Colors.GREEN + "\n [+] Users List:\t" + Colors.ORANGE + str(totUsr) + Colors.DEFAULT)
     print(" ")
 
+    credentials_list = []
+
     if totUsr > 0:
         print(Colors.GREEN + " [+] Credentials Found:" + Colors.DEFAULT)
-        return True
-        credentials_list = []
         for obj in range(0, totUsr):
             _usuario = dataJson["list"][obj]["uid"]
             _password = dataJson["list"][obj]["pwd"]
