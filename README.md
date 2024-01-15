@@ -41,4 +41,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    agregar argumento wordlist.
    agregar argumento time para controlar la conexiones(SOCKETS).
    agregar un chequeo de ip/host scaneados para reanudar desde el punto de interrupcion del script.
+   agregar conexion proxy
 
