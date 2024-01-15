@@ -31,6 +31,7 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Puede filtrar por puertos,servicios, busqueda avanzada filtro por baner y todo el html
    Cuenta con un mapa donde vera todos los datos recopilados en un numero total a la region escaneada
    Cuenta con modo Oscuro.
+   Cuenta con barra de progreso al buscar un rango de ip.
    Cuenta con chequeo de Vulnerabilidades de camaras.
   https://github.com/ezelf/CVE-2018-9995_dvr_credentials. Una de ellas
   Iré agregando más a la lista próximament.
