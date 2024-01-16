@@ -1,30 +1,23 @@
 from http.server import SimpleHTTPRequestHandler, HTTPServer
-from datetime import datetime, timedelta, timezone
 
-class AlwaysFreshHandler(SimpleHTTPRequestHandler):
+class NoCacheHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         try:
             # Llamar al método original do_GET() para manejar la solicitud GET
             super().do_GET()
-
-            # Obtener la fecha y hora actual
-            current_time = datetime.now(timezone.utc)
-
-            # Agregar encabezados para indicar que el recurso siempre está actualizado
-            self.send_response(200)
-            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
-            self.send_header('Pragma', 'no-cache')
-            self.send_header('Expires', '0')
-            self.send_header('Last-Modified', current_time.strftime('%a, %d %b %Y %H:%M:%S GMT'))
-            self.end_headers()
-
         except ConnectionAbortedError:
             # Manejar la excepción de conexión abortada
             print("Se ha producido una conexión abortada por el cliente.")
 
+    def end_headers(self):
+        # Desactivar la memoria caché añadiendo encabezados específicos
+        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        super().end_headers()
+
 if __name__ == '__main__':
     port = 8080
     server_address = ('', port)
-    httpd = HTTPServer(server_address, AlwaysFreshHandler)
-    print(f'Servidor iniciado 127.0.0.1:{port}')
+    httpd = HTTPServer(server_address, NoCacheHandler)
+    print(f'Servidor iniciado en http://127.0.0.1:{port}')
     httpd.serve_forever()
+
