@@ -635,7 +635,6 @@ def scan(ip, ports):
         except socket.gaierror as e:
             continue
         except Exception as e:
-            print(f"Excepción al escanear {ip}:{port}: {e}")
 
             sock.close()
             
