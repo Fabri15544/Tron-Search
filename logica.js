@@ -25,6 +25,11 @@ function cargarOpcionesDeServicio(datos) {
     });
 }
 
+
+cargarDatos(datos => {
+    cargarOpcionesDeServicio(datos);
+});
+
 function actualizarListaPeriodicamente() {
     setInterval(() => {
         cargarDatos(datos => {
@@ -34,11 +39,6 @@ function actualizarListaPeriodicamente() {
         });
     }, 2000); // Actualizar cada 60 segundos (ajustar según sea necesario)
 }
-
-cargarDatos(datos => {
-    cargarOpcionesDeServicio(datos);
-    actualizarListaPeriodicamente();
-});
 
 function getFlagEmoji(region) {
     // Create a mapping of regions to flag emojis
