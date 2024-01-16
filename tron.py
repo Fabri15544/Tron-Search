@@ -565,6 +565,11 @@ def scan(ip, ports):
 
                 # Get the response body from the service
                 response_body = get_response_body(ip, port, '/some_endpoint_here')  # Change '/some_endpoint_here' to the actual endpoint
+                hikvision_vulnerable = False # valor predeterminado
+                avtech_vulnerable = False # valor predeterminado
+                tvt_vulnerable = False # valor predeterminado
+                cam = False # valor predeterminado
+
 
                 # Check if the region and city match the filters
                 if (FiltroRegion and region == FiltroRegion) or (FiltroCiudad and city == FiltroCiudad) or (FiltroCiudad is None and FiltroRegion is None):
@@ -630,7 +635,7 @@ def scan(ip, ports):
         except socket.gaierror as e:
             continue
         except Exception as e:
-            pass
+            print(f"Excepción al escanear {ip}:{port}: {e}")
 
             sock.close()
             
