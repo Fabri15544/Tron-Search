@@ -23,18 +23,7 @@ function cargarOpcionesDeServicio(datos) {
             servicioFilter.appendChild(option);
         }
     });
-
-    agregarCredencialesOption();
 }
-
-function agregarCredencialesOption() {
-    var servicioFilter = document.getElementById("servicioFilter");
-    var credencialesOption = document.createElement("option");
-    credencialesOption.value = "CredencialesDVR";
-    credencialesOption.textContent = "CredencialesDVR";
-    servicioFilter.appendChild(credencialesOption);
-}
-
 
 function actualizarListaPeriodicamente() {
     setInterval(() => {
@@ -50,7 +39,6 @@ cargarDatos(datos => {
     cargarOpcionesDeServicio(datos);
     actualizarListaPeriodicamente();
 });
-
 
 function getFlagEmoji(region) {
     // Create a mapping of regions to flag emojis
