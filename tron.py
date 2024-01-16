@@ -585,6 +585,7 @@ def scan(ip, ports):
                             hikvision_vulnerable = check_vuln_hikvision(ip, port)
                             avtech_vulnerable = check_vuln_avtech(ip, port)
                             tvt_vulnerable = check_vuln_tvt(ip, port)
+                            cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
                     else:
                         print(f"{Fore.RED}Not-Found Camera{Style.RESET_ALL}")
 
@@ -618,9 +619,10 @@ def scan(ip, ports):
                         existing_data = []
 
                     existing_data.append(data)
+                    json_data = json.dumps(existing_data, indent=4)
 
                     with open("datos.json", "w") as file:
-                        json.dump(existing_data, file, indent=4)
+                        file.write(json_data)
 
                 else:
                     print(f"Filtrando: {ip}:{port} Región: {region} Ciudad: {city}\n")
