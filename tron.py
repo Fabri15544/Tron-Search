@@ -587,14 +587,12 @@ def scan(ip, ports):
                     
                     if is_camera(ip, port):
                         print(f"{Fore.GREEN}*Found Camera{Style.RESET_ALL}")
+                        hikvision_vulnerable = check_vuln_hikvision(ip, port)
+                        avtech_vulnerable = check_vuln_avtech(ip, port)
+                        tvt_vulnerable = check_vuln_tvt(ip, port)
+                        cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
                         if "HTTP/1.0 302 Found" in banner:
-                            credentials_found = scan_dvr_credentials(ip, port)
-                        else:
-                            hikvision_vulnerable = check_vuln_hikvision(ip, port)
-                            avtech_vulnerable = check_vuln_avtech(ip, port)
-                            tvt_vulnerable = check_vuln_tvt(ip, port)
-                            cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
-                            
+                            credentials_found = scan_dvr_credentials(ip, port)                           
                     else:
                         print(f"{Fore.RED}Not-Found Camera{Style.RESET_ALL}")
 
