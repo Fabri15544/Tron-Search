@@ -97,6 +97,8 @@ def is_camera(ip, port):
             return True
         if "Model:" in banner:
             return True
+        if "HTTP/1.0 302 Found" in banner:
+            return True
         if "WWW-Authenticate: Basic realm=\"index.html\"" in banner:
             return True
         if "WWW-Authenticate: Basic realm=\"streaming_server\"" in banner:
@@ -582,15 +584,17 @@ def scan(ip, ports):
 
                     print(f"IP: {formatted_ip}\nServicio: {formatted_service_name}\nBanner: {formatted_banner}\nRegión: {formatted_region}\nCiudad: {formatted_city}\nDominio: {formatted_domain}")
 
-                    credentials_found = scan_dvr_credentials(ip, port)
                     
-                    if is_camera(ip, port) or (credentials_found and not isinstance(credentials_found, str)):
+                    if is_camera(ip, port):
                         print(f"{Fore.GREEN}*Found Camera{Style.RESET_ALL}")
-                        if isinstance(credentials_found, str):
+                        if "HTTP/1.0 302 Found" in banner:
+                            credentials_found = scan_dvr_credentials(ip, port)
+                        else:
                             hikvision_vulnerable = check_vuln_hikvision(ip, port)
                             avtech_vulnerable = check_vuln_avtech(ip, port)
                             tvt_vulnerable = check_vuln_tvt(ip, port)
                             cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
+                            
                     else:
                         print(f"{Fore.RED}Not-Found Camera{Style.RESET_ALL}")
 
@@ -806,7 +810,7 @@ def format_unknown(value):
 def get_banner(ip, port):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(0.5)
+        sock.settimeout(2)
         sock.connect((ip, port))
         sock.send(b"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n")
         banner = sock.recv(1024).decode().strip()
