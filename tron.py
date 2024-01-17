@@ -584,17 +584,20 @@ def scan(ip, ports):
 
                     print(f"IP: {formatted_ip}\nServicio: {formatted_service_name}\nBanner: {formatted_banner}\nRegión: {formatted_region}\nCiudad: {formatted_city}\nDominio: {formatted_domain}")
 
+                    credentials_found = "NULL"
                     
-                    if is_camera(ip, port):
+                    if is_camera(ip, port) and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
                         print(f"{Fore.GREEN}*Found Camera{Style.RESET_ALL}")
                         hikvision_vulnerable = check_vuln_hikvision(ip, port)
-                        avtech_vulnerable = check_vuln_avtech(ip, port)
-                        tvt_vulnerable = check_vuln_tvt(ip, port)
-                        cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
-                        if "HTTP/1.0 302 Found" in banner:
-                            credentials_found = scan_dvr_credentials(ip, port)                           
+                        if hikvision_vulnerable:
+                            avtech_vulnerable = check_vuln_avtech(ip, port)
+                            tvt_vulnerable = check_vuln_tvt(ip, port)
+                            cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
                     else:
                         print(f"{Fore.RED}Not-Found Camera{Style.RESET_ALL}")
+                        
+                    if "HTTP/1.0 302 Found" in banner:
+                        credentials_found = scan_dvr_credentials(ip, port)                           
 
                     print("-" * 50)
 
