@@ -44,6 +44,8 @@ function getFlagEmoji(region) {
     // Create a mapping of regions to flag emojis
     const flagMap = {
         "Afghanistan": "🇦🇫",
+        "Turkey": "🇹🇷",
+        "Türkiye": "🇹🇷",
         "Albania": "🇦🇱",
         "Algeria": "🇩🇿",
         "Andorra": "🇦🇩",
@@ -247,6 +249,8 @@ function getFlagEmoji(region) {
 const countries = [
         { name: "USA", results: 0, lat: 37.0902, lng: -95.7129 },
         { name: "Canada", results: 0, lat: 56.1304, lng: -106.3468 },
+        { name: "Turkey", results: 0, lat: 38.9637, lng: 35.2433 },
+        { name: "Türkiye", results: 0, lat: 38.9637, lng: 35.2433 },
         { name: "Afghanistan", results: 0, lat: 33.93911, lng: 67.709953 },
         { name: "Albania", results: 0, lat: 41.153332, lng: 20.168331 },
         { name: "Algeria", results: 0, lat: 28.033886, lng: 1.659626 },
