@@ -589,10 +589,10 @@ def scan(ip, ports):
                     if is_camera(ip, port) and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
                         print(f"{Fore.GREEN}*Found Camera{Style.RESET_ALL}")
                         hikvision_vulnerable = check_vuln_hikvision(ip, port)
+                        cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
                         if hikvision_vulnerable:
                             avtech_vulnerable = check_vuln_avtech(ip, port)
                             tvt_vulnerable = check_vuln_tvt(ip, port)
-                            cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
                     else:
                         print(f"{Fore.RED}Not-Found Camera{Style.RESET_ALL}")
                         
