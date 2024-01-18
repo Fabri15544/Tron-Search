@@ -34,6 +34,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    --region REGION       Filtrar por región ej US,AR,MX
    --ciudad CIUDAD       Filtrar por ciudad
    --w W                 Ruta del archivo de texto con el wordlist (usuarios y contraseñas)
+   --s S                 Tiempo de espera entre conexiones[SOCKET] (valor predeterminado: 0.5 segundos)
+   --bn BN               Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)
 
 ## Web-UI
 
