@@ -22,8 +22,18 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    ```bash
    pip install -r requirements.txt
 
-   python tron.py --search <patrón de direcciones IP> [--region <código de región>] [--ciudad <nombre de la ciudad>] [--port 80 443 21] [--port 80]
-   python tron.py --search <Nombre a buscar ej : google> [--region <código de región>] [--ciudad <nombre de la ciudad>]
+   python tron.py --search <patrón de direcciones IP> [--region <código de región>] [--ciudad <nombre de la ciudad>] [--port 80 443 21] [--port 80] [--w diccionario.txt]
+   python tron.py --search <Nombre a buscar ej : google> [--region <código de región>] [--ciudad <nombre de la ciudad>] [--w diccionario.txt]
+
+   options:
+   -h, --help            show this help message and exit
+   --search SEARCH       Patrón de direcciones IP a escanear con el * como comodín (ejemplo: 192.168.*.*) busqueda
+                        avanzada con google:https://www.exploit-db.com/google-hacking-database
+   --port PORT [PORT ...]
+                        Puerto o puertos a escanear. Presiona Enter para usar los puertos predeterminados.
+   --region REGION       Filtrar por región ej US,AR,MX
+   --ciudad CIUDAD       Filtrar por ciudad
+   --w W                 Ruta del archivo de texto con el wordlist (usuarios y contraseñas)
 
 ## Web-UI
 
@@ -48,8 +58,6 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
   Iré agregando más a la lista próximamente.
   
 4. **PUNTOS A MEJORAR:**
-   
-   agregar argumento wordlist.
    
    agregar argumento time para controlar la conexiones(SOCKETS).
    
