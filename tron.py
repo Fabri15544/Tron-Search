@@ -40,6 +40,8 @@ parser.add_argument('--port', nargs='+', type=int, help='Puerto o puertos a esca
 parser.add_argument('--region', help='Filtrar por región ej US,AR,MX')
 parser.add_argument('--ciudad', help='Filtrar por ciudad')
 parser.add_argument('--w', help='Ruta del archivo de texto con el wordlist (usuarios y contraseñas)')
+parser.add_argument('--s', default=0.5, type=float, help='Tiempo de espera entre conexiones[SOCKET] (valor predeterminado: 0.5 segundos)')
+parser.add_argument('--bn', default=2, type=float, help='Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)')
 
 args = parser.parse_args()
 
@@ -505,7 +507,7 @@ def scan(ip, ports):
     for port in ports:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.settimeout(0.5)
+                sock.settimeout(args.s)
                 result = sock.connect_ex((ip, port))
                 if result != 0:
                     #futures.append(executor.submit(capture_screenshot, ip, ports[0]))
@@ -769,7 +771,7 @@ def format_unknown(value):
 def get_banner(ip, port):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(2)
+        sock.settimeout(args.bn)
         sock.connect((ip, port))
         sock.send(b"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n")
         banner = sock.recv(1024).decode().strip()
