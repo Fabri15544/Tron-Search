@@ -39,6 +39,7 @@ parser.add_argument('--search', required=True, help='Patrón de direcciones IP a
 parser.add_argument('--port', nargs='+', type=int, help='Puerto o puertos a escanear. Presiona Enter para usar los puertos predeterminados.')
 parser.add_argument('--region', help='Filtrar por región ej US,AR,MX')
 parser.add_argument('--ciudad', help='Filtrar por ciudad')
+parser.add_argument('--w', help='Ruta del archivo de texto con el wordlist (usuarios y contraseñas)')
 
 args = parser.parse_args()
 
@@ -167,57 +168,14 @@ def enviar_solicitud(ip, port, carga_cancelada, resultados):
         futures = [executor.submit(enviar_solicitud_individual, ip, port, url, carga_cancelada, resultados) for url in set(urls)]
         concurrent.futures.wait(futures)
 
-usuarios = {
-    'admin': 'admin',
-    'admin': 'user',
-    'admin1': 'password',
-    'Admin': '123456',
-    '888888': '888888',
-    '666666': '666666',    
-    'guest': 'guest',
-    'anonymous': 'anonymous',
-    'superuser': 'passadmin',
-    'testuser': 'testpass',
-    'sysadmin': 'syspass',
-    'demo': 'demo123',
-    'default': 'defaultpwd',
-    'user1': 'userpass',
-    'root': 'root',
-    'newuser1': 'newpass1',
-    'newuser2': 'newpass2',
-    'john_doe': 'john123',
-    'jane_doe': 'jane456',
-    'admin2': 'adminadmin',
-    'security': 'secure123',
-    'webmaster': 'webpass',
-    'database': 'dbpass',
-    'networkadmin': 'netadmin',
-    'genericuser1': 'genericpass1',
-    'genericuser2': 'genericpass2',
-    'defaultuser': 'defaultpass',
-    'commonuser': 'commonpass',
-    'standarduser': 'standardpass',
-    'basicuser': 'basicpass',
-    'simpleuser': 'simplepass',
-    'usualuser': 'usualpass',
-    'admin3': 'admin123',
-    'admin4': 'adminadmin123',
-    'user2': 'userpass123',
-    'user3': 'user123',
-    'superadmin': 'superadminpass',
-    'administrator': 'adminpass123',
-    'techadmin': 'techadminpass',
-    'manager': 'managerpass',
-    'officeadmin': 'officeadminpass',
-    'financeuser': 'financepass',
-    'hradmin': 'hradminpass',
-    'projectmanager': 'projectpass',
-    'salesadmin': 'salespass',
-    'customeruser': 'customerpass',
-    'itmanager': 'itmanagerpass',
-    'supportadmin': 'supportpass',
-    'developeruser': 'developerpass'
-}
+usuarios = {}
+
+# Cargar el wordlist desde el archivo de texto si se proporciona
+if args.w:
+    with open(args.w, 'r') as file:
+        for line in file:
+            key, value = line.strip().split(':')
+            usuarios[key] = value
 
 
 def manejar_respuesta(ip, port, url, response, usuario, contraseña, carga_cancelada, resultados):
