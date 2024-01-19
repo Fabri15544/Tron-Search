@@ -67,5 +67,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    
    agregar exploits RDP.
    
-   agregar consultas rtsp/wordlist.
+   agregar consultas rtsp/wordlist[Port:554].
 
