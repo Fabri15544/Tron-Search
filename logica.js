@@ -652,7 +652,7 @@ function mostrarResultados(resultados) {
         table.classList.add("result-table");
 
         // Create a row for each field
-        var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "CredencialesDVR"];
+        var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR"];
         fields.forEach(function (field) {
             if (field === "CredencialesDVR") {
                 // Check if CredencialesDVR field is empty or undefined
