@@ -74,6 +74,7 @@ ip_queue = queue.Queue()
 # Inicializar una variable para rastrear el índice
 last_index = 0
 
+
 # Verificar si existe el archivo last_ip.txt
 if os.path.isfile("last_ip.txt"):
     with open("last_ip.txt", "r") as last_ip_file:
@@ -86,21 +87,29 @@ if os.path.isfile("last_ip.txt"):
         ip_queue.put(current_ip)  # Poner la última IP de nuevo en la cola
         if current_ip == last_ip:
             break
+    # Iterar sobre todos los posibles valores para las partes del patrón con comodines
+    for i in range(last_index, 256**num_stars):
+        parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
+        ip = ip_pattern.replace('*', '{}').format(*parts)
+
+        if last_index > 0:
+            # Si ya se encontró la última IP, comienza a generar las nuevas IPs
+            ip_queue.put(ip)
+        
+        elif ip == last_ip:
+            # Si aún no se encontró la última IP, pero la IP generada es igual a la última IP, comienza a generar las nuevas IPs
+            last_index += 1
+            ip_queue.put(ip)
+
 else:
     # Limpiar la cola si no se desea retomar
-    ip_queue.queue.clear()
+    with open("last_ip.txt", "w") as last_ip_file:
+        last_ip_file.write(ip_pattern.replace("*", "0"))
 
-# Iterar sobre todos los posibles valores para las partes del patrón con comodines
-for i in range(last_index, 256**num_stars):
-    parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
-    ip = ip_pattern.replace('*', '{}').format(*parts)
-
-    if last_index > 0:
-        # Si ya se encontró la última IP, comienza a generar las nuevas IPs
-        ip_queue.put(ip)
-    elif ip == last_ip:
-        # Si aún no se encontró la última IP, pero la IP generada es igual a la última IP, comienza a generar las nuevas IPs
-        last_index += 1
+    # Resto del código para la generación de IPs
+    for i in range(256**num_stars):
+        parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
+        ip = ip_pattern.replace('*', '{}').format(*parts)
         ip_queue.put(ip)
     
 
