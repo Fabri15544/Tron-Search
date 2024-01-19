@@ -69,15 +69,42 @@ threads = []
 # Crear una cola vacía para guardar las direcciones IP a escanear
 ip_queue = queue.Queue()
 
-# Iterar sobre todos los posibles valores para las partes del patrón con comodines
-for i in range(256**num_stars):
-    # Convertir el índice actual en una lista de números que representan las partes de la dirección IP
-    parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
-    # Crear una dirección IP a partir de las partes obtenidas y el patrón original
-    ip = ip_pattern.replace('*', '{}').format(*parts)
-    # Añadir la dirección IP a la cola
-    ip_queue.put(ip)
+    
 
+# Inicializar una variable para rastrear el índice
+last_index = 0
+
+# Verificar si existe el archivo last_ip.txt
+if os.path.isfile("last_ip.txt"):
+    with open("last_ip.txt", "r") as last_ip_file:
+        last_ip = last_ip_file.read().strip()
+
+    # Buscar la última IP en la cola
+    while not ip_queue.empty():
+        current_ip = ip_queue.get()
+        last_index += 1
+        ip_queue.put(current_ip)  # Poner la última IP de nuevo en la cola
+        if current_ip == last_ip:
+            break
+else:
+    # Limpiar la cola si no se desea retomar
+    ip_queue.queue.clear()
+
+# Iterar sobre todos los posibles valores para las partes del patrón con comodines
+for i in range(last_index, 256**num_stars):
+    parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
+    ip = ip_pattern.replace('*', '{}').format(*parts)
+
+    if last_index > 0:
+        # Si ya se encontró la última IP, comienza a generar las nuevas IPs
+        ip_queue.put(ip)
+    elif ip == last_ip:
+        # Si aún no se encontró la última IP, pero la IP generada es igual a la última IP, comienza a generar las nuevas IPs
+        last_index += 1
+        ip_queue.put(ip)
+    
+
+        
 def is_camera(ip, port):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -601,8 +628,10 @@ def scan(ip, ports):
             continue
         except Exception as e:
             continue
-
             sock.close()
+    # Guardar la última IP en un archivo
+    with open("last_ip.txt", "w") as last_ip_file:
+        last_ip_file.write(ip)
             
 # Crea una instancia de UserAgent
 ua = UserAgent()
