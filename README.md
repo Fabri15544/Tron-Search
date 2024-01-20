@@ -63,11 +63,11 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
   
 4. **PUNTOS A MEJORAR:**
    
-   agregar conexion proxy.
+   Agregar conexion proxy.
    
-   agregar exploits RDP.
+   Agregar exploits RDP.
    
-   agregar consultas rtsp/wordlist[Port:554].
+   Agregar consultas rtsp/wordlist[Port:554].
 
    Agregar las capturas de camaras Vulnerables al html[Vista-Previa].
 
