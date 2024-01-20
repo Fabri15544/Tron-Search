@@ -1,0 +1,146 @@
+/* Estilo para el cuerpo del documento */
+body, body.dark-mode * {
+    font-family: Arial, sans-serif;
+    transition: background-color 0.3s ease; /* Transición suave para el modo oscuro */
+}
+
+/* Modo Oscuro */
+body.dark-mode {
+    background-color: #333; /* Color de fondo en modo oscuro */
+    color: #fff; /* Color de texto en modo oscuro */
+}
+
+/* Encabezado */
+h1, h1.dark-mode {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: inherit; /* Hereda el color del texto del body */
+}
+
+/* Contenedor principal */
+.container {
+    max-width: 100%; /* Cambiado a 100% para ocupar todo el espacio disponible */
+    margin: 0 auto;
+}
+
+/* Etiquetas de filtro */
+label, label.dark-mode {
+    font-size: 16px;
+    margin-right: 10px;
+    color: inherit; /* Hereda el color del texto del body */
+}
+
+/* Selectores de filtro */
+select, #busqueda, select.dark-mode, #busqueda.dark-mode {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: inherit; /* Hereda el color del texto del body */
+    background-color: inherit; /* Hereda el fondo del body */
+}
+
+/* Estilo específico para el cuadro de opciones de filtro en modo oscuro */
+select.dark-mode {
+    background-color: #333; /* Color de fondo en modo oscuro */
+    color: #fff; /* Color de texto en modo oscuro */
+}
+
+/* Botones */
+button, button.dark-mode {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+/* Resultados */
+#resultados, #resultados.dark-mode {
+    list-style-type: none;
+    padding: 0;
+}
+
+/* Estilo para cada resultado */
+#resultados li, #resultados li.dark-mode {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    color: inherit; /* Hereda el color del texto del body */
+    background-color: inherit; /* Hereda el fondo del body */
+}
+
+/* Botón de modo oscuro */
+.dark-mode-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    z-index: 999; /* Ajusta el índice z para que el botón aparezca encima del mapa */
+}
+
+
+/* Cambiar los estilos de otros elementos en el modo oscuro si es necesario */
+select.dark-mode-select {
+    background-color: #333; /* Color de fondo en modo oscuro */
+    color: #fff; /* Color de texto en modo oscuro */
+}
+
+.not-found-container {
+    text-align: center; /* Center-align the content horizontally */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50%; /* Center-align the content vertically */
+}
+
+.image-container {
+    display: flex;
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Centra verticalmente */
+    height: 100%; /* Establece la altura del contenedor al 100% de la ventana gráfica */
+}
+
+table {
+    width: 60%; /* Hace que la tabla ocupe el 100% del contenedor */
+    border-collapse: collapse; /* Fusiona los bordes de las celdas para un aspecto más limpio */
+    margin-bottom: 20px; /* Ajusta el margen inferior según tus preferencias */
+}
+
+th, td {
+    padding: 10px; /* Ajusta el espacio interno de las celdas según tus preferencias */
+    text-align: left; /* Alinea el texto a la izquierda */
+    border: 1px solid #ddd; /* Agrega un borde delgado a las celdas */
+}
+
+.image-square img {
+     width: 100%; /* La imagen ocupa el 100% del cuadrado */
+     height: 100%; /* La imagen ocupa el 100% del cuadrado */
+     object-fit: cover; /* La imagen se ajusta para cubrir completamente el cuadrado */
+}
+
+
+#pagination{
+    text-align: center;
+}
+
+#map {
+    width: 80%;
+    margin: 0;
+}
