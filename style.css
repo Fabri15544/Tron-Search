@@ -131,3 +131,9 @@ select.dark-mode-select {
 #pagination{
     text-align: center;
 }
+
+#map {
+    width: 80%;
+    max-width: 800px;
+    margin: 0 auto;
+}
