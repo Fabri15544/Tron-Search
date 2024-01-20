@@ -655,12 +655,14 @@ function mostrarResultados(resultados) {
             window.open("http://" + resultado.IP + ":" + resultado.Puerto, "_blank");
         });
 
-        var checkboxCheckmark = document.createElement("span");
-        checkboxCheckmark.classList.add("checkbox-checkmark");
+        var icon = document.createElement("img");
+        icon.setAttribute("src", "icon.png");
+        icon.classList.add("icon");
 
+        checkboxContainer.appendChild(icon);
         checkboxContainer.appendChild(checkboxInput);
-        checkboxContainer.appendChild(checkboxCheckmark);
 
+        item.appendChild(checkboxContainer);
         item.appendChild(checkboxContainer);
 
         // Create a table for better formatting
