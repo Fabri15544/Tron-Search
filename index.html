@@ -19,17 +19,6 @@
         <label for="puertoFilter">Filtrar por Puerto:</label>
         <select id="puertoFilter">
             <option value="">Todos</option>
-            <!-- Agregar opciones de puerto desde la lista -->
-            <script>
-                var ports = [80, 90, 443, 8080, 81, 82, 83, 84, 88, 1813, 8181, 8000, 8001, 9000, 21, 23, 22, 25, 53, 161, 101, 137, 138, 139, 2082, 2083, 3306, 3389];
-                var puertoFilter = document.getElementById("puertoFilter");
-                ports.forEach(function (port) {
-                    var option = document.createElement("option");
-                    option.value = port;
-                    option.textContent = "Puerto " + port;
-                    puertoFilter.appendChild(option);
-                });
-            </script>
         </select>
 
         <!-- Filtro por Servicios -->
