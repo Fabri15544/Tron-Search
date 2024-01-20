@@ -27,13 +27,13 @@ h1, h1.dark-mode {
 
 /* Contenedor principal */
 .container, .container.dark-mode {
-    max-width: 800px;
+    max-width: 100%; /* Cambiado a 100% para ocupar todo el espacio disponible */
     margin: 0 auto;
     background-color: #A5;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    color: inherit; /* Hereda el color del texto del body */
+    color: inherit;
 }
 
 /* Etiquetas de filtro */
@@ -50,7 +50,7 @@ select, #busqueda, select.dark-mode, #busqueda.dark-mode {
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     color: inherit; /* Hereda el color del texto del body */
     background-color: inherit; /* Hereda el fondo del body */
 }
@@ -93,9 +93,9 @@ button, button.dark-mode {
 
 /* Botón de modo oscuro */
 .dark-mode-toggle {
-    position: absolute;
+    position: fixed;
     top: 10px;
-    left: 10px;
+    right: 10px;
     background-color: #333;
     color: #fff;
     border: none;
@@ -103,7 +103,9 @@ button, button.dark-mode {
     width: 30px;
     height: 30px;
     cursor: pointer;
+    z-index: 999; /* Ajusta el índice z para que el botón aparezca encima del mapa */
 }
+
 
 /* Cambiar los estilos de otros elementos en el modo oscuro si es necesario */
 select.dark-mode-select {
@@ -124,8 +126,37 @@ select.dark-mode-select {
     display: flex;
     justify-content: center; /* Centra horizontalmente */
     align-items: center; /* Centra verticalmente */
-    height: 100vh; /* Establece la altura del contenedor al 100% de la ventana gráfica */
+    height: 100%; /* Establece la altura del contenedor al 100% de la ventana gráfica */
 }
+
+/* Agrega este bloque de estilo en tu archivo de estilo CSS (style.css) o en el head de tu HTML */
+table {
+    width: 60%; /* Hace que la tabla ocupe el 100% del contenedor */
+    border-collapse: collapse; /* Fusiona los bordes de las celdas para un aspecto más limpio */
+    margin-bottom: 20px; /* Ajusta el margen inferior según tus preferencias */
+}
+
+th, td {
+    padding: 10px; /* Ajusta el espacio interno de las celdas según tus preferencias */
+    text-align: left; /* Alinea el texto a la izquierda */
+    border: 1px solid #ddd; /* Agrega un borde delgado a las celdas */
+}
+
+/* Estilo adicional para el cuadrado con la imagen */
+.image-square {
+     width: 100px; /* Ajusta el tamaño del cuadrado según tus necesidades */
+     height: 100px; /* Ajusta el tamaño del cuadrado según tus necesidades */
+     background-color: #f0f0f0; /* Color de fondo del cuadrado */
+     margin-left: 20px; /* Espacio a la izquierda de la tabla */
+}
+
+.image-square img {
+     width: 100%; /* La imagen ocupa el 100% del cuadrado */
+     height: 100%; /* La imagen ocupa el 100% del cuadrado */
+     object-fit: cover; /* La imagen se ajusta para cubrir completamente el cuadrado */
+}
+
+/* Estilo adicional según tus necesidades */
 
 /* Estilos para centrar los números de página */
 #pagination{
@@ -134,6 +165,5 @@ select.dark-mode-select {
 
 #map {
     width: 80%;
-    max-width: 800px;
-    margin: 0 auto;
+    margin: 0;
 }
