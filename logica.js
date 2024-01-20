@@ -10,6 +10,21 @@ function cargarDatos(callback) {
     xhr.send(null);
 }
 
+function cargarOpcionesDePuerto(datos) {
+    var puertoFilter = document.getElementById("puertoFilter");
+    var Puertos = [];
+
+    datos.forEach(resultado => {
+        if (!Puertos.includes(resultado.Puerto)) {
+            Puertos.push(resultado.Puerto);
+            var option = document.createElement("option");
+            option.value = resultado.Puerto;
+            option.textContent = resultado.Puerto;
+            puertoFilter.appendChild(option);
+        }
+    });
+}
+
 function cargarOpcionesDeServicio(datos) {
     var servicioFilter = document.getElementById("servicioFilter");
     var servicios = [];
@@ -28,6 +43,7 @@ function cargarOpcionesDeServicio(datos) {
 
 cargarDatos(datos => {
     cargarOpcionesDeServicio(datos);
+    cargarOpcionesDePuerto(datos);
 });
 
 function actualizarListaPeriodicamente() {
