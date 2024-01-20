@@ -144,3 +144,9 @@ th, td {
     width: 80%;
     margin: 0;
 }
+
+.icon {
+    width: 40px; /* Ajusta el tamaño según tus necesidades */
+    height: 30px; /* Ajusta el tamaño según tus necesidades */
+    margin-right: 5px; /* Opcional: espacio entre el icono y el cuadro de verificación */
+}
