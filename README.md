@@ -69,3 +69,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    
    agregar consultas rtsp/wordlist[Port:554].
 
+   Agregar las capturas de camaras Vulnerables al html[Vista-Previa].
+
