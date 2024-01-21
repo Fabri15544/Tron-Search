@@ -42,6 +42,7 @@ parser.add_argument('--ciudad', help='Filtrar por ciudad')
 parser.add_argument('--w', help='Ruta del archivo de texto con el wordlist (usuarios y contraseñas)')
 parser.add_argument('--s', default=0.5, type=float, help='Tiempo de espera entre conexiones[SOCKET] (valor predeterminado: 0.5 segundos)')
 parser.add_argument('--bn', default=2, type=float, help='Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)')
+parser.add_argument('--has_screenshot', choices=['all', 'cam'], help='Indica si se debe verificar la existencia de capturas de pantalla.')
 
 args = parser.parse_args()
 
@@ -204,6 +205,7 @@ def enviar_solicitud(ip, port, carga_cancelada, resultados):
         f'http://{ip}:{port}/video.cgi?',
         f'http://{ip}:{port}/web/mobile.html',
         f'http://{ip}:{port}/asp/video.cgi'
+        f'http://{ip}:{port}/serverpush.htm'
     ]
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -468,48 +470,37 @@ def check_vuln_tvt(ip, port):
     print(Colors.GREEN + f"[{ip}:{port}] - Posible Exploit" + Colors.DEFAULT)
     return True
 
-def capture_screenshot(ip, port, width=1024, height=768):
+def capture_screenshot(ip, port):
     try:
-        # Verificar la conexión a la dirección IP y el puerto
         url = f"http://{ip}:{port}"
-        response = requests.get(url, timeout=5)  # Timeout de 5 segundos
+        response = requests.get(url, timeout=5)
 
-        # Verificar si la respuesta fue exitosa (código de estado 2xx)
         if not response.ok:
             return
 
-        # Configurar las opciones del navegador
-        chrome_options = Options()
-        chrome_options.add_argument('--headless')  # Ejecutar en modo sin cabeza (sin interfaz gráfica)
-        chrome_options.add_argument(f'--window-size={width},{height}')
-        chrome_options.add_argument('--disable-notifications')  # Desactivar notificaciones
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--disable-notifications')
+        chrome_options.add_argument('--log-level=3')
+        chrome_options.add_argument('--remote-debugging-port=0')
+        chrome_options.add_argument('--disable-dev-shm-usage')
 
-        # Configurar el controlador del navegador (asegúrate de tener el controlador de Chrome instalado)
         driver = webdriver.Chrome(options=chrome_options)
-
-        # Intentar abrir la URL en el navegador
         driver.get(url)
 
-        # Esperar unos segundos antes de tomar la captura de pantalla
-        time.sleep(3)
+        # Esperar a que la página se cargue completamente
+        driver.implicitly_wait(10)
 
-        # Tomar una captura de pantalla y guardarla con el formato IP-PORT.png en la ruta raíz
-        screenshot_filename = fr"screenshot\{ip}-{port}.png"
+        screenshot_filename = f"screenshot/{ip}-{port}.png"
         driver.save_screenshot(screenshot_filename)
 
-        print(f"Captura de pantalla guardada: {screenshot_filename}")
-
     except requests.RequestException as e:
-        return
-
-    except WebDriverException as e:
-        return
+        print(f'Error de solicitud: {e}')
 
     except Exception as e:
-        return
+        print(f'Error: {e}')
 
     finally:
-        # Cerrar el navegador
         if 'driver' in locals() and driver is not None:
             driver.quit()
 
@@ -585,8 +576,12 @@ def scan(ip, ports):
                     print(f"IP: {formatted_ip}\nServicio: {formatted_service_name}\nBanner: {formatted_banner}\nRegión: {formatted_region}\nCiudad: {formatted_city}\nDominio: {formatted_domain}")
 
                     credentials_found = "NULL"
+                    if args.has_screenshot == 'all':
+                        capture_screenshot(ip, port)
                     
                     if is_camera(ip, port) and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
+                        if args.has_screenshot == 'cam':
+                            capture_screenshot(ip, port)
                         print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
                         hikvision_vulnerable = check_vuln_hikvision(ip, port)
                         cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
@@ -597,6 +592,8 @@ def scan(ip, ports):
                         print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
                         
                     if "HTTP/1.0 302 Found" in banner:
+                        if args.has_screenshot == 'cam':
+                            capture_screenshot(ip, port)
                         credentials_found = scan_dvr_credentials(ip, port)                           
 
                     print("-" * 50)
