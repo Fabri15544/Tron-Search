@@ -649,7 +649,7 @@ def scan(ip, ports):
                             tiempo_actual = time.time()
                             tiempo_ultima_copia = os.path.getmtime("respaldo.json") if os.path.exists("respaldo.json") else 0
 
-                            if (tiempo_actual - tiempo_ultima_copia) > 1.5:
+                            if (tiempo_actual - tiempo_ultima_copia) > 5:
                                 with open("respaldo.json", "w") as file:
                                     file.write(json.dumps(existing_data, indent=4))
                 except Exception as e:
