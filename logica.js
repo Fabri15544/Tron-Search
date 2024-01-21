@@ -669,32 +669,39 @@ function mostrarResultados(resultados) {
         var table = document.createElement("table");
         table.classList.add("result-table");
 
-        // Create a row for each field
-        var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR"];
-        fields.forEach(function (field) {
-            if (field === "CredencialesDVR") {
-                // Check if CredencialesDVR field is empty or undefined
-                if (resultado[field]) {
-                    var row = table.insertRow();
-                    var cell1 = row.insertCell(0);
-                    var cell2 = row.insertCell(1);
-                    cell1.textContent = field;
-                    cell2.textContent = resultado[field];
-                }
-            } else {
-                var row = table.insertRow();
-                var cell1 = row.insertCell(0);
-                var cell2 = row.insertCell(1);
-                cell1.textContent = field;
-                if (field === "IP") {
-                    // Add the flag emoji next to the IP based on the region
-                    const flagEmoji = getFlagEmoji(resultado["Región"]);
-                    cell2.textContent = resultado[field] + " " + flagEmoji;
-                } else {
-                    cell2.textContent = resultado[field] || ''; // Display field value, or empty string if it's missing
-                }
-            }
-        });
+// Función para crear una celda de imagen con la captura web
+function createImageCell(ip, puerto) {
+    var imageCell = document.createElement("td");
+    imageCell.innerHTML = `<img src="screenshot/${ip}-${puerto}.png" alt="Screenshot" style="max-width: 512px;">`;
+    return imageCell;
+}
+
+// Create a row for each field
+var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR"];
+
+fields.forEach(function (field) {
+    var row = table.insertRow();
+    var cell1 = row.insertCell(0);
+    var cell2 = row.insertCell(1);
+
+    cell1.textContent = field;
+
+    if (field === "IP") {
+        // Add the flag emoji next to the IP based on the region
+        const flagEmoji = getFlagEmoji(resultado["Región"]);
+        cell2.textContent = resultado[field] + " " + flagEmoji;
+    } else if (field === "Banner") {
+        // If the field is "Banner", add the value to the cell
+        cell2.textContent = resultado[field] || '';
+
+        // Add image cell for CredencialesDVR field next to the Banner
+        if (resultado["CredencialesDVR"]) {
+            row.appendChild(createImageCell(resultado["IP"], resultado["Puerto"]));
+        }
+    } else {
+        cell2.textContent = resultado[field] || ''; // Display field value, or empty string if it's missing
+    }
+});
 
         // Append the table to the result item
         item.appendChild(table);
@@ -761,60 +768,59 @@ cargarDatos(function (datos) {
     mostrarResultados(datos);
 });
 
-// Función para alternar el modo oscuro
+// Function to toggle dark mode
 function toggleDarkMode() {
     const mainContainer = document.getElementById("main-container");
     const mainContainerr = document.getElementById("servicioFilter");
-    mainContainer.classList.toggle('dark-mode'); // Agregar o quitar la clase 'dark-mode' al contenedor principal
-    mainContainerr.classList.toggle('dark-mode'); // Agregar o quitar la clase 'dark-mode' al contenedor principal
+    mainContainer.classList.toggle('dark-mode'); // Add or remove the 'dark-mode' class to the main container
+    mainContainerr.classList.toggle('dark-mode'); // Add or remove the 'dark-mode' class to the main container
 
-    // También puedes agregar el cambio de estilo para el cuadro de opciones de filtro aquí
+    // You can also add style change for the filter options box here
     const puertoFilter = document.getElementById("puertoFilter");
-    puertoFilter.classList.toggle('dark-mode-select'); // Agregar o quitar la clase 'dark-mode-select' al cuadro de opciones de filtro
+    puertoFilter.classList.toggle('dark-mode-select'); // Add or remove the 'dark-mode-select' class to the filter options box
 
-    // Puedes agregar más lógica aquí para guardar la preferencia del usuario en una cookie o localStorage
-
+    // You can add more logic here to save the user's preference in a cookie or localStorage
 }
 
 // Function to load country flags and count the results for each country
 function cargarBanderasPaises(datos) {
-    var countryCounts = {}; // Objeto para contar la cantidad de resultados por país
+    var countryCounts = {}; // Object to count the number of results per country
 
-    // Inicializar el conteo en 0 para cada país
+    // Initialize the count to 0 for each country
     countries.forEach(function (country) {
         countryCounts[country.name] = 0;
     });
 
-    // Contar la cantidad de resultados para cada país
+    // Count the number of results for each country
     datos.forEach(function (resultado) {
-        var countryName = resultado["Región"]; // Asegúrate de que "Región" sea la propiedad correcta
-        var country = countries.find(c => c.name === countryName); // Buscar el país por nombre
+        var countryName = resultado["Región"]; // Make sure "Región" is the correct property
+        var country = countries.find(c => c.name === countryName); // Find the country by name
         if (country) {
-            countryCounts[country.name]++; // Incrementar el contador de resultados del país
+            countryCounts[country.name]++; // Increment the country's results count
         }
     });
 
-    return countryCounts; // Devuelve los resultados de conteo
+    return countryCounts; // Return the count results
 }
 
-// Función para mostrar los resultados y actualizar el array countries
+// Function to display the results and update the 'countries' array
 function mapa(datos) {
     const countryCounts = cargarBanderasPaises(datos);
 
-    // Actualiza los valores de 'results' en el array 'countries'
+    // Update the 'results' values in the 'countries' array
     countries.forEach(function (country) {
         country.results = countryCounts[country.name];
     });
 
-    // Crear un mapa y centrarlo en una ubicación inicial
+    // Create a map and center it at an initial location
     var map = L.map('map').setView([0, 0], 2);
 
-    // Agregar una capa de mapa base de OpenStreetMap
+    // Add an OpenStreetMap base map layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Iterar a través de los datos y agregar marcadores rojos para países con resultados
+    // Iterate through the data and add red markers for countries with results
     countries.forEach(function (data) {
         if (data.results > 0) {
             var redIcon = new L.Icon({
@@ -831,27 +837,26 @@ function mapa(datos) {
     });
 }
 
-// Llamar a la función para mostrar resultados y actualizar el array 'countries'
+// Call the function to display results and update the 'countries' array
 cargarDatos(function (datos) {
     mapa(datos);
 });
 
-// Función para alternar el modo oscuro
+// Function to toggle dark mode
 function toggleDarkMode() {
     const mainContainer = document.getElementById("main-container");
     const mainContainerr = document.getElementById("servicioFilter");
-    mainContainer.classList.toggle('dark-mode'); // Agregar o quitar la clase 'dark-mode' al contenedor principal
-    mainContainerr.classList.toggle('dark-mode'); // Agregar o quitar la clase 'dark-mode' al contenedor principal
+    mainContainer.classList.toggle('dark-mode'); // Add or remove the 'dark-mode' class to the main container
+    mainContainerr.classList.toggle('dark-mode'); // Add or remove the 'dark-mode' class to the main container
 
-    // También puedes agregar el cambio de estilo para el cuadro de opciones de filtro aquí
+    // You can also add style change for the filter options box here
     const puertoFilter = document.getElementById("puertoFilter");
-    puertoFilter.classList.toggle('dark-mode-select'); // Agregar o quitar la clase 'dark-mode-select' al cuadro de opciones de filtro
+    puertoFilter.classList.toggle('dark-mode-select'); // Add or remove the 'dark-mode-select' class to the filter options box
 
-    // Puedes agregar más lógica aquí para guardar la preferencia del usuario en una cookie o localStorage
-
+    // You can add more logic here to save the user's preference in a cookie or localStorage
 }
 
-// Muestra todos los resultados cuando la página se carga
+// Display all results when the page loads
 cargarDatos(function (datos) {
     mostrarResultados(datos);
 });
