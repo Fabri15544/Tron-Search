@@ -72,5 +72,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    
    Agregar consultas rtsp/wordlist[Port:554].
 
-   Se rompe el JSON al tener multiples peticiones[Hacer mas pruebas].
+   Se rompe el JSON al tener multiples peticiones, sistema de respaldo.json[Hacer mas pruebas].
 
