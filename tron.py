@@ -483,8 +483,7 @@ def capture_screenshot(ip, port):
             driver.quit()
 
 def GuardarDatos(data):
-    
-    tamanio_anterior = 0
+    tamanio_actual = 0
 
     if os.path.isfile("datos.json"):
         tamanio_actual = os.path.getsize("datos.json")
@@ -492,14 +491,14 @@ def GuardarDatos(data):
             with open("datos.json", "r") as file:
                 existing_data = json.load(file)
         except Exception as e:
-            # En caso de error al leer datos.json, intenta cargar desde el respaldo
+            # Intenta cargar desde el respaldo en caso de error al leer datos.json
             try:
                 with open("respaldo.json", "r") as backup_file:
                     existing_data = json.load(backup_file)
             except Exception as backup_exception:
                 existing_data = []
     else:
-        # Si no hay datos.json, intenta cargar desde el respaldo
+        # Intenta cargar desde el respaldo si no hay datos.json
         try:
             with open("respaldo.json", "r") as backup_file:
                 existing_data = json.load(backup_file)
@@ -508,28 +507,28 @@ def GuardarDatos(data):
 
     existing_data.append(data)
     json_data = json.dumps(existing_data, indent=4)
+
     try:
         with open("datos.json", "w") as file:
             file.write(json_data)
     except Exception as e:
+        # Si hay un error al escribir en datos.json, no se realiza el respaldo
         pass
 
-    # Lógica para hacer respaldo solo si datos.json no está corrupto
+    # Lógica para hacer respaldo solo si datos.json no está corrupto y su tamaño es mayor que 0
     try:
-        if tamanio_actual > tamanio_anterior:
+        if tamanio_actual > 0:
             with open("datos.json", "r") as check_file:
                 json.load(check_file)
-            tamanio_anterior = tamanio_actual
-            if existing_data is not None:
-                tiempo_actual = time.time()
-                tiempo_ultima_copia = os.path.getmtime("respaldo.json") if os.path.exists("respaldo.json") else 0
 
-                respaldo_size = os.path.getsize("datos.json") if os.path.exists("datos.json") else 0
+            tiempo_actual = time.time()
+            tiempo_ultima_copia = os.path.getmtime("respaldo.json") if os.path.exists("respaldo.json") else 0
 
-                if (tiempo_actual - tiempo_ultima_copia) > 5 and respaldo_size != 0:
-                    with open("respaldo.json", "w") as file:
-                        file.write(json.dumps(existing_data, indent=4))
+            if (tiempo_actual - tiempo_ultima_copia) > 5:
+                with open("respaldo.json", "w") as file:
+                    file.write(json.dumps(existing_data, indent=4))
     except Exception as e:
+        # Si hay algún error al cargar datos.json, no se realiza el respaldo
         pass
 
 def scan(ip, ports):
