@@ -43,76 +43,59 @@ parser.add_argument('--w', help='Ruta del archivo de texto con el wordlist (usua
 parser.add_argument('--s', default=0.5, type=float, help='Tiempo de espera entre conexiones[SOCKET] (valor predeterminado: 0.5 segundos)')
 parser.add_argument('--bn', default=2, type=float, help='Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)')
 parser.add_argument('--has_screenshot', choices=['all', 'cam'], help='Captura de pantalla [--has_screenshot all (todas las urls)] [--has_screenshot cam (todas las que se reconocen como camaras)]')
+parser.add_argument('--reanudar', help='IP a partir de la cual se reanudará el escaneo')
 
+# Analizar los argumentos proporcionados al script
 args = parser.parse_args()
 
 # Actualizar los puertos si se proporciona un valor a través de --port, de lo contrario, usar los predeterminados
 ports = args.port if args.port else ports
 
-# Ahora, puedes imprimir la variable 'ports'
+# Imprimir la variable 'ports'
 print(f"Puertos seleccionados: {ports}")
 
-
-# Ahora, puedes acceder a los argumentos en tu código
+# Acceder a los argumentos en el código
 ip_pattern = args.search
 FiltroRegion = args.region
 FiltroCiudad = args.ciudad
+reanudar_ip = args.reanudar
+
+# Limpiar la pantalla (se asume que la función clear() está definida)
 clear()
 
+# Inicializar variables
 processed_ips = 0
-
-# Obtener el número de ocurrencias del carácter '*' en el patrón
 num_stars = ip_pattern.count('*')
-
-# Crear una lista vacía para guardar los hilos de ejecución
 threads = []
-
-# Crear una cola vacía para guardar las direcciones IP a escanear
 ip_queue = queue.Queue()
-
-    
-
-# Inicializar una variable para rastrear el índice
 last_index = 0
 
-
-# Verificar si existe el archivo last_ip.txt
-if os.path.isfile("last_ip.txt"):
-    with open("last_ip.txt", "r") as last_ip_file:
-        last_ip = last_ip_file.read().strip()
-
-    # Buscar la última IP en la cola
+# Verificar si se proporciona una IP para reanudar
+if reanudar_ip:
+    # Buscar la IP de reanudación en la cola
     while not ip_queue.empty():
         current_ip = ip_queue.get()
         last_index += 1
-        ip_queue.put(current_ip)  # Poner la última IP de nuevo en la cola
-        if current_ip == last_ip:
+        ip_queue.put(current_ip)
+        if current_ip == reanudar_ip:
             break
-    # Iterar sobre todos los posibles valores para las partes del patrón con comodines
+
+    # Iterar sobre posibles valores para las partes del patrón con comodines
     for i in range(last_index, 256**num_stars):
         parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
         ip = ip_pattern.replace('*', '{}').format(*parts)
 
         if last_index > 0:
-            # Si ya se encontró la última IP, comienza a generar las nuevas IPs
             ip_queue.put(ip)
-        
-        elif ip == last_ip:
-            # Si aún no se encontró la última IP, pero la IP generada es igual a la última IP, comienza a generar las nuevas IPs
+        elif ip == reanudar_ip:
             last_index += 1
             ip_queue.put(ip)
-
 else:
-    # Limpiar la cola si no se desea retomar
-    with open("last_ip.txt", "w") as last_ip_file:
-        last_ip_file.write(ip_pattern.replace("*", "0"))
-
     # Resto del código para la generación de IPs
     for i in range(256**num_stars):
         parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
         ip = ip_pattern.replace('*', '{}').format(*parts)
-        ip_queue.put(ip)
-    
+        ip_queue.put(ip)    
 
         
 def is_camera(ip, port):
@@ -682,7 +665,7 @@ def scan(ip, ports):
             continue
         finally:
             # Guarda la última IP en un archivo
-            with open("last_ip.txt", "w") as last_ip_file:
+            with open("Ultima_IP.txt", "w") as last_ip_file:
                 last_ip_file.write(ip)
             sock.close()
             
