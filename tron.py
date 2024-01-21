@@ -43,7 +43,7 @@ parser.add_argument('--w', help='Ruta del archivo de texto con el wordlist (usua
 parser.add_argument('--s', default=0.5, type=float, help='Tiempo de espera entre conexiones[SOCKET] (valor predeterminado: 0.5 segundos)')
 parser.add_argument('--bn', default=2, type=float, help='Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)')
 parser.add_argument('--has_screenshot', choices=['all', 'cam'], help='Captura de pantalla [--has_screenshot all (todas las urls)] [--has_screenshot cam (todas las que se reconocen como camaras)]')
-parser.add_argument('--reanudar', help='IP a partir de la cual se reanudará el escaneo')
+parser.add_argument('--reanudar', help='IP a partir de la cual se reanudará el escaneo EJ: --search 144.88.*.* --reanudar 144.88.92.63')
 
 # Analizar los argumentos proporcionados al script
 args = parser.parse_args()
