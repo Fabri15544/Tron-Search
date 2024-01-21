@@ -96,15 +96,11 @@ if os.path.isfile("last_ip.txt"):
         if last_index > 0:
             # Si ya se encontró la última IP, comienza a generar las nuevas IPs
             ip_queue.put(ip)
-        if ip == last_ip:
+        
+        elif ip == last_ip:
             # Si aún no se encontró la última IP, pero la IP generada es igual a la última IP, comienza a generar las nuevas IPs
             last_index += 1
             ip_queue.put(ip)
-        else:
-            with open("last_ip.txt", "w") as f:
-                f.write(ip_pattern.replace("*", "0"))
-                
-            
 
 else:
     # Limpiar la cola si no se desea retomar
@@ -652,14 +648,14 @@ def scan(ip, ports):
                     if tamanio_actual > tamanio_anterior:
                         with open("datos.json", "r") as check_file:
                             json.load(check_file)
-                        tamanio_anterior = tamanio_actual
                         if existing_data is not None:
                             tiempo_actual = time.time()
                             tiempo_ultima_copia = os.path.getmtime("respaldo.json") if os.path.exists("respaldo.json") else 0
 
                             respaldo_size = os.path.getsize("respaldo.json") if os.path.exists("respaldo.json") else 0
 
-                            if (tiempo_actual - tiempo_ultima_copia) > 5 and respaldo_size != 0:
+                            if (tiempo_actual - tiempo_ultima_copia) > 5 and respaldo_size != 0 and tamanio_anterior < tamanio_actual:
+                                tamanio_anterior = os.path.getsize("datos.json")
                                 with open("respaldo.json", "w") as file:
                                     file.write(json.dumps(existing_data, indent=4))
                 except Exception as e:
