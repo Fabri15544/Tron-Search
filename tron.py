@@ -101,10 +101,6 @@ if os.path.isfile("last_ip.txt"):
             # Si aún no se encontró la última IP, pero la IP generada es igual a la última IP, comienza a generar las nuevas IPs
             last_index += 1
             ip_queue.put(ip)
-        else:
-            # Limpiar el archivo si no se encontró la última IP en la cola
-            with open("last_ip.txt", "w") as last_ip_file:
-                last_ip_file.write(ip_pattern.replace("*", "0"))
 
 else:
     # Limpiar la cola si no se desea retomar
@@ -617,19 +613,46 @@ def scan(ip, ports):
                         "Separador": "-" * 50
                     }
 
-                    # Comprueba si existe un archivo
-                    if os.path.isfile("datos.json"):
-                        # Lee el contenido del archivo
+                if os.path.isfile("datos.json"):
+                    try:
                         with open("datos.json", "r") as file:
                             existing_data = json.load(file)
-                    else:
+                    except Exception as e:
+                        # En caso de error al leer datos.json, intenta cargar desde el respaldo
+                        try:
+                            with open("respaldo.json", "r") as backup_file:
+                                existing_data = json.load(backup_file)
+                        except Exception as backup_exception:
+                            existing_data = []
+                else:
+                    # Si no hay datos.json, intenta cargar desde el respaldo
+                    try:
+                        with open("respaldo.json", "r") as backup_file:
+                            existing_data = json.load(backup_file)
+                    except Exception as backup_exception:
                         existing_data = []
 
-                    existing_data.append(data)
-                    json_data = json.dumps(existing_data, indent=4)
-
+                existing_data.append(data)
+                json_data = json.dumps(existing_data, indent=4)
+                try:
                     with open("datos.json", "w") as file:
                         file.write(json_data)
+                except Exception as e:
+                    pass
+
+                # Lógica para hacer respaldo solo si datos.json no está corrupto
+                try:
+                    if os.path.isfile("datos.json"):
+                        with open("datos.json", "r") as check_file:
+                            json.load(check_file)
+                        tiempo_actual = time.time()
+                        tiempo_ultima_copia = os.path.getmtime("respaldo.json") if os.path.exists("respaldo.json") else 0
+
+                        if (tiempo_actual - tiempo_ultima_copia) > 1.5:
+                            with open("respaldo.json", "w") as file:
+                                file.write(json_data)
+                except Exception as e:
+                    pass
 
                 else:
                     print(f"Filtrando: {ip}:{port} Región: {region} Ciudad: {city}\n")
