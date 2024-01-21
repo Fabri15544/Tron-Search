@@ -103,6 +103,8 @@ if os.path.isfile("last_ip.txt"):
         else:
             with open("last_ip.txt", "w") as f:
                 f.write(ip_pattern.replace("*", "0"))
+                
+            
 
 else:
     # Limpiar la cola si no se desea retomar
