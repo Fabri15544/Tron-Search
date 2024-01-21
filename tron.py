@@ -96,11 +96,13 @@ if os.path.isfile("last_ip.txt"):
         if last_index > 0:
             # Si ya se encontró la última IP, comienza a generar las nuevas IPs
             ip_queue.put(ip)
-        
-        elif ip == last_ip:
+        if ip == last_ip:
             # Si aún no se encontró la última IP, pero la IP generada es igual a la última IP, comienza a generar las nuevas IPs
             last_index += 1
             ip_queue.put(ip)
+        else:
+            with open("last_ip.txt", "w") as f:
+                f.write(ip_pattern.replace("*", "0"))
 
 else:
     # Limpiar la cola si no se desea retomar
