@@ -118,7 +118,7 @@ select.dark-mode-select {
 }
 
 table {
-    width: 60%; /* Hace que la tabla ocupe el 100% del contenedor */
+    width: 100%; /* Hace que la tabla ocupe el 100% del contenedor */
     border-collapse: collapse; /* Fusiona los bordes de las celdas para un aspecto más limpio */
     margin-bottom: 20px; /* Ajusta el margen inferior según tus preferencias */
 }
