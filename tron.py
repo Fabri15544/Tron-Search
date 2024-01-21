@@ -612,8 +612,11 @@ def scan(ip, ports):
                         "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
                         "Separador": "-" * 50
                     }
+                    
+                tamanio_anterior = 0
 
                 if os.path.isfile("datos.json"):
+                    tamanio_actual = os.path.getsize("datos.json")
                     try:
                         with open("datos.json", "r") as file:
                             existing_data = json.load(file)
@@ -642,14 +645,17 @@ def scan(ip, ports):
 
                 # Lógica para hacer respaldo solo si datos.json no está corrupto
                 try:
-                    if os.path.isfile("datos.json"):
+                    if tamanio_actual > tamanio_anterior:
                         with open("datos.json", "r") as check_file:
                             json.load(check_file)
                         if existing_data is not None:
                             tiempo_actual = time.time()
                             tiempo_ultima_copia = os.path.getmtime("respaldo.json") if os.path.exists("respaldo.json") else 0
 
-                            if (tiempo_actual - tiempo_ultima_copia) > 5:
+                            respaldo_size = os.path.getsize("respaldo.json") if os.path.exists("respaldo.json") else 0
+
+                            if (tiempo_actual - tiempo_ultima_copia) > 5 and respaldo_size != 0 and tamanio_anterior < tamanio_actual:
+                                tamanio_anterior = os.path.getsize("datos.json")
                                 with open("respaldo.json", "w") as file:
                                     file.write(json.dumps(existing_data, indent=4))
                 except Exception as e:
