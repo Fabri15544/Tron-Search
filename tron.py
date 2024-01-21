@@ -461,7 +461,6 @@ def capture_screenshot(ip, port):
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--disable-notifications')
         chrome_options.add_argument('--log-level=3')
-        chrome_options.add_argument('--remote-debugging-port=0')
         chrome_options.add_argument('--disable-dev-shm-usage')
 
         driver = webdriver.Chrome(options=chrome_options)
@@ -474,70 +473,62 @@ def capture_screenshot(ip, port):
         driver.save_screenshot(screenshot_filename)
 
     except requests.RequestException as e:
-        print(f'Error de solicitud: {e}')
+        pass
 
     except Exception as e:
-        print(f'Error: {e}')
+        pass
 
     finally:
         if 'driver' in locals() and driver is not None:
             driver.quit()
 
 def GuardarDatos(data):
-    global tamanio_anterior
+    
+    tamanio_anterior = 0
 
-    # Verifica si existe el archivo "datos.json"
     if os.path.isfile("datos.json"):
         tamanio_actual = os.path.getsize("datos.json")
-
-        # Intenta cargar datos desde "datos.json"
         try:
             with open("datos.json", "r") as file:
                 existing_data = json.load(file)
         except Exception as e:
-            # En caso de error, intenta cargar desde el respaldo "respaldo.json"
+            # En caso de error al leer datos.json, intenta cargar desde el respaldo
             try:
                 with open("respaldo.json", "r") as backup_file:
                     existing_data = json.load(backup_file)
             except Exception as backup_exception:
                 existing_data = []
     else:
-        # Si no hay "datos.json", intenta cargar desde el respaldo "respaldo.json"
+        # Si no hay datos.json, intenta cargar desde el respaldo
         try:
             with open("respaldo.json", "r") as backup_file:
                 existing_data = json.load(backup_file)
         except Exception as backup_exception:
             existing_data = []
 
-    # Agrega nuevos datos a la lista
     existing_data.append(data)
-
-    # Convierte la lista a formato JSON con formato indentado
     json_data = json.dumps(existing_data, indent=4)
-
-    # Intenta escribir en "datos.json"
     try:
         with open("datos.json", "w") as file:
             file.write(json_data)
     except Exception as e:
         pass
 
-    # Lógica para hacer respaldo solo si "datos.json" no está corrupto
+    # Lógica para hacer respaldo solo si datos.json no está corrupto
     try:
         if tamanio_actual > tamanio_anterior:
             with open("datos.json", "r") as check_file:
                 json.load(check_file)
             tamanio_anterior = tamanio_actual
+            if existing_data is not None:
+                tiempo_actual = time.time()
+                tiempo_ultima_copia = os.path.getmtime("respaldo.json") if os.path.exists("respaldo.json") else 0
 
-            # Verifica la última vez que se hizo el respaldo y su tamaño
-            tiempo_actual = time.time()
-            tiempo_ultima_copia = os.path.getmtime("respaldo.json") if os.path.exists("respaldo.json") else 0
-            respaldo_size = os.path.getsize("respaldo.json") if os.path.exists("respaldo.json") else 0
+                respaldo_size = os.path.getsize("datos.json") if os.path.exists("datos.json") else 0
 
-            # Realiza el respaldo si han pasado más de 5 segundos y el respaldo no está vacío
-            if (tiempo_actual - tiempo_ultima_copia) > 5 and respaldo_size != 0:
-                with open("respaldo.json", "w") as file:
-                    file.write(json.dumps(existing_data, indent=4))
+                if (tiempo_actual - tiempo_ultima_copia) > 5 and respaldo_size != 0:
+                    with open("respaldo.json", "w") as file:
+                        file.write(json.dumps(existing_data, indent=4))
     except Exception as e:
         pass
 
