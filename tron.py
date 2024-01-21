@@ -42,7 +42,7 @@ parser.add_argument('--ciudad', help='Filtrar por ciudad')
 parser.add_argument('--w', help='Ruta del archivo de texto con el wordlist (usuarios y contraseñas)')
 parser.add_argument('--s', default=0.5, type=float, help='Tiempo de espera entre conexiones[SOCKET] (valor predeterminado: 0.5 segundos)')
 parser.add_argument('--bn', default=2, type=float, help='Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)')
-parser.add_argument('--has_screenshot', choices=['all', 'cam'], help='Indica si se debe verificar la existencia de capturas de pantalla.')
+parser.add_argument('--has_screenshot', choices=['all', 'cam'], help='Captura de pantalla [--has_screenshot all (todas las urls)] [--has_screenshot cam (todas las que se reconocen como camaras)]')
 
 args = parser.parse_args()
 
