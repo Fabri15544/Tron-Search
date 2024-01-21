@@ -649,7 +649,7 @@ function mostrarResultados(resultados) {
 
         var checkboxInput = document.createElement("input");
         checkboxInput.setAttribute("type", "checkbox");
-        checkboxInput.classList.add("checkbox-input");
+        item.appendChild(checkboxInput);
         checkboxInput.addEventListener("click", function () {
             // Open the link in a new tab or window when clicked
             window.open("http://" + resultado.IP + ":" + resultado.Puerto, "_blank");
@@ -672,7 +672,16 @@ function mostrarResultados(resultados) {
 // Función para crear una celda de imagen con la captura web
 function createImageCell(ip, puerto) {
     var imageCell = document.createElement("td");
-    imageCell.innerHTML = `<img src="screenshot/${ip}-${puerto}.png" alt="Screenshot" style="max-width: 512px;">`;
+    var imagePath = `screenshot/${ip}-${puerto}.png`;
+
+    // Verifica si la imagen existe antes de crear la celda
+    var img = new Image();
+    img.src = imagePath;
+    img.onload = function() {
+        // La imagen existe, entonces crea la celda de imagen
+        imageCell.innerHTML = `<img src="${imagePath}" alt="Screenshot" style="max-width: 512px;">`;
+    };
+
     return imageCell;
 }
 
