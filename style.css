@@ -32,6 +32,16 @@ h1, h1.dark-mode {
     padding: 20px;
 }
 
+#resultados {
+    list-style: none; /* Quitar los puntos de la lista */
+    padding: 0; /* Eliminar el espacio de relleno predeterminado de la lista */
+    margin: 0; /* Eliminar el margen predeterminado de la lista */
+}
+
+#resultados li {
+    margin-bottom: 10px; /* Ajusta el espacio entre los resultados */
+    padding: 10px;
+}
 
 /* Búsqueda Avanzada */
 #busqueda {
