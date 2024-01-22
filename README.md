@@ -48,8 +48,9 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Cuenta con un mapa donde vera todos los datos recopilados en un numero total a la region escaneada
    
    Cuenta con modo Oscuro.
+
    
-3. **CONSOLA:**
+4. **CONSOLA:**
    
    Cuenta con barra de progreso al buscar un rango de ip.
    
@@ -72,6 +73,4 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Agregar exploits RDP.
    
    Agregar consultas rtsp/wordlist[Port:554].
-
-   Se rompe el JSON al tener multiples peticiones, sistema de respaldo.json[Hacer mas pruebas].
 
