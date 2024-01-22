@@ -14,14 +14,20 @@ body.dark-mode {
 h1, h1.dark-mode {
     text-align: center;
     font-size: 24px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     color: inherit; /* Hereda el color del texto del body */
 }
 
 /* Contenedor principal */
+.container, #resultados li {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    border: 1px solid #ddd; /* Borde delgado */
+}
+
 .container {
-    max-width: 100%; /* Cambiado a 100% para ocupar todo el espacio disponible */
+    max-width: auto;
     margin: 0 auto;
+    padding: 20px;
 }
 
 /* Etiquetas de filtro */
@@ -49,34 +55,29 @@ select.dark-mode {
     color: #fff; /* Color de texto en modo oscuro */
 }
 
+/* Efecto de escala al pasar el mouse sobre el botón */
+hover, #resultados li:hover {
+    background-color: rgba(0, 0, 0, 0.1); /* Ajusta el valor alfa según tu preferencia */
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Efecto al hacer clic en el botón */
+button:active, #resultados li:active {
+    background-color: rgba(0, 0, 0, 0.1); /* Color diferente al hacer clic */
+}
+
 /* Botones */
 button, button.dark-mode {
-    background-color: #007bff;
+    background-color: #2196F3; /* Tonos de azul en modo claro */
     color: #fff;
-    padding: 10px 20px;
+    padding: 12px 24px; /* Mayor padding */
     border: none;
-    border-radius: 5px;
-    font-size: 16px;
+    border-radius: 8px; /* Bordes redondeados */
+    font-size: 18px; /* Tamaño de fuente más grande */
     cursor: pointer;
     margin-right: 10px;
-}
-
-/* Resultados */
-#resultados, #resultados.dark-mode {
-    list-style-type: none;
-    padding: 0;
-}
-
-/* Estilo para cada resultado */
-#resultados li, #resultados li.dark-mode {
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    color: inherit; /* Hereda el color del texto del body */
-    background-color: inherit; /* Hereda el fondo del body */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; /* Efectos de transición */
 }
 
 /* Botón de modo oscuro */
@@ -93,7 +94,6 @@ button, button.dark-mode {
     cursor: pointer;
     z-index: 999; /* Ajusta el índice z para que el botón aparezca encima del mapa */
 }
-
 
 /* Cambiar los estilos de otros elementos en el modo oscuro si es necesario */
 select.dark-mode-select {
@@ -135,8 +135,7 @@ th, td {
      object-fit: cover; /* La imagen se ajusta para cubrir completamente el cuadrado */
 }
 
-
-#pagination{
+#pagination {
     text-align: center;
 }
 
