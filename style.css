@@ -1,7 +1,12 @@
 /* Estilo para el cuerpo del documento */
 body, body.dark-mode * {
-    font-family: Arial, sans-serif;
     transition: background-color 0.3s ease;
+}
+
+h1 {
+    font-family: 'Courier New', monospace;
+    font-size: 36px; /* Puedes ajustar el tamaño según tus preferencias */
+    text-align: center; /* Centrar el texto */
 }
 
 /* Modo Oscuro */
@@ -125,10 +130,18 @@ select.dark-mode-select {
 }
 
 
-table {
+.table-container {
+    text-align: center; /* Centra el contenido horizontalmente */
+}
+
+.result-table {
     width: auto;
     border-collapse: collapse;
     margin: 0 auto; /* Centra la tabla horizontalmente dentro del contenedor */
+}
+
+.result-table tbody {
+    text-align: left; /* Alinea el texto dentro de cada celda del cuerpo de la tabla a la izquierda */
 }
 
 th, td {
