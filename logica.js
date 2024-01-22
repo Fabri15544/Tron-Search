@@ -730,8 +730,8 @@ function updatePaginationControls() {
     var totalPages = Math.ceil(totalResults / resultsPerPage);
 
     // Calculate the range of page numbers to display
-    var startPage = Math.max(1, currentPage - 4); // Display up to 4 pages before the current page
-    var endPage = Math.min(totalPages, currentPage + 5); // Display up to 5 pages after the current page
+    var startPage = Math.max(1, currentPage - 5); // Display up to 4 pages before the current page
+    var endPage = Math.min(totalPages, currentPage + 1); // Display up to 5 pages after the current page
 
     // Create and add page number buttons
     for (var i = startPage; i <= endPage; i++) {
