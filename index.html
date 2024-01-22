@@ -15,31 +15,30 @@
     <div class="container">
         <h1>Tron Search</h1>
 
-        <!-- Filtro por Puertos -->
-        <label for="puertoFilter">Filtrar por Puerto:</label>
-        <select id="puertoFilter">
+        <!-- Búsqueda Avanzada -->
+        <input type="text" id="busqueda" placeholder="Ejemplo: 80 && http">
+
+        <!-- Filtro por Puerto -->
+        <label for="puertoFilter" style="margin-right: 10px;">Puerto:</label>
+        <select id="puertoFilter" style="width: 80px; margin-right: 10px;">
             <option value="">Todos</option>
         </select>
 
-        <!-- Filtro por Servicios -->
-        <label for="servicioFilter">Filtrar por Servicio:</label>
-        <select id="servicioFilter">
+        <!-- Filtro por Servicio -->
+        <label for="servicioFilter" style="margin-right: 10px;">Servicio:</label>
+        <select id="servicioFilter" style="width: 80px; margin-right: 10px;">
             <option value="">Todos</option>
             <!-- Las opciones de servicio se cargarán desde los datos JSON -->
         </select>
 
-        <!-- Búsqueda Avanzada -->
-        <label for="busqueda">Búsqueda Avanzada:</label>
-        <input type="text" id="busqueda" placeholder="Ejemplo: 80 AND http">
-
         <!-- Botón "Filtrar" junto a la Búsqueda Avanzada -->
-        <button onclick="filtrarResultados()">Filtrar</button>
+        <button onclick="filtrarResultados()" style="margin-right: 10px;">Filtrar</button>
 
         <!-- Botón "Iniciar Script" -->
-        <button id="startButton" onclick="window.location.href = '/start_script'">Iniciar Script</button>
+        <button id="startButton" onclick="window.location.href = '/start_script'" style="margin-right: 10px;">Iniciar Script</button>
 
         <!-- Botón "Detener Script" -->
-        <button id="stopButton" onclick="window.location.href = '/stop_script'">Detener Script</button>
+        <button id="stopButton" onclick="window.location.href = '/stop_script'" style="margin-right: 10px;">Detener Script</button>
 
         <!-- Lista de Resultados -->
         <ul id="resultados">
