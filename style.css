@@ -1,13 +1,13 @@
 /* Estilo para el cuerpo del documento */
 body, body.dark-mode * {
     font-family: Arial, sans-serif;
-    transition: background-color 0.3s ease; /* Transición suave para el modo oscuro */
+    transition: background-color 0.3s ease;
 }
 
 /* Modo Oscuro */
 body.dark-mode {
-    background-color: #333; /* Color de fondo en modo oscuro */
-    color: #fff; /* Color de texto en modo oscuro */
+    background-color: #333;
+    color: #fff;
 }
 
 /* Encabezado */
@@ -15,69 +15,76 @@ h1, h1.dark-mode {
     text-align: center;
     font-size: 24px;
     margin-bottom: 15px;
-    color: inherit; /* Hereda el color del texto del body */
+    color: inherit;
 }
 
 /* Contenedor principal */
 .container, #resultados li {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra suave */
-    border: 1px solid #ddd; /* Borde delgado */
-}
-
-.container {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
     max-width: auto;
     margin: 0 auto;
     padding: 20px;
 }
 
-/* Etiquetas de filtro */
-label, label.dark-mode {
-    font-size: 16px;
-    margin-right: 10px;
-    color: inherit; /* Hereda el color del texto del body */
-}
 
-/* Selectores de filtro */
-select, #busqueda, select.dark-mode, #busqueda.dark-mode {
-    width: 100%;
+/* Búsqueda Avanzada */
+#busqueda {
+    width: 35%;
+    margin-bottom: 10px;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 16px;
-    margin-bottom: 5px;
-    color: inherit; /* Hereda el color del texto del body */
-    background-color: inherit; /* Hereda el fondo del body */
 }
 
-/* Estilo específico para el cuadro de opciones de filtro en modo oscuro */
+/* Etiqueta de filtro */
+label, label.dark-mode {
+    font-size: 16px;
+    margin-right: 10px;
+    color: inherit;
+}
+
+/* Selector de filtro */
+select, #puertoFilter, #servicioFilter, select.dark-mode, #puertoFilter.dark-mode, #servicioFilter.dark-mode {
+    width: 80px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-right: 10px;
+    color: inherit;
+    background-color: inherit;
+}
+
 select.dark-mode {
-    background-color: #333; /* Color de fondo en modo oscuro */
-    color: #fff; /* Color de texto en modo oscuro */
+    background-color: #333;
+    color: #fff;
 }
 
 /* Efecto de escala al pasar el mouse sobre el botón */
 hover, #resultados li:hover {
-    background-color: rgba(0, 0, 0, 0.1); /* Ajusta el valor alfa según tu preferencia */
+    background-color: rgba(0, 0, 0, 0.1);
     transform: scale(1.02);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Efecto al hacer clic en el botón */
 button:active, #resultados li:active {
-    background-color: rgba(0, 0, 0, 0.1); /* Color diferente al hacer clic */
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 /* Botones */
 button, button.dark-mode {
-    background-color: #2196F3; /* Tonos de azul en modo claro */
+    background-color: #2196F3;
     color: #fff;
-    padding: 12px 24px; /* Mayor padding */
+    padding: 12px 24px;
     border: none;
-    border-radius: 8px; /* Bordes redondeados */
-    font-size: 18px; /* Tamaño de fuente más grande */
+    border-radius: 8px;
+    font-size: 18px;
     cursor: pointer;
     margin-right: 10px;
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; /* Efectos de transición */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Botón de modo oscuro */
@@ -92,47 +99,47 @@ button, button.dark-mode {
     width: 30px;
     height: 30px;
     cursor: pointer;
-    z-index: 999; /* Ajusta el índice z para que el botón aparezca encima del mapa */
+    z-index: 999;
 }
 
 /* Cambiar los estilos de otros elementos en el modo oscuro si es necesario */
 select.dark-mode-select {
-    background-color: #333; /* Color de fondo en modo oscuro */
-    color: #fff; /* Color de texto en modo oscuro */
+    background-color: #333;
+    color: #fff;
 }
 
 .not-found-container {
-    text-align: center; /* Center-align the content horizontally */
+    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 50%; /* Center-align the content vertically */
+    height: 50%;
 }
 
 .image-container {
     display: flex;
-    justify-content: center; /* Centra horizontalmente */
-    align-items: center; /* Centra verticalmente */
-    height: 100%; /* Establece la altura del contenedor al 100% de la ventana gráfica */
+    justify-content: center;
+    align-items: center;
+    height: 100%;
 }
 
+
 table {
-    width: 100%; /* Hace que la tabla ocupe el 100% del contenedor */
-    border-collapse: collapse; /* Fusiona los bordes de las celdas para un aspecto más limpio */
-    margin-bottom: 20px; /* Ajusta el margen inferior según tus preferencias */
+    width: auto;
+    border-collapse: collapse;
+    margin: 0 auto; /* Centra la tabla horizontalmente dentro del contenedor */
 }
 
 th, td {
-    padding: 10px; /* Ajusta el espacio interno de las celdas según tus preferencias */
-    text-align: left; /* Alinea el texto a la izquierda */
-    border: 1px solid #ddd; /* Agrega un borde delgado a las celdas */
+    padding: 3.5px;
+    text-align: left;
 }
 
 .image-square img {
-     width: 100%; /* La imagen ocupa el 100% del cuadrado */
-     height: 100%; /* La imagen ocupa el 100% del cuadrado */
-     object-fit: cover; /* La imagen se ajusta para cubrir completamente el cuadrado */
+     width: 100%;
+     height: 100%;
+     object-fit: cover;
 }
 
 #pagination {
@@ -145,7 +152,7 @@ th, td {
 }
 
 .icon {
-    width: 40px; /* Ajusta el tamaño según tus necesidades */
-    height: 30px; /* Ajusta el tamaño según tus necesidades */
-    margin-right: 5px; /* Opcional: espacio entre el icono y el cuadro de verificación */
+    width: 40px;
+    height: 30px;
+    margin-right: 5px;
 }
