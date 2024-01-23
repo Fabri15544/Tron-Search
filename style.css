@@ -136,7 +136,6 @@ select.dark-mode-select {
 .result-table {
     width: auto;
     border-collapse: collapse;
-    margin: 0 auto; /* Centra la tabla horizontalmente dentro del contenedor */
 }
 
 .result-table tbody {
