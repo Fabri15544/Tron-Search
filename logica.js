@@ -724,30 +724,46 @@ fields.forEach(function (field) {
 // Function to update pagination controls
 function updatePaginationControls() {
     var paginationContainer = document.getElementById("pagination");
-    paginationContainer.innerHTML = ""; // Clear previous pagination controls
+    paginationContainer.innerHTML = "";
 
-    // Calculate the total number of pages
     var totalPages = Math.ceil(totalResults / resultsPerPage);
+    var startPage = Math.max(1, currentPage - 5);
+    var endPage = Math.min(totalPages, currentPage + 5);
 
-    // Calculate the range of page numbers to display
-    var startPage = Math.max(1, currentPage - 5); // Display up to 4 pages before the current page
-    var endPage = Math.min(totalPages, currentPage + 1); // Display up to 5 pages after the current page
+    // Add "Inicio" button
+    if (startPage > 1) {
+        var startButton = document.createElement("button");
+        startButton.textContent = "1";
+        startButton.addEventListener("click", function () {
+            currentPage = 1;
+            mostrarResultados(resultados);
+        });
+        paginationContainer.appendChild(startButton);
+    }
 
-    // Create and add page number buttons
     for (var i = startPage; i <= endPage; i++) {
         var pageButton = document.createElement("button");
         pageButton.textContent = i;
         pageButton.addEventListener("click", function () {
-            // Set the current page and re-display results
             currentPage = parseInt(this.textContent);
             mostrarResultados(resultados);
         });
 
         paginationContainer.appendChild(pageButton);
     }
+
+    // Add "Final" button
+    if (endPage < totalPages) {
+        var finalButton = document.createElement("button");
+        finalButton.textContent = totalPages.toString();
+        finalButton.addEventListener("click", function () {
+            currentPage = totalPages;
+            mostrarResultados(resultados);
+        });
+        paginationContainer.appendChild(finalButton);
+    }
 }
 
-// Function to load more results
 function loadMoreResults() {
     currentPage++;
     mostrarResultados(resultados);
