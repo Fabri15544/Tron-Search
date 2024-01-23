@@ -73,3 +73,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    
    Agregar consultas rtsp/wordlist[Port:554].
 
+   Hacer funcionar los botones[Iniciar Script/Detener Script].
+
