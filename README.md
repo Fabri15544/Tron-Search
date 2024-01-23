@@ -75,3 +75,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Hacer funcionar los botones[Iniciar Script/Detener Script].
 
+   Mostrar capturas de camaras vulnerables a Wordlist/Link.
+
