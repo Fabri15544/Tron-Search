@@ -15,6 +15,7 @@ body.dark-mode {
     color: #fff;
 }
 
+
 /* Encabezado */
 h1, h1.dark-mode {
     text-align: center;
@@ -58,18 +59,6 @@ label, label.dark-mode {
     font-size: 16px;
     margin-right: 10px;
     color: inherit;
-}
-
-/* Selector de filtro */
-select, #puertoFilter, #servicioFilter, select.dark-mode, #puertoFilter.dark-mode, #servicioFilter.dark-mode {
-    width: 80px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-    margin-right: 10px;
-    background-color: #2196F3;
-    color: #fff;
 }
 
 select.dark-mode {
@@ -152,6 +141,10 @@ select.dark-mode-select {
 
 .result-table tbody {
     text-align: left; /* Alinea el texto dentro de cada celda del cuerpo de la tabla a la izquierda */
+}
+
+.result-table tbody td {
+    text-align: left;
 }
 
 th, td {
