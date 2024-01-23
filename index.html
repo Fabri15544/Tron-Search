@@ -16,21 +16,21 @@
     <div class="container">
         <h1 style="text-align: center; font-size: 80px; font-family: 'VT323', monospace;">Tron Search</h1>
 
-        <!-- Búsqueda Avanzada -->
-        <input type="text" id="busqueda" placeholder="Ejemplo: 80 && http">
-
         <!-- Filtro por Puerto -->
-        <label for="puertoFilter" style="margin-right: 10px;">Puerto:</label>
-        <select id="puertoFilter" style="width: 80px; margin-right: 10px;">
+        <label for="puertoFilter" style="margin-right: 20px;">Puerto:</label>
+        <select id="puertoFilter" style="width: 100px; margin-right: 10px;">
             <option value="">Todos</option>
         </select>
 
         <!-- Filtro por Servicio -->
-        <label for="servicioFilter" style="margin-right: 10px;">Servicio:</label>
-        <select id="servicioFilter" style="width: 80px; margin-right: 10px;">
+        <label for="servicioFilter" style="margin-right: 20px;">Servicio:</label>
+        <select id="servicioFilter" style="width: 100px; margin-right: 10px;">
             <option value="">Todos</option>
             <!-- Las opciones de servicio se cargarán desde los datos JSON -->
         </select>
+
+        <!-- Búsqueda Avanzada -->
+        <input type="text" id="busqueda" placeholder="Ejemplo: 80 && http">
 
         <!-- Botón "Filtrar" junto a la Búsqueda Avanzada -->
         <button onclick="filtrarResultados()" style="margin-right: 10px;">Filtrar</button>
