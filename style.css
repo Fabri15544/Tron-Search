@@ -90,7 +90,7 @@ button:active, #resultados li:active {
 }
 
 /* Botones */
-button, button.dark-mode {
+button,#servicioFilter,#puertoFilter, button.dark-mode {
     background-color: #2196F3;
     color: #fff;
     padding: 5px 10px;
