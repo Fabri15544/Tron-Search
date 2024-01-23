@@ -45,7 +45,7 @@ h1, h1.dark-mode {
 
 /* Búsqueda Avanzada */
 #busqueda {
-    width: 35%;
+    width: 40%;
     margin-bottom: 10px;
     padding: 10px;
     border: 1px solid #ccc;
@@ -91,7 +91,7 @@ button:active, #resultados li:active {
 button, button.dark-mode {
     background-color: #2196F3;
     color: #fff;
-    padding: 12px 24px;
+    padding: 5px 10px;
     border: none;
     border-radius: 8px;
     font-size: 18px;
