@@ -68,6 +68,8 @@ select, #puertoFilter, #servicioFilter, select.dark-mode, #puertoFilter.dark-mod
     border-radius: 5px;
     font-size: 16px;
     margin-right: 10px;
+    background-color: #2196F3;
+    color: #fff;
 }
 
 select.dark-mode {
