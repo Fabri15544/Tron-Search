@@ -812,7 +812,7 @@ function cargarBanderasPaises(datos) {
     return countryCounts; // Return the count results
 }
 
-// Function to display the results and update the 'countries' array
+
 function mapa(datos) {
     const countryCounts = cargarBanderasPaises(datos);
 
