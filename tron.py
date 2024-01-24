@@ -63,49 +63,39 @@ reanudar_ip = args.reanudar
 # Limpiar la pantalla (se asume que la función clear() está definida)
 clear()
 
-def generate_ip_parts(last_index, num_stars):
-    for i in range(last_index, 256 ** num_stars):
-        parts = [i // (256 ** j) % 256 for j in range(num_stars)][::-1]
-        yield parts
-
-def generate_ip(ip_pattern, parts):
-    return ip_pattern.replace('*', '{}').format(*parts)
-
-def process_ips(ip_queue, reanudar_ip=None):
-    global processed_ips
-    num_stars = ip_pattern.count('*')
-    last_index = 0
-
-    if reanudar_ip:
-        while not ip_queue.empty():
-            current_ip = ip_queue.get()
-            last_index += 1
-            ip_queue.put(current_ip)
-            if current_ip == reanudar_ip:
-                break
-
-    for parts in generate_ip_parts(last_index, num_stars):
-        ip = generate_ip(ip_pattern, parts)
-        ip_queue.put(ip)
-        processed_ips += 1
-    
-    return processed_ips
-
 # Inicializar variables
-num_threads = os.cpu_count() or 2  # Obtener el número de núcleos, si es 0, establecer en 2
+processed_ips = 0
+num_stars = ip_pattern.count('*')
 threads = []
 ip_queue = queue.Queue()
-processed_ips = 0
+last_index = 0
 
-#procesar IPs
-for _ in range(num_threads):
-    thread = threading.Thread(target=process_ips, args=(ip_queue, reanudar_ip))
-    thread.start()
-    threads.append(thread)
+# Verificar si se proporciona una IP para reanudar
+if reanudar_ip:
+    # Buscar la IP de reanudación en la cola
+    while not ip_queue.empty():
+        current_ip = ip_queue.get()
+        last_index += 1
+        ip_queue.put(current_ip)
+        if current_ip == reanudar_ip:
+            break
 
-# Esperar a que todos los hilos terminen
-for thread in threads:
-    thread.join()
+    # Iterar sobre posibles valores para las partes del patrón con comodines
+    for i in range(last_index, 256**num_stars):
+        parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
+        ip = ip_pattern.replace('*', '{}').format(*parts)
+
+        if last_index > 0:
+            ip_queue.put(ip)
+        elif ip == reanudar_ip:
+            last_index += 1
+            ip_queue.put(ip)
+else:
+    # Resto del código para la generación de IPs
+    for i in range(256**num_stars):
+        parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
+        ip = ip_pattern.replace('*', '{}').format(*parts)
+        ip_queue.put(ip)
 
         
 def is_camera(ip, port):
