@@ -79,19 +79,3 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Agregar un chequeo de IP para no repetir las que ya estan, en caso que ya este omitir.
 
-   Agregar Detecion de Sistema Operativo Windows/linux/Unix Versiones Build EJ:
-   ```bash
-   TTL: 115
-   Probablemente sistema operativo basado en Windows
-   Build GUID: ffffffff-ffff-ffff-ffff-ffffffffffff
-   Current Version: 9.0
-   Current Build: 16299
-   Build Lab: 16299.rs3_release.170928-1534
-   Build Lab Ex: 16299.15.amd64fre.rs3_release.170928-1534
-   Edition ID: Enterprise
-   Install Date: 1430140806
-   Product Name: Windows 10 Enterprise
-   Product ID: 19084-279-3351265-28009
-   IE Service Update: KB3185319
-   
-Crear otro apartado donde se mostrara informacion relevante de la ip selecionada, si el OS es detectado.[(Probando)Errores: Al Mostrar los datos]
