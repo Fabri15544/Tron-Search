@@ -93,3 +93,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Product Name: Windows 10 Enterprise
    Product ID: 19084-279-3351265-28009
    IE Service Update: KB3185319
+   
+Crear otro apartado donde se mostrara informacion relevante de la ip selecionada, si el OS es detectado.[(Probando)Errores: Al Mostrar los datos]
