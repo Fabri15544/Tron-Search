@@ -13,3 +13,4 @@ selenium
 tqdm
 urllib3
 chromedriver-autoinstaller
+scapy
