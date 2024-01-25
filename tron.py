@@ -12,6 +12,7 @@ import sys
 import json
 import re  # Importamos la librería 're' para las expresiones regulares
 from bs4 import BeautifulSoup
+from scapy.all import IP, TCP, sr
 from urllib.parse import urlsplit
 import random
 from colorama import init, Fore, Style
@@ -540,6 +541,54 @@ def GuardarDatos(data):
         # Si hay algún error al cargar datos.json, no se realiza el respaldo
         pass
 
+def os_detection(target, port=3389):
+    # Envía paquetes TCP SYN a los puertos especificados sin detección de hosts/Tiene_Fallos[Mejorar]
+    packet = IP(dst=target) / TCP(dport=port, flags="S")
+    responses, _ = sr(packet, timeout=10, verbose=0)
+
+    # Analiza las respuestas
+    for response in responses:
+        #print(f"Respuesta recibida: {repr(response)}")
+        if response[1].haslayer(TCP):
+            #print(f"TTL: {response[1].ttl}")
+            #print(f"IP de origen: {response[1].src}")
+            #print(f"IP de destino: {response[1].dst}")
+            #print(f"Números de puerto: {response[1][TCP].sport} -> {response[1][TCP].dport}")
+            #print(f"Flags TCP: {response[1][TCP].sprintf('%TCP.flags%')}")
+            payload_hex = response[1].load.hex()
+            #print(f"Carga útil en hexadecimal: {payload_hex}")
+        if response[1][TCP].flags == 0x12 or response[1][TCP].flags == 0x10:
+            if response[1][TCP].options:
+                #win7 ttl=113
+                #win10 ttl=119
+                window_detect = response[1][TCP].window #w10=64000,w8.1=64000, XP=65535, w7=8192,64240
+                ttl_detect = response[1][IP].ttl
+                for option in response[1][TCP].options:
+                    if ((option[0] == 'MSS' and option[1] == 1412) and (window_detect == 64000) and (113 < ttl_detect < 118) or (112 < ttl_detect < 128)) and (window_detect != 65535):
+                        print(f"OS: Windows 10")
+                        return(f"Windows 10")
+                    if (option[0] == 'MSS' and option[1] == 1412) and (window_detect == 64000) and (116 < ttl_detect < 119):
+                        print(f"OS: Windows 8")
+                        return(f"Windows 8")
+                    if (((option[0] == 'MSS' and option[1] == 1412) or (option[0] == 'MSS' and option[1] == 1380)) and ((window_detect == 8192) or (window_detect == 1460) or (window_detect == 64240))) and (0 < ttl_detect < 116):
+                        print(f"OS: Windows 7")
+                        return(f"Windows 7")
+                    if (((option[0] == 'MSS' and option[1] == 1412) or (option[0] == 'MSS' and option[1] == 1380)) and ((window_detect == 65535) or (window_detect == 1460) or (window_detect == 64240))) and (0 < ttl_detect < 116) or (0 < ttl_detect < 114):
+                        print(f"OS: Windows XP")
+                        return(f"Windows XP")
+                else:
+                    #print("No se encontraron opciones en la respuesta.")
+                    # Cerrar la conexión
+                    return False
+            elif response[1][TCP].flags == 0x14:  # TCP RST-ACK
+                #print(f"El puerto {port} está cerrado en {target}.")
+                return False
+            # Cerrar la conexión para otros casos
+            return False
+        else:
+            # Cerrar la conexión para otros casos
+            return False
+
 def scan(ip, ports):
     PURPLE = "\033[35m"
 
@@ -610,7 +659,10 @@ def scan(ip, ports):
                     formatted_domain = f"{Fore.YELLOW}{domain}{Style.RESET_ALL}"
 
                     print(f"IP: {formatted_ip}\nServicio: {formatted_service_name}\nBanner: {formatted_banner}\nRegión: {formatted_region}\nCiudad: {formatted_city}\nDominio: {formatted_domain}")
-
+                    if port == 3389:
+                        os_detected = os_detection(ip, port)
+                    else:
+                        os_detected = "N/A"
                     credentials_found = "NULL"
                     if args.has_screenshot == 'all':
                         capture_screenshot(ip, port)
@@ -651,6 +703,7 @@ def scan(ip, ports):
                             "video.mjpg-Vulnerable": cam
                         },
                         "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
+                        "SistemaOperativo": os_detected,
                         "Separador": "-" * 50
                     }
 
@@ -662,6 +715,7 @@ def scan(ip, ports):
         except socket.gaierror as e:
             continue
         except Exception as e:
+            #print(f"Error: {e}")
             continue
         finally:
             # Guarda la última IP en un archivo
