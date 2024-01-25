@@ -79,5 +79,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Agregar un chequeo de IP para no repetir las que ya estan, en caso que ya este omitir.
 
-   Detecion de Sistema Operativo en el Puerto [3389] en desarrollo.
+   Detección del sistema operativo (SO) en el Puerto [3389] en desarrollo.
 
