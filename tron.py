@@ -564,16 +564,30 @@ def os_detection(target, port=3389):
                 window_detect = response[1][TCP].window #w10=64000,w8.1=64000, XP=65535, w7=8192,64240
                 ttl_detect = response[1][IP].ttl
                 for option in response[1][TCP].options:
-                    if ((option[0] == 'MSS' and option[1] == 1412) and (window_detect == 64000) and (113 < ttl_detect < 118) or (112 < ttl_detect < 128)) and (window_detect != 65535):
+                    if ((option[0] == 'MSS' and option[1] == 1412) and
+                            (window_detect == 64000) and
+                            ((113 < ttl_detect < 118) or (112 < ttl_detect < 128)) and
+                            (ttl_detect != 115) and (window_detect != 65535)):
                         print(f"OS: Windows 10")
                         return(f"Windows 10")
-                    if (option[0] == 'MSS' and option[1] == 1412) and (window_detect == 64000) and (116 < ttl_detect < 119):
+                    
+                    elif (option[0] == 'MSS' and option[1] == 1412 and
+                          window_detect == 64000 and
+                          114 < ttl_detect < 119):
                         print(f"OS: Windows 8")
                         return(f"Windows 8")
-                    if (((option[0] == 'MSS' and option[1] == 1412) or (option[0] == 'MSS' and option[1] == 1380)) and ((window_detect == 8192) or (window_detect == 1460) or (window_detect == 64240))) and (0 < ttl_detect < 116):
+                    
+                    elif (((option[0] == 'MSS' and option[1] == 1412) or
+                          (option[0] == 'MSS' and option[1] == 1380)) and
+                          ((window_detect == 8192) or (window_detect == 1460) or (window_detect == 64240)) and
+                          (0 < ttl_detect < 218)):
                         print(f"OS: Windows 7")
                         return(f"Windows 7")
-                    if (((option[0] == 'MSS' and option[1] == 1412) or (option[0] == 'MSS' and option[1] == 1380)) and ((window_detect == 65535) or (window_detect == 1460) or (window_detect == 64240))) and (0 < ttl_detect < 116) or (0 < ttl_detect < 114):
+                    
+                    elif ((((option[0] == 'MSS' and option[1] == 1412) or
+                           (option[0] == 'MSS' and option[1] == 1380)) and
+                           ((window_detect == 65535) or (window_detect == 1460) or (window_detect == 64240))) and
+                           (0 < ttl_detect < 116) or (0 < ttl_detect < 114)) and ttl_detect != 108:
                         print(f"OS: Windows XP")
                         return(f"Windows XP")
                 else:
