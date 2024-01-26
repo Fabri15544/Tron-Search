@@ -90,3 +90,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Agregar volcado de ips:ports especificos para pasar a Metasploit.
 
+   Agregar WebTechnologies check.
+
