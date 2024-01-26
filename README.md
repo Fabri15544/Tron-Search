@@ -49,6 +49,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 [![Captura de pantalla 9](https://i.postimg.cc/7L6Kbsjs/uala-preview-removebg-preview.png)](https://postimg.cc/BjrTVgSH)
 [![Captura de pantalla 9](https://i.postimg.cc/cJf9YgX2/frame-1.png)](https://postimg.cc/cK4BGHqB)
 
+<a href="https://www.buymeacoffee.com/fabriciolou" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
 ## Web-UI
 
 2. **USO DEL LOCALHOST:**
