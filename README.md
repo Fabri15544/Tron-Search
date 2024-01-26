@@ -81,5 +81,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Detección del sistema operativo (SO) en el Puerto [3389] en desarrollo.
 
-   Agregue detección de sistema Operativo SMB: https://github.com/nopfor/ntlm_challenger/tree/master
+   Agregue detección de sistema Operativo SMB en el Puerto[445]: https://github.com/nopfor/ntlm_challenger/tree/master
 
