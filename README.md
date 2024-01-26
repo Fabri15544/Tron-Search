@@ -1,4 +1,3 @@
-[![Imagen1](https://i.postimg.cc/qBskxJnY/Captura-web-23-1-2024-24827-127-0-0-1.jpg)](https://postimg.cc/NL0qgwd7) [![Imagen1](https://i.postimg.cc/3Jz3FkNg/Captura-web-23-1-2024-25013-127-0-0-1.jpg)](https://postimg.cc/Tpq8RYrw) [![Imagen1](https://i.postimg.cc/7LFBBy7t/Captura-web-23-1-2024-24941-127-0-0-1.jpg)](https://postimg.cc/zLkSB6xT) 
 [![Imagen1](https://i.postimg.cc/jL3ZjGcL/Captura-de-pantalla-10.png)](https://postimg.cc/jL3ZjGc)
 [![Imagen1](https://i.postimg.cc/KR80xZn6/Captura-de-pantalla-11.png)](https://postimg.cc/KR80xZn6)
 [![Imagen1](https://i.postimg.cc/06Dfcrsw/Captura-de-pantalla-12.png)](https://postimg.cc/06Dfcrsw)
