@@ -1,5 +1,6 @@
 ipaddress
 requests
+impacket
 beautifulsoup4
 bs4
 colorama
