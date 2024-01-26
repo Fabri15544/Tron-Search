@@ -23,6 +23,10 @@ from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
 import concurrent.futures
 import argparse  # Importa el módulo argparse
+#LIBRERIAS-NUEVAS-SMB
+from impacket import smb3, ntlm
+from collections import OrderedDict
+import datetime
 
 def clear():
     if os.name == 'nt':
@@ -603,6 +607,224 @@ def os_detection(target, port=3389):
             # Cerrar la conexión para otros casos
             return False
 
+def decode_string(byte_string):
+  return byte_string.decode('UTF-8').replace('\x00', '')
+
+def decode_int(byte_string):
+  return int.from_bytes(byte_string, 'little')
+
+def parse_version(version_bytes):
+  
+  major_version = version_bytes[0]
+  minor_version = version_bytes[1]
+  product_build = decode_int(version_bytes[2:4])
+
+  version = 'Unknown'
+
+  if major_version == 5 and minor_version == 1:
+    version = 'Windows XP (SP2)'
+  elif major_version == 5 and minor_version == 2:
+    version = 'Server 2003'
+  elif major_version == 6 and minor_version == 0:
+    version = 'Server 2008 / Windows Vista'
+  elif major_version == 6 and minor_version == 1:
+    version = 'Server 2008 R2 / Windows 7'
+  elif major_version == 6 and minor_version == 2:
+    version = 'Server 2012 / Windows 8'
+  elif major_version == 6 and minor_version == 3:
+    version = 'Server 2012 R2 / Windows 8.1'
+  elif major_version == 10 and minor_version == 0:
+    version = 'Server 2016 or 2019 / Windows 10'
+
+  return '{} (build {})'.format(version, product_build)
+
+def parse_negotiate_flags(negotiate_flags_int):
+
+  flags = OrderedDict()
+
+  flags['NTLMSSP_NEGOTIATE_UNICODE']                  = 0x00000001
+  flags['NTLM_NEGOTIATE_OEM']                         = 0x00000002
+  flags['NTLMSSP_REQUEST_TARGET']                     = 0x00000004
+  flags['UNUSED_10']                                  = 0x00000008
+  flags['NTLMSSP_NEGOTIATE_SIGN']                     = 0x00000010
+  flags['NTLMSSP_NEGOTIATE_SEAL']                     = 0x00000020
+  flags['NTLMSSP_NEGOTIATE_DATAGRAM']                 = 0x00000040
+  flags['NTLMSSP_NEGOTIATE_LM_KEY']                   = 0x00000080
+  flags['UNUSED_9']                                   = 0x00000100
+  flags['NTLMSSP_NEGOTIATE_NTLM']                     = 0x00000400
+  flags['UNUSED_8']                                   = 0x00000400
+  flags['NTLMSSP_ANONYMOUS']                          = 0x00000800
+  flags['NTLMSSP_NEGOTIATE_OEM_DOMAIN_SUPPLIED']      = 0x00001000
+  flags['NTLMSSP_NEGOTIATE_OEM_WORKSTATION_SUPPLIED'] = 0x00002000
+  flags['UNUSED_7']                                   = 0x00004000
+  flags['NTLMSSP_NEGOTIATE_ALWAYS_SIGN']              = 0x00008000
+  flags['NTLMSSP_TARGET_TYPE_DOMAIN']                 = 0x00010000
+  flags['NTLMSSP_TARGET_TYPE_SERVER']                 = 0x00020000
+  flags['UNUSED_6']                                   = 0x00040000
+  flags['NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY'] = 0x00080000
+  flags['NTLMSSP_NEGOTIATE_IDENTIFY']                 = 0x00100000
+  flags['UNUSED_5']                                   = 0x00200000
+  flags['NTLMSSP_REQUEST_NON_NT_SESSION_KEY']         = 0x00400000
+  flags['NTLMSSP_NEGOTIATE_TARGET_INFO']              = 0x00800000
+  flags['UNUSED_4']                                   = 0x01000000
+  flags['NTLMSSP_NEGOTIATE_VERSION']                  = 0x02000000
+  flags['UNUSED_3']                                   = 0x10000000
+  flags['UNUSED_2']                                   = 0x08000000
+  flags['UNUSED_1']                                   = 0x04000000
+  flags['NTLMSSP_NEGOTIATE_128']                      = 0x20000000
+  flags['NTLMSSP_NEGOTIATE_KEY_EXCH']                 = 0x40000000
+  flags['NTLMSSP_NEGOTIATE_56']                       = 0x80000000
+
+  negotiate_flags = []
+
+  for name,value in flags.items():
+    if negotiate_flags_int & value:
+      negotiate_flags.append(name)
+
+  return negotiate_flags
+
+def check(ip, port=445):
+    try:
+        # Conectar usando SMBv3
+        smb_client = smb3.SMB3(ip, ip, sess_port=port)
+        resp_token = request_SMBv23(smb_client)
+        return parse_challenge(resp_token)
+    except Exception as e:
+        return f"Error al verificar {ip}:{port}: {str(e)}"
+
+def request_SMBv23(smb_client):
+    session_setup = smb3.SMB2SessionSetup()
+
+    blob = smb3.SPNEGO_NegTokenInit()
+    blob['MechTypes'] = [smb3.TypesMech['NTLMSSP - Microsoft NTLM Security Support Provider']]
+
+    auth = ntlm.getNTLMSSPType1(smb_client._Connection['ClientName'], '',
+                                smb_client._Connection['RequireSigning'])
+    blob['MechToken'] = auth.getData()
+
+    session_setup['SecurityMode'] = smb3.SMB2_NEGOTIATE_SIGNING_REQUIRED if smb_client.RequireMessageSigning else smb3.SMB2_NEGOTIATE_SIGNING_ENABLED
+    session_setup['Flags'] = 0
+    session_setup['SecurityBufferLength'] = len(blob)
+    session_setup['Buffer'] = blob.getData()
+
+    packet = smb_client.SMB_PACKET()
+    packet['Command'] = smb3.SMB2_SESSION_SETUP
+    packet['Data'] = session_setup
+
+    packet_id = smb_client.sendSMB(packet)
+    smb_response = smb_client.recvSMB(packet_id)
+
+    if smb_response.isValidAnswer(smb3.STATUS_MORE_PROCESSING_REQUIRED):
+        session_setup_response = smb3.SMB2SessionSetup_Response(smb_response['Data'])
+        resp_token = smb3.SPNEGO_NegTokenResp(session_setup_response['Buffer'])
+        return resp_token['ResponseToken']
+    else:
+        return None
+
+def parse_target_info(target_info_bytes):
+
+  MsvAvEOL             = 0x0000
+  MsvAvNbComputerName  = 0x0001
+  MsvAvNbDomainName    = 0x0002
+  MsvAvDnsComputerName = 0x0003
+  MsvAvDnsDomainName   = 0x0004
+  MsvAvDnsTreeName     = 0x0005
+  MsvAvFlags           = 0x0006
+  MsvAvTimestamp       = 0x0007
+  MsvAvSingleHost      = 0x0008
+  MsvAvTargetName      = 0x0009
+  MsvAvChannelBindings = 0x000A
+
+  target_info = OrderedDict()
+  info_offset = 0
+
+  while info_offset < len(target_info_bytes):
+    av_id = decode_int(target_info_bytes[info_offset:info_offset+2])
+    av_len = decode_int(target_info_bytes[info_offset+2:info_offset+4])
+    av_value = target_info_bytes[info_offset+4:info_offset+4+av_len]
+    
+    info_offset = info_offset + 4 + av_len
+    
+    if av_id == MsvAvEOL:
+      pass
+    elif av_id == MsvAvNbComputerName:
+      target_info['MsvAvNbComputerName'] = decode_string(av_value)
+    elif av_id == MsvAvNbDomainName:
+      target_info['MsvAvNbDomainName'] = decode_string(av_value)
+    elif av_id == MsvAvDnsComputerName:
+      target_info['MsvAvDnsComputerName'] = decode_string(av_value)
+    elif av_id == MsvAvDnsDomainName:
+      target_info['MsvAvDnsDomainName'] = decode_string(av_value)
+    elif av_id == MsvAvDnsTreeName:
+      target_info['MsvAvDnsTreeName'] = decode_string(av_value)
+    elif av_id == MsvAvFlags:
+      pass
+    elif av_id == MsvAvTimestamp:
+      filetime = decode_int(av_value)
+      microseconds = (filetime - 116444736000000000) / 10
+      time = datetime.datetime(1970, 1, 1) + datetime.timedelta(microseconds = microseconds)
+      target_info['MsvAvTimestamp'] = time.strftime("%b %d, %Y %H:%M:%S.%f")
+    elif av_id == MsvAvSingleHost:
+      target_info['MsvAvSingleHost'] = decode_string(av_value)
+    elif av_id == MsvAvTargetName:
+      target_info['MsvAvTargetName'] = decode_string(av_value)
+    elif av_id == MsvAvChannelBindings:
+      target_info['MsvAvChannelBindings'] = av_value
+
+  return target_info
+
+def parse_challenge(challenge_message):
+
+  # Signature
+  signature = decode_string(challenge_message[0:7]) # b'NTLMSSP\x00' --> NTLMSSP
+
+  # MessageType
+  message_type = decode_int(challenge_message[8:12]) # b'\x02\x00\x00\x00' --> 2
+
+  # TargetNameFields
+  target_name_fields  = challenge_message[12:20]
+  target_name_len     = decode_int(target_name_fields[0:2])
+  target_name_max_len = decode_int(target_name_fields[2:4])
+  target_name_offset  = decode_int(target_name_fields[4:8])
+
+  # NegotiateFlags
+  negotiate_flags_int = decode_int(challenge_message[20:24])
+
+  negotiate_flags = parse_negotiate_flags(negotiate_flags_int)
+
+  # ServerChallenge
+  server_challenge = challenge_message[24:32]
+
+  # Reserved
+  reserved = challenge_message[32:40]
+
+  # TargetInfoFields
+  target_info_fields  = challenge_message[40:48]
+  target_info_len     = decode_int(target_info_fields[0:2])
+  target_info_max_len = decode_int(target_info_fields[2:4])
+  target_info_offset  = decode_int(target_info_fields[4:8])
+
+  # Version
+  version_bytes = challenge_message[48:56]
+  version = parse_version(version_bytes)
+
+  # TargetName
+  target_name = challenge_message[target_name_offset:target_name_offset+target_name_len]
+  target_name = decode_string(target_name)
+
+  # TargetInfo
+  target_info_bytes = challenge_message[target_info_offset:target_info_offset+target_info_len]
+
+  target_info = parse_target_info(target_info_bytes)
+
+  return {
+    'target_name': target_name,
+    'version': version,
+    'target_info': target_info,
+    'negotiate_flags': negotiate_flags
+  }
+
+
 def scan(ip, ports):
     PURPLE = "\033[35m"
 
@@ -673,10 +895,13 @@ def scan(ip, ports):
                     formatted_domain = f"{Fore.YELLOW}{domain}{Style.RESET_ALL}"
 
                     print(f"IP: {formatted_ip}\nServicio: {formatted_service_name}\nBanner: {formatted_banner}\nRegión: {formatted_region}\nCiudad: {formatted_city}\nDominio: {formatted_domain}")
+
+                    #detecta el sistema por RDP
                     if port == 3389:
                         os_detected = os_detection(ip, port)
                     else:
                         os_detected = "N/A"
+                        
                     credentials_found = "NULL"
                     if args.has_screenshot == 'all':
                         capture_screenshot(ip, port)
@@ -699,8 +924,6 @@ def scan(ip, ports):
                             capture_screenshot(ip, port)
                         credentials_found = scan_dvr_credentials(ip, port)                           
 
-                    print("-" * 50)
-
                     data = {
                         "IP": ip,
                         "Puerto": port,
@@ -717,9 +940,21 @@ def scan(ip, ports):
                             "video.mjpg-Vulnerable": cam
                         },
                         "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
-                        "SistemaOperativo": os_detected,
-                        "Separador": "-" * 50
+                        "SistemaOperativo_RDP": os_detected,
                     }
+
+                    if port == 445:
+                        smb_os = check(ip)
+                        data["Fecha"] = smb_os['target_info']['MsvAvTimestamp']
+                        data["SistemaOperativo_SMB"] = smb_os['version']
+                        data["Nombre-PC"] = smb_os['target_info']['MsvAvDnsComputerName']
+                        print("Fecha: " + smb_os['target_info']['MsvAvTimestamp'])
+                        print("Sistema-Operativo: " + smb_os['version'])
+                        print("Nombre-PC: " + smb_os['target_info']['MsvAvDnsComputerName'])
+                        print("-" * 50)
+                        data["Separador"] = "-" * 50
+                    else:
+                        smb_os = "N/A"
 
                     GuardarDatos(data)
 
