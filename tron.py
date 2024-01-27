@@ -50,6 +50,7 @@ parser.add_argument('--s', default=0.5, type=float, help='Tiempo de espera entre
 parser.add_argument('--bn', default=2, type=float, help='Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)')
 parser.add_argument('--has_screenshot', choices=['all', 'cam'], help='Captura de pantalla [--has_screenshot all (todas las urls)] [--has_screenshot cam (todas las que se reconocen como camaras)]')
 parser.add_argument('--reanudar', help='IP a partir de la cual se reanudará el escaneo EJ: --search 144.88.*.* --reanudar 144.88.92.63')
+parser.add_argument('--fast', default=0, type=int, const=500, nargs='?', help='Salto de IPS para búsqueda rápida')
 
 # Analizar los argumentos proporcionados al script
 args = parser.parse_args()
@@ -65,6 +66,7 @@ ip_pattern = args.search
 FiltroRegion = args.region
 FiltroCiudad = args.ciudad
 reanudar_ip = args.reanudar
+salto = args.fast
 
 # Limpiar la pantalla (se asume que la función clear() está definida)
 clear()
@@ -81,8 +83,9 @@ if reanudar_ip:
     # Buscar la IP de reanudación en la cola
     while not ip_queue.empty():
         current_ip = ip_queue.get()
-        last_index += 1
-        ip_queue.put(current_ip)
+        if not args.fast:
+            last_index += 1
+            ip_queue.put(current_ip)
         if current_ip == reanudar_ip:
             break
 
@@ -97,11 +100,12 @@ if reanudar_ip:
             last_index += 1
             ip_queue.put(ip)
 else:
-    # Resto del código para la generación de IPs
-    for i in range(256**num_stars):
+    # Resto del código para la generación de IPs con salto
+    for i in range(0, 256**num_stars, salto):
         parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
         ip = ip_pattern.replace('*', '{}').format(*parts)
-        ip_queue.put(ip)
+        if not args.fast:
+            ip_queue.put(ip)
 
         
 def is_camera(ip, port):
@@ -954,7 +958,15 @@ def scan(ip, ports):
             continue
         except Exception as e:
             #print(f"Error: {e}")
-            continue
+            generated_ip = None
+            if args.fast:
+                salto = 500 #valor inicial en aumento.
+                generated_ip = ip_queue.get()
+                print(generated_ip)
+                ip_queue.put(generated_ip)
+                time.sleep(60)
+            if generated_ip is not None:
+                ip = generated_ip
         finally:
             # Guarda la última IP en un archivo
             with open("Ultima_IP.txt", "w") as last_ip_file:
@@ -1163,36 +1175,26 @@ def get_location(ip):
 # Crear una barra de progreso con el número total de direcciones IP a escanear
 bar = tqdm(total=ip_queue.qsize(), desc="Escaneando direcciones IP")
 clear()
-print(f"buscando {ip_pattern}")
+print(f"Buscando {ip_pattern}")
 
-# Crear una lista para almacenar las direcciones IP escaneadas
 ip_pattern_list = []
 
-# Crear un bucle infinito que se repita mientras haya direcciones IP en la cola
 while not ip_queue.empty():
-    # Verificar si hay direcciones IP en la cola
-    # Sacar una dirección IP de la cola
     ip = ip_queue.get()
-    ip_pattern_list.append(ip)  # Agregar la dirección IP a la lista
-    
-    # Incrementar el contador de direcciones IP procesadas
+    ip_pattern_list.append(ip)
     processed_ips += 1
-    
-    # Actualizar la barra de progreso
-    bar.update(1)  # Esto actualiza la barra de progreso
+    bar.update(1)
 
-    # Crear un hilo de ejecución que ejecute la función scan con la dirección IP y el puerto dados
-    t = threading.Thread(target=scan, args=(ip, ports))
-    # Añadir el hilo a la lista de hilos
-    threads.append(t)
-    # Iniciar el hilo
-    t.start()
-    # Si no hay direcciones IP en la cola, esperar 1 segundo antes de verificar nuevamente
-    time.sleep(1)
+    hilo = threading.Thread(target=scan, args=(ip, ports))
+    threads.append(hilo)
+    hilo.start()
 
-# Esperar a que todos los hilos terminen
-for t in threads:
-    t.join()
+    if args.fast:
+        time.sleep(0.1) #velocidad rapida
+    else:
+        time.sleep(1) #velocidad normal
 
-# Cerrar la barra de progreso
+for hilo in threads:
+    hilo.join()
+
 bar.close()
