@@ -51,6 +51,7 @@ parser.add_argument('--bn', default=2, type=float, help='Tiempo de espera [BANNE
 parser.add_argument('--has_screenshot', choices=['all', 'cam'], help='Captura de pantalla [--has_screenshot all (todas las urls)] [--has_screenshot cam (todas las que se reconocen como camaras)]')
 parser.add_argument('--reanudar', help='IP a partir de la cual se reanudará el escaneo EJ: --search 144.88.*.* --reanudar 144.88.92.63')
 parser.add_argument('--fast', default=0, type=int, const=500, nargs='?', help='Salto de IPS para búsqueda rápida')
+parser.add_argument('--time', default=30, type=int, help='Valor de tiempo para la opción --fast')
 
 # Analizar los argumentos proporcionados al script
 args = parser.parse_args()
@@ -67,6 +68,7 @@ FiltroRegion = args.region
 FiltroCiudad = args.ciudad
 reanudar_ip = args.reanudar
 salto = args.fast
+TiempoSalto = args.time
 
 # Limpiar la pantalla (se asume que la función clear() está definida)
 clear()
@@ -963,7 +965,7 @@ def scan(ip, ports):
                 generated_ip = ip_queue.get()
                 #print(generated_ip)
                 ip_queue.put(generated_ip)
-                time.sleep(60)
+                time.sleep(TiempoSalto)
             if generated_ip is not None:
                 ip = generated_ip
         finally:
