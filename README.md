@@ -38,6 +38,7 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    --bn BN               Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)
    --has_screenshot      Captura de pantalla [--has_screenshot all (todas las urls)] [--has_screenshot cam (todas las que se reconocen como camaras)]
    --reanudar REANUDAR   IP a partir de la cual se reanudará el escaneo EJ: --search 144.88.*.* --reanudar 144.88.92.63
+   --fast [FAST]         Salto de IPS para búsqueda rápida
    
 
 [![Captura de pantalla 9](https://i.postimg.cc/V6qby6Rp/Paypal-2014-logo-removebg-preview.png)](https://postimg.cc/7GLL0qjn)
