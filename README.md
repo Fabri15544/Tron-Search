@@ -73,6 +73,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Cuenta Metodo Reanudar Escaneo.
 
+   Cuenta con salto automatico entre ips/ hasta encontrar 1 ip valida, con tiempo espera maximo antes de acelerar la carga. Argumento --fast
+
    Capturas Webs.
    
   https://github.com/ezelf/CVE-2018-9995_dvr_credentials. Una de ellas
@@ -102,8 +104,6 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Agrega detección de sistema Operativo Linux/Unix [Agregar-Argumento]
 
    Modificar js/ para no mostrar datos nulos.
-
-   Agregar salto automatico entre ips/ hasta encontrar 1 ip valida, con tiempo espera maximo antes de acelerar la carga. Argumento --fast
 
    Agregar volcado de ips:ports especificos para pasar a Metasploit.
 
