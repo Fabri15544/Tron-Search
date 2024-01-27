@@ -103,7 +103,7 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Modificar js/ para no mostrar datos nulos.
 
-   Agregar salto automatico entre ips/ hasta encontrar 1 ip valida, con tiempo espera maximo antes de acelerar la carga. Argumento --T5
+   Agregar salto automatico entre ips/ hasta encontrar 1 ip valida, con tiempo espera maximo antes de acelerar la carga. Argumento --fast
 
    Agregar volcado de ips:ports especificos para pasar a Metasploit.
 
