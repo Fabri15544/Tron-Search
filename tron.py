@@ -962,7 +962,7 @@ def scan(ip, ports):
             if args.fast:
                 salto = 500 #valor inicial en aumento.
                 generated_ip = ip_queue.get()
-                print(generated_ip)
+                #print(generated_ip)
                 ip_queue.put(generated_ip)
                 time.sleep(60)
             if generated_ip is not None:
