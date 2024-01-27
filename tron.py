@@ -2,6 +2,7 @@ import fnmatch
 import queue
 import ipaddress
 import threading
+from threading import Lock
 import subprocess
 import socket
 import time
@@ -496,54 +497,42 @@ def capture_screenshot(ip, port, usuario=None, contraseña=None):
         if 'driver' in locals() and driver is not None:
             driver.quit()
 
-def GuardarDatos(data):
-    tamanio_actual = 0
+lock = Lock()
 
-    if os.path.isfile("datos.json"):
-        tamanio_actual = os.path.getsize("datos.json")
-        try:
+def GuardarDatos(data):
+    try:
+        lock.acquire()
+
+        tamanio_actual = 0
+        existing_data = []
+
+        if os.path.isfile("datos.json"):
+            tamanio_actual = os.path.getsize("datos.json")
             with open("datos.json", "r") as file:
                 existing_data = json.load(file)
-        except Exception as e:
-            # Intenta cargar desde el respaldo en caso de error al leer datos.json
-            try:
-                with open("respaldo.json", "r") as backup_file:
-                    existing_data = json.load(backup_file)
-            except Exception as backup_exception:
-                existing_data = []
-    else:
-        # Intenta cargar desde el respaldo si no hay datos.json
+
+        existing_data.append(data)
+        json_data = json.dumps(existing_data, indent=4)
+
+        #respaldo
         try:
-            with open("respaldo.json", "r") as backup_file:
-                existing_data = json.load(backup_file)
+            with open("respaldo.json", "w") as backup_file:
+                backup_file.write(json_data)
         except Exception as backup_exception:
-            existing_data = []
+            print(f"Error al realizar respaldo: {backup_exception}")
 
-    existing_data.append(data)
-    json_data = json.dumps(existing_data, indent=4)
+        #Guarda en "datos.json"
+        try:
+            with open("datos.json", "w") as file:
+                file.write(json_data)
+        except Exception as write_exception:
+            print(f"Error al escribir en datos.json: {write_exception}")
 
-    try:
-        with open("datos.json", "w") as file:
-            file.write(json_data)
     except Exception as e:
-        # Si hay un error al escribir en datos.json, no se realiza el respaldo
-        pass
+        print(f"Error general: {e}")
 
-    # Lógica para hacer respaldo solo si datos.json no está corrupto y su tamaño es mayor que 0
-    try:
-        if tamanio_actual > 0:
-            with open("datos.json", "r") as check_file:
-                json.load(check_file)
-
-            tiempo_actual = time.time()
-            tiempo_ultima_copia = os.path.getmtime("respaldo.json") if os.path.exists("respaldo.json") else 0
-
-            if (tiempo_actual - tiempo_ultima_copia) > 5:
-                with open("respaldo.json", "w") as file:
-                    file.write(json.dumps(existing_data, indent=4))
-    except Exception as e:
-        # Si hay algún error al cargar datos.json, no se realiza el respaldo
-        pass
+    finally:
+        lock.release()
 
 def os_detection(target, port=3389):
     # Envía paquetes TCP SYN a los puertos especificados sin detección de hosts/Tiene_Fallos[Mejorar]
