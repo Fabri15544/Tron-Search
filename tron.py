@@ -960,7 +960,6 @@ def scan(ip, ports):
             #print(f"Error: {e}")
             generated_ip = None
             if args.fast:
-                salto = 500 #valor inicial en aumento.
                 generated_ip = ip_queue.get()
                 #print(generated_ip)
                 ip_queue.put(generated_ip)
