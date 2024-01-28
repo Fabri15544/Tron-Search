@@ -126,6 +126,8 @@ def is_camera(ip, port):
         # Buscar la cadena "ETag:" en el banner
         if "ETag:" in banner:
             return(f"Camara-Hikvision/DVR")
+        if "X-UA-Compatible" in banner:
+            return(f"Camara-Hikvision/DVR")
         if 'WWW-Authenticate: Basic realm="index.html"' in banner:
             return(f"Camara-Auntenticacion-401")
         if "ID:" in banner:
@@ -914,13 +916,13 @@ def scan(ip, ports):
                             "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
                         }
 
+                        #VARIABLE CAMARA
+                        camara_detect = is_camera(ip, port)
+                        
                         #CHEQUEO DE CAMARAS
 
                         if args.has_screenshot == 'all':
                             capture_screenshot(ip, port)
-
-                        #VARIABLE CAMARA
-                        camara_detect = is_camera(ip, port)
 
                         if camara_detect and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
                             if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
@@ -982,7 +984,10 @@ def scan(ip, ports):
                 continue
             finally:
                 sock.close()
-            
+
+        # El executor.shutdown(wait=True) debe ir aquí, fuera del bucle for
+        executor.shutdown(wait=True)
+        
 # Crea una instancia de UserAgent
 ua = UserAgent()
 # List of User-Agent strings
