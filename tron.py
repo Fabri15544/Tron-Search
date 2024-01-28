@@ -936,6 +936,9 @@ def scan(ip, ports):
                             "Camara_check": camara_detect, 
                         }
 
+                        if camara_detect and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
+                            data["Camara_check"] = camara_detect
+
                         if port == 445:
                             smb_os = check(ip)
                             data["Fecha"] = smb_os['target_info']['MsvAvTimestamp']
