@@ -890,8 +890,6 @@ def scan(ip, ports):
 
                         print(f"IP: {formatted_ip}\nServicio: {formatted_service_name}\nBanner: {formatted_banner}\nRegión: {formatted_region}\nCiudad: {formatted_city}\nDominio: {formatted_domain}")
 
-                        # Detecta el sistema por RDP
-                        os_detected = os_detection(ip, port) if port == 3389 else "N/A"
                         #VARIABLE INICIADA EN NULL
                         credentials_found = "NULL"
                         #VARIABLE CAMARA
@@ -914,7 +912,6 @@ def scan(ip, ports):
                                 "video.mjpg-Vulnerable": cam
                             },
                             "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
-                            "SistemaOperativo_RDP": os_detected,
                             "Camara_check": camara_detect, 
                         }
 
@@ -936,6 +933,9 @@ def scan(ip, ports):
                                 tvt_vulnerable = check_vuln_tvt(ip, port)
                         else:
                             print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
+                            # Detecta el sistema por RDP
+                            os_detected = os_detection(ip, port) if port == 3389 else "N/A"
+                            data["SistemaOperativo_RDP"] = os_detected
 
                         if "HTTP/1.0 302 Found" in banner:
                             if args.has_screenshot == 'cam':
