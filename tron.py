@@ -125,42 +125,42 @@ def is_camera(ip, port):
 
         # Buscar la cadena "ETag:" en el banner
         if "ETag:" in banner:
-            return True
+            return(f"Camara-Hikvision/DVR")
         if 'WWW-Authenticate: Basic realm="index.html"' in banner:
-            return True
+            return(f"Camara-Auntenticacion-401")
         if "ID:" in banner:
-            return True
+            return(f"Camara-Found")
         if "Camera:" in banner:
-            return True
+            return(f"Camara-Found")
         if "camera:" in banner:
-            return True
+            return(f"Camara-Found")
         if "Model:" in banner:
-            return True
+            return(f"Camara-Found")
         if "HTTP/1.0 302 Found" in banner:
-            return True
+            return(f"Camara-Found")
         if "WWW-Authenticate: Basic realm=\"index.html\"" in banner:
-            return True
+            return(f"Camara-Hikvision/DVR")
         if "WWW-Authenticate: Basic realm=\"streaming_server\"" in banner:
-            return True
+            return(f"Camara-Auntenticacion-401")
         if "Server: Hipcam RealServer/V1.0" in banner:
-            return True
+            return(f"Camara-Hipcam")
         if "Server: Network Camera with Pan/Tilt" in banner:
-            return True
+            return(f"Camara-Network")
         if "Server: Boa/0.94.14rc21" in banner:
-            return True
+            return(f"Camara-Found")
         if "Plugin:" in banner:
-            return True
+            return(f"Camara-Found")
         if "Expires:" in banner:
-            return True
+            return(f"Camara-Found")
         if "unknown" in banner:
-            return True
+            return(f"Camara-Found")
 
 
         # Buscar palabras clave en el banner
         keywords = ["camera", "ActiveX", "Camera:", "Model:"]  # Agrega aquí las palabras clave que deseas buscar
         for keyword in keywords:
             if keyword in banner.lower():  # Convertir a minúsculas para una búsqueda insensible a mayúsculas y minúsculas
-                return True
+                return(f"Camara-Found")
 
         return False
     except:
@@ -893,11 +893,12 @@ def scan(ip, ports):
                         # Detecta el sistema por RDP
                         os_detected = os_detection(ip, port) if port == 3389 else "N/A"
                         credentials_found = "NULL"
+                        camara_detect = is_camera(ip, port)
 
                         if args.has_screenshot == 'all':
                             capture_screenshot(ip, port)
 
-                        if is_camera(ip, port) and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
+                        if camara_detect and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
                             if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
                                 capture_screenshot(ip, port, usuario=None, contraseña=None)
                             if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
@@ -932,6 +933,7 @@ def scan(ip, ports):
                             },
                             "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
                             "SistemaOperativo_RDP": os_detected,
+                            "Camara_check": camara_detect, 
                         }
 
                         if port == 445:
