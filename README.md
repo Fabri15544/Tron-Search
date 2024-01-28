@@ -78,6 +78,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Chequeo de IP para no repetir las que ya estan.
 
+   Camara-Check en localhost para saber que camara es.[Agregar Icon de la camara correspondientes automatico]
+
    Capturas Webs.
    
   https://github.com/ezelf/CVE-2018-9995_dvr_credentials. Una de ellas
