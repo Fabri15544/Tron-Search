@@ -37,12 +37,16 @@ def actualizar_datos():
         datos_previos = cargar_datos()
         datos_filtrados = eliminar_duplicados(datos_previos)
 
-        with open('datos.json', 'w') as file:
-            json.dump(datos_filtrados, file, indent=2)
-        with open('respaldo.json', 'w') as file:
-            json.dump(datos_filtrados, file, indent=2)
+        try:
+            with open('datos.json', 'w') as file:
+                json.dump(datos_filtrados, file, indent=2)
+            with open('respaldo.json', 'w') as file:
+                json.dump(datos_filtrados, file, indent=2)
 
-        print("Datos actualizados.")
+            print("Datos actualizados.")
+        except Exception as e:
+            print(f"Error: {e}")
+            continue
         time.sleep(10)  # Pausa la ejecución durante 10 segundos
 
 if __name__ == '__main__':
