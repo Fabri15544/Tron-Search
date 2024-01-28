@@ -76,6 +76,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Cuenta con salto automatico entre ips/ hasta encontrar 1 ip valida, con tiempo espera maximo antes de acelerar la carga. Argumento --fast
 
+   Chequeo de IP para no repetir las que ya estan.
+
    Capturas Webs.
    
   https://github.com/ezelf/CVE-2018-9995_dvr_credentials. Una de ellas
@@ -93,8 +95,6 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Hacer funcionar los botones[Iniciar Script/Detener Script].
 
    Mostrar capturas de camaras vulnerables a Wordlist/Link.
-
-   Agregar un chequeo de IP para no repetir las que ya estan, en caso que ya este omitir.
 
    Detección del sistema operativo (SO) en el Puerto [3389] en desarrollo.
 
