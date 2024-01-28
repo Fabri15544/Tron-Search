@@ -892,29 +892,11 @@ def scan(ip, ports):
 
                         # Detecta el sistema por RDP
                         os_detected = os_detection(ip, port) if port == 3389 else "N/A"
+                        #VARIABLE INICIADA EN NULL
                         credentials_found = "NULL"
+                        #VARIABLE CAMARA
                         camara_detect = is_camera(ip, port)
 
-                        if args.has_screenshot == 'all':
-                            capture_screenshot(ip, port)
-
-                        if camara_detect and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
-                            if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
-                                capture_screenshot(ip, port, usuario=None, contraseña=None)
-                            if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
-                                cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
-                            print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
-                            hikvision_vulnerable = check_vuln_hikvision(ip, port)
-                            if hikvision_vulnerable:
-                                avtech_vulnerable = check_vuln_avtech(ip, port)
-                                tvt_vulnerable = check_vuln_tvt(ip, port)
-                        else:
-                            print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
-
-                        if "HTTP/1.0 302 Found" in banner:
-                            if args.has_screenshot == 'cam':
-                                capture_screenshot(ip, port)
-                            credentials_found = scan_dvr_credentials(ip, port)
 
                         data = {
                             "IP": ip,
@@ -936,9 +918,33 @@ def scan(ip, ports):
                             "Camara_check": camara_detect, 
                         }
 
-                        if not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
-                            data["Camara_check"] = camara_detect
+                        #CHEQUEO DE CAMARAS
 
+                        if args.has_screenshot == 'all':
+                            capture_screenshot(ip, port)
+
+                        if camara_detect and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
+                            if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
+                                capture_screenshot(ip, port, usuario=None, contraseña=None)
+                            if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
+                                cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
+                            print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
+                            data["Camara_check"] = camara_detect
+                            hikvision_vulnerable = check_vuln_hikvision(ip, port)
+                            if hikvision_vulnerable:
+                                avtech_vulnerable = check_vuln_avtech(ip, port)
+                                tvt_vulnerable = check_vuln_tvt(ip, port)
+                        else:
+                            print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
+
+                        if "HTTP/1.0 302 Found" in banner:
+                            if args.has_screenshot == 'cam':
+                                capture_screenshot(ip, port)
+                            credentials_found = scan_dvr_credentials(ip, port)
+                            
+                        #TERMINA EL CHEQUEO DE CAMARAS
+
+                        #CHEQUEO SMB INTENTA OBTENER INFO DEL SMB
                         if port == 445:
                             smb_os = check(ip)
                             data["Fecha"] = smb_os['target_info']['MsvAvTimestamp']
@@ -952,6 +958,7 @@ def scan(ip, ports):
                         else:
                             smb_os = "N/A"
                             print("-" * 50)
+                        #TERMINA EL CHEQUEO SMB
 
                         GuardarDatos(data)
 
