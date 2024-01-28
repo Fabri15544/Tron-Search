@@ -140,6 +140,8 @@ def is_camera(ip, port):
             return(f"Camara-Found")
         if "WWW-Authenticate: Basic realm=\"index.html\"" in banner:
             return(f"Camara-Hikvision/DVR")
+        if "/doc/page/login.asp?_" in banner:
+            return(f"Camara-Hikvision/DVR")
         if "WWW-Authenticate: Basic realm=\"streaming_server\"" in banner:
             return(f"Camara-Auntenticacion-401")
         if "Server: Hipcam RealServer/V1.0" in banner:
