@@ -50,7 +50,7 @@ parser.add_argument('--s', default=0.5, type=float, help='Tiempo de espera entre
 parser.add_argument('--bn', default=2, type=float, help='Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)')
 parser.add_argument('--has_screenshot', choices=['all', 'cam'], help='Captura de pantalla [--has_screenshot all (todas las urls)] [--has_screenshot cam (todas las que se reconocen como camaras)]')
 parser.add_argument('--reanudar', help='IP a partir de la cual se reanudará el escaneo EJ: --search 144.88.*.* --reanudar 144.88.92.63')
-parser.add_argument('--fast', default=0, type=int, const=500, nargs='?', help='Salto de IPS para búsqueda rápida')
+parser.add_argument('--fast', default=0, type=int, const=50, nargs='?', help='Salto de IPS para búsqueda rápida')
 parser.add_argument('--time', default=30, type=int, help='Valor de tiempo para la opción --fast')
 
 # Analizar los argumentos proporcionados al script
@@ -85,9 +85,8 @@ if reanudar_ip:
     # Buscar la IP de reanudación en la cola
     while not ip_queue.empty():
         current_ip = ip_queue.get()
-        if not args.fast:
-            last_index += 1
-            ip_queue.put(current_ip)
+        last_index += 1
+        ip_queue.put(current_ip)
         if current_ip == reanudar_ip:
             break
 
@@ -101,13 +100,18 @@ if reanudar_ip:
         elif ip == reanudar_ip:
             last_index += 1
             ip_queue.put(ip)
-else:
+            
+if salto is not None and salto != 0:
     # Resto del código para la generación de IPs con salto
     for i in range(0, 256**num_stars, salto):
         parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
         ip = ip_pattern.replace('*', '{}').format(*parts)
-        if not args.fast:
-            ip_queue.put(ip)
+        ip_queue.put(ip)
+else:
+    for i in range(0, 256**num_stars):
+        parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
+        ip = ip_pattern.replace('*', '{}').format(*parts)
+        ip_queue.put(ip)
 
         
 def is_camera(ip, port):
@@ -536,6 +540,16 @@ def GuardarDatos(data):
 
     except Exception as e:
         print(f"Error general: {e}")
+        try:
+            with open("respaldo.json", "r") as backup_file:
+                restored_data = json.load(backup_file)
+                
+            with open("datos.json", "w") as file:
+                file.write(json.dumps(restored_data, indent=4))
+                
+            print("Datos restaurados desde el respaldo.")
+        except Exception as restore_exception:
+            print(f"No se pudo restaurar desde el respaldo: {restore_exception}")
 
     finally:
         lock.release()
@@ -819,10 +833,10 @@ def parse_challenge(challenge_message):
     'negotiate_flags': negotiate_flags
   }
 
+lock = threading.Lock()
 
 def scan(ip, ports):
     PURPLE = "\033[35m"
-
     if not is_valid_ip(ip):
         ip_list = search_and_display_titles(ip)
         if ip_list is not None:
@@ -831,148 +845,125 @@ def scan(ip, ports):
                 pass
         else:
             print("No se encontraron direcciones IP válidas.")
-
-    # Configura el número máximo de hilos/conexiones paralelas
-    max_threads = 10
-
-    try:
-        with concurrent.futures.ThreadPoolExecutor(max_threads) as executor:
-            futures = []
-            for port in ports:
-                #futures.append(executor.submit(capture_screenshot, ip, port))
-                futures.append(executor.submit(ip, port))
-
-            # Espera a que todas las tareas se completen
-            concurrent.futures.wait(futures)
             
-    except concurrent.futures.CancelledError:
-        pass
-    except Exception as e:
-        pass
+    with lock:
+        bar.update(1)
 
+    futures = []
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        for port in ports:
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                    sock.settimeout(args.s)
 
-    for port in ports:
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.settimeout(args.s)
-                result = sock.connect_ex((ip, port))
-                if result != 0:
-                    #futures.append(executor.submit(capture_screenshot, ip, ports[0]))
-                    futures.append(executor.submit(ip, ports[0]))
-                    continue
+                    result = sock.connect_ex((ip, port))
+                    if result != 0:
+                        futures.append(executor.submit(ip, ports[0]))
+                        continue
 
-                try:
-                    service_name = socket.getservbyport(port)
-                except OSError:
-                    service_name = "unknown"
+                    try:
+                        service_name = socket.getservbyport(port)
+                    except OSError:
+                        service_name = "unknown"
+                    banner = get_banner(ip, port)
+                    region, city, country = get_location(ip)
 
-                banner = get_banner(ip, port)
-                region, city, country = get_location(ip)
+                    # Extract the domain name from the IP
+                    domain = extract_domain(ip)
 
-                # Extract the domain name from the IP
-                domain = extract_domain(ip)
+                    # Get the response body from the service
+                    response_body = get_response_body(ip, port, '/some_endpoint_here')  # Cambiar '/some_endpoint_here' al endpoint real
+                    hikvision_vulnerable, avtech_vulnerable, tvt_vulnerable, cam = False, False, False, False
 
-                # Get the response body from the service
-                response_body = get_response_body(ip, port, '/some_endpoint_here')  # Change '/some_endpoint_here' to the actual endpoint
-                hikvision_vulnerable = False # valor predeterminado
-                avtech_vulnerable = False # valor predeterminado
-                tvt_vulnerable = False # valor predeterminado
-                cam = False # valor predeterminado
+                    # Check if the region and city match the filters
+                    if (FiltroRegion and region == FiltroRegion) or (FiltroCiudad and city == FiltroCiudad) or (FiltroCiudad is None and FiltroRegion is None):
+                        formatted_ip = f"{Fore.YELLOW}{ip}{Style.RESET_ALL}:{Fore.YELLOW}{port}{Style.RESET_ALL}"
+                        formatted_service_name = f"{Fore.YELLOW}{service_name}{Style.RESET_ALL}"
+                        formatted_banner = f"{Fore.CYAN}{banner}{Style.RESET_ALL}"
+                        formatted_region = f"{Fore.YELLOW}{region}{Style.RESET_ALL}"
+                        formatted_city = f"{Fore.YELLOW}{city}{Style.RESET_ALL}"
+                        formatted_domain = f"{Fore.YELLOW}{domain}{Style.RESET_ALL}"
 
+                        print(f"IP: {formatted_ip}\nServicio: {formatted_service_name}\nBanner: {formatted_banner}\nRegión: {formatted_region}\nCiudad: {formatted_city}\nDominio: {formatted_domain}")
 
-                # Check if the region and city match the filters
-                if (FiltroRegion and region == FiltroRegion) or (FiltroCiudad and city == FiltroCiudad) or (FiltroCiudad is None and FiltroRegion is None):
-                    formatted_ip = f"{Fore.YELLOW}{ip}{Style.RESET_ALL}:{Fore.YELLOW}{port}{Style.RESET_ALL}"
-                    formatted_service_name = f"{Fore.YELLOW}{service_name}{Style.RESET_ALL}"
-                    formatted_banner = f"{Fore.CYAN}{banner}{Style.RESET_ALL}"
-                    formatted_region = f"{Fore.YELLOW}{region}{Style.RESET_ALL}"
-                    formatted_city = f"{Fore.YELLOW}{city}{Style.RESET_ALL}"
-                    formatted_domain = f"{Fore.YELLOW}{domain}{Style.RESET_ALL}"
+                        # Detecta el sistema por RDP
+                        os_detected = os_detection(ip, port) if port == 3389 else "N/A"
+                        credentials_found = "NULL"
 
-                    print(f"IP: {formatted_ip}\nServicio: {formatted_service_name}\nBanner: {formatted_banner}\nRegión: {formatted_region}\nCiudad: {formatted_city}\nDominio: {formatted_domain}")
-
-                    #detecta el sistema por RDP
-                    if port == 3389:
-                        os_detected = os_detection(ip, port)
-                    else:
-                        os_detected = "N/A"
-                        
-                    credentials_found = "NULL"
-                    if args.has_screenshot == 'all':
-                        capture_screenshot(ip, port)
-                    
-                    if is_camera(ip, port) and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
-                        if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
-                            capture_screenshot(ip, port, usuario=None, contraseña=None)
-                        if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
-                            cam = verificar_respuesta_200(ip,port,tiempo_cancelacion=1)
-                        print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
-                        hikvision_vulnerable = check_vuln_hikvision(ip, port)
-                        if hikvision_vulnerable:
-                            avtech_vulnerable = check_vuln_avtech(ip, port)
-                            tvt_vulnerable = check_vuln_tvt(ip, port)
-                    else:
-                        print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
-                        
-                    if "HTTP/1.0 302 Found" in banner:
-                        if args.has_screenshot == 'cam':
+                        if args.has_screenshot == 'all':
                             capture_screenshot(ip, port)
-                        credentials_found = scan_dvr_credentials(ip, port)                           
 
-                    data = {
-                        "IP": ip,
-                        "Puerto": port,
-                        "Servicio": service_name,
-                        "Banner": banner,
-                        "Región": region,
-                        "Ciudad": city,
-                        "Dominio": domain,  # Include the domain
-                        "CuerpoRespuesta": response_body,  # Include the response body
-                        "ExploitVulnerable": {
-                            "Hikvision": hikvision_vulnerable,
-                            "Avtech": avtech_vulnerable,
-                            "TVT": tvt_vulnerable,
-                            "video.mjpg-Vulnerable": cam
-                        },
-                        "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
-                        "SistemaOperativo_RDP": os_detected,
-                    }
+                        if is_camera(ip, port) and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
+                            if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
+                                capture_screenshot(ip, port, usuario=None, contraseña=None)
+                            if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
+                                cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
+                            print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
+                            hikvision_vulnerable = check_vuln_hikvision(ip, port)
+                            if hikvision_vulnerable:
+                                avtech_vulnerable = check_vuln_avtech(ip, port)
+                                tvt_vulnerable = check_vuln_tvt(ip, port)
+                        else:
+                            print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
 
-                    if port == 445:
-                        smb_os = check(ip)
-                        data["Fecha"] = smb_os['target_info']['MsvAvTimestamp']
-                        data["SistemaOperativo_SMB"] = smb_os['version']
-                        data["Nombre-PC"] = smb_os['target_info']['MsvAvDnsComputerName']
-                        print("Fecha: " + smb_os['target_info']['MsvAvTimestamp'])
-                        print("Sistema-Operativo: " + smb_os['version'])
-                        print("Nombre-PC: " + smb_os['target_info']['MsvAvDnsComputerName'])
-                        print("-" * 50)
-                        data["Separador"] = "-" * 50
+                        if "HTTP/1.0 302 Found" in banner:
+                            if args.has_screenshot == 'cam':
+                                capture_screenshot(ip, port)
+                            credentials_found = scan_dvr_credentials(ip, port)
+
+                        data = {
+                            "IP": ip,
+                            "Puerto": port,
+                            "Servicio": service_name,
+                            "Banner": banner,
+                            "Región": region,
+                            "Ciudad": city,
+                            "Dominio": domain,  # Include the domain
+                            "CuerpoRespuesta": response_body,  # Include the response body
+                            "ExploitVulnerable": {
+                                "Hikvision": hikvision_vulnerable,
+                                "Avtech": avtech_vulnerable,
+                                "TVT": tvt_vulnerable,
+                                "video.mjpg-Vulnerable": cam
+                            },
+                            "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
+                            "SistemaOperativo_RDP": os_detected,
+                        }
+
+                        if port == 445:
+                            smb_os = check(ip)
+                            data["Fecha"] = smb_os['target_info']['MsvAvTimestamp']
+                            data["SistemaOperativo_SMB"] = smb_os['version']
+                            data["Nombre-PC"] = smb_os['target_info']['MsvAvDnsComputerName']
+                            print("Fecha: " + smb_os['target_info']['MsvAvTimestamp'])
+                            print("Sistema-Operativo: " + smb_os['version'])
+                            print("Nombre-PC: " + smb_os['target_info']['MsvAvDnsComputerName'])
+                            print("-" * 50)
+                            data["Separador"] = "-" * 50
+                        else:
+                            smb_os = "N/A"
+                            print("-" * 50)
+
+                        GuardarDatos(data)
+
                     else:
-                        smb_os = "N/A"
+                        print(f"Filtrando: {ip}:{port} Región: {region} Ciudad: {city}\n")
 
-                    GuardarDatos(data)
-
-                else:
-                    print(f"Filtrando: {ip}:{port} Región: {region} Ciudad: {city}\n")
-
-        except socket.gaierror as e:
-            continue
-        except Exception as e:
-            #print(f"Error: {e}")
-            generated_ip = None
-            if args.fast:
-                generated_ip = ip_queue.get()
-                #print(generated_ip)
-                ip_queue.put(generated_ip)
-                time.sleep(TiempoSalto)
-            if generated_ip is not None:
-                ip = generated_ip
-        finally:
-            # Guarda la última IP en un archivo
-            with open("Ultima_IP.txt", "w") as last_ip_file:
-                last_ip_file.write(ip)
-            sock.close()
+            except socket.gaierror as e:
+                generated_ip = None
+                if args.fast:
+                    generated_ip = ip_queue.get()
+                    print(generated_ip)
+                    ip_queue.put(generated_ip)
+                    time.sleep(TiempoSalto)
+                if generated_ip is not None:
+                    ip = generated_ip
+                continue
+            except Exception as e:
+                print(f"Error: {e}")
+                continue
+            finally:
+                sock.close()
             
 # Crea una instancia de UserAgent
 ua = UserAgent()
@@ -1184,7 +1175,6 @@ while not ip_queue.empty():
     ip = ip_queue.get()
     ip_pattern_list.append(ip)
     processed_ips += 1
-    bar.update(1)
 
     hilo = threading.Thread(target=scan, args=(ip, ports))
     threads.append(hilo)
