@@ -892,8 +892,6 @@ def scan(ip, ports):
 
                         #VARIABLE INICIADA EN NULL
                         credentials_found = "NULL"
-                        #VARIABLE CAMARA
-                        camara_detect = is_camera(ip, port)
 
 
                         data = {
@@ -912,13 +910,15 @@ def scan(ip, ports):
                                 "video.mjpg-Vulnerable": cam
                             },
                             "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
-                            "Camara_check": camara_detect, 
                         }
 
                         #CHEQUEO DE CAMARAS
 
                         if args.has_screenshot == 'all':
                             capture_screenshot(ip, port)
+
+                        #VARIABLE CAMARA
+                        camara_detect = is_camera(ip, port)
 
                         if camara_detect and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
                             if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
