@@ -868,12 +868,13 @@ def scan(ip, ports):
                     if result != 0:
                         futures.append(executor.submit(ip, ports[0]))
                         continue
+                    
+                    banner = get_banner(ip, port)
 
                     try:
                         service_name = socket.getservbyport(port)
                     except OSError:
                         service_name = "unknown"
-                    banner = get_banner(ip, port)
                     region, city, country = get_location(ip)
 
                     # Extract the domain name from the IP
