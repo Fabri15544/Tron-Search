@@ -686,7 +686,7 @@ function createImageCell(ip, puerto) {
 }
 
 // Create a row for each field
-var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR"];
+var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR", "SistemaOperativo_RDP", "Fecha", "SistemaOperativo_SMB", "Nombre-PC"];
 
 fields.forEach(function (field) {
     var row = table.insertRow();
