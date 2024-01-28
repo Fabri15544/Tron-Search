@@ -1,23 +1,63 @@
 from http.server import SimpleHTTPRequestHandler, HTTPServer
+import json
+import time
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         try:
-            # Llamar al método original do_GET() para manejar la solicitud GET
             super().do_GET()
         except ConnectionAbortedError:
-            # Manejar la excepción de conexión abortada
             print("Se ha producido una conexión abortada por el cliente.")
 
     def end_headers(self):
-        # Desactivar la memoria caché añadiendo encabezados específicos
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
         super().end_headers()
 
+def cargar_datos():
+    try:
+        with open('datos.json', 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
+
+def eliminar_duplicados(datos):
+    combinaciones_unicas = set()
+    datos_filtrados = []
+
+    for dato in datos:
+        combinacion = (dato["IP"], dato["Puerto"])
+        if combinacion not in combinaciones_unicas:
+            combinaciones_unicas.add(combinacion)
+            datos_filtrados.append(dato)
+
+    return datos_filtrados
+
+def actualizar_datos():
+    while True:
+        datos_previos = cargar_datos()
+        datos_filtrados = eliminar_duplicados(datos_previos)
+
+        with open('datos.json', 'w') as file:
+            json.dump(datos_filtrados, file, indent=2)
+        with open('respaldo.json', 'w') as file:
+            json.dump(datos_filtrados, file, indent=2)
+
+        print("Datos actualizados.")
+        time.sleep(10)  # Pausa la ejecución durante 10 segundos
+
 if __name__ == '__main__':
+    # Iniciar un hilo para actualizar los datos cada 10 segundos
+    import threading
+    threading.Thread(target=actualizar_datos, daemon=True).start()
+
+    # Iniciar el servidor HTTP
     port = 8080
     server_address = ('', port)
     httpd = HTTPServer(server_address, NoCacheHandler)
     print(f'Servidor iniciado en http://127.0.0.1:{port}')
-    httpd.serve_forever()
 
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("Servidor detenido.")
+        httpd.server_close()
