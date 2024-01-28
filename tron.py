@@ -956,7 +956,7 @@ def scan(ip, ports):
                     print(generated_ip)
                     ip_queue.put(generated_ip)
                     time.sleep(TiempoSalto)
-                if generated_ip is not None:
+                if generated_ip is not None and salto is not None and salto != 0 :
                     ip = generated_ip
                 continue
             except Exception as e:
@@ -1180,7 +1180,7 @@ while not ip_queue.empty():
     threads.append(hilo)
     hilo.start()
 
-    if args.fast:
+    if salto is not None and salto != 0:
         time.sleep(0.1) #velocidad rapida
     else:
         time.sleep(1) #velocidad normal
