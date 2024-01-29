@@ -114,15 +114,8 @@ else:
         ip_queue.put(ip)
 
         
-def is_camera(ip, port):
+def is_camera(ip, port, banner):
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(0.5)
-        sock.connect((ip, port))
-        
-        banner = get_banner(ip, port)  # Obtener el banner
-        sock.close()
-
         # Buscar la cadena "ETag:" en el banner
         if "Webs" in banner and "ETag:" in banner:
             return(f"Camara-Hikvision/DVR")
@@ -142,6 +135,8 @@ def is_camera(ip, port):
             return(f"Camara-Hikvision/DVR")
         if "/doc/page/login.asp?_" in banner:
             return(f"Camara-Hikvision/DVR")
+        if "-//W3C//DTD XHTML 1.0 Transitional//EN" in banner:
+            return("Camara-IPCAM")
         if "WWW-Authenticate: Basic realm=\"streaming_server\"" in banner:
             return(f"Camara-Auntenticacion-401")
         if "Server: Hipcam RealServer/V1.0" in banner:
@@ -903,7 +898,7 @@ def scan(ip, ports):
                         if args.has_screenshot == 'all':
                             capture_screenshot(ip, port)
 
-                        if is_camera(ip, port) and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
+                        if is_camera(ip, port, banner) and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
                             if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
                                 capture_screenshot(ip, port, usuario=None, contraseña=None)
                             if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
@@ -1090,7 +1085,7 @@ def search_and_display_titles(query, max_pages=10):
                         if url.startswith("http"):
                             domain = urlsplit(url).netloc
                             try:
-                                ip_address = socket.gethostbyname(domain)
+                                ip_address = extract_domain(domain)
                                 if ip_address != '0.0.0.0':
                                     if ip_address not in ip_url_mapping:
                                         ip_url_mapping[ip_address] = set()  # Use a set to store unique URLs
