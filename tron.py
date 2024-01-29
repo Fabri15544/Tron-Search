@@ -124,10 +124,10 @@ def is_camera(ip, port):
         sock.close()
 
         # Buscar la cadena "ETag:" en el banner
-        if "ETag:" in banner:
+        if "ETag:" in banner and "X-UA-Compatible" in banner:
             return(f"Camara-Hikvision/DVR")
-        if "X-UA-Compatible" in banner:
-            return(f"Camara-Hikvision/DVR")
+        if "IPCAM" in banner:
+            return(f"Camara")
         if 'WWW-Authenticate: Basic realm="index.html"' in banner:
             return(f"Camara-Auntenticacion-401")
         if "ID:" in banner:
@@ -917,21 +917,19 @@ def scan(ip, ports):
                             "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
                         }
 
-                        #VARIABLE CAMARA
-                        camara_detect = is_camera(ip, port)
                         
                         #CHEQUEO DE CAMARAS
 
                         if args.has_screenshot == 'all':
                             capture_screenshot(ip, port)
 
-                        if camara_detect and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
+                        if is_camera(ip, port) and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
                             if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
                                 capture_screenshot(ip, port, usuario=None, contraseña=None)
                             if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
                                 cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
                             print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
-                            data["Camara_check"] = camara_detect
+                            data["Camara_check"] = is_camera(ip, port)
                             hikvision_vulnerable = check_vuln_hikvision(ip, port)
                             if hikvision_vulnerable:
                                 avtech_vulnerable = check_vuln_avtech(ip, port)
@@ -949,7 +947,6 @@ def scan(ip, ports):
                             
                         #TERMINA EL CHEQUEO DE CAMARAS
                         data["Separador"] = "-" * 50
-                        print("-" * 50)
 
                         #CHEQUEO SMB INTENTA OBTENER INFO DEL SMB
                         if port == 445:
