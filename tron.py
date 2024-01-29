@@ -948,6 +948,8 @@ def scan(ip, ports):
                             credentials_found = scan_dvr_credentials(ip, port)
                             
                         #TERMINA EL CHEQUEO DE CAMARAS
+                        data["Separador"] = "-" * 50
+                        print("-" * 50)
 
                         #CHEQUEO SMB INTENTA OBTENER INFO DEL SMB
                         if port == 445:
