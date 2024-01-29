@@ -686,7 +686,7 @@ function createImageCell(ip, puerto) {
 }
 
 // Create a row for each field
-var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR", "SistemaOperativo_RDP", "Fecha", "SistemaOperativo_SMB", "Nombre-PC", "Camara_check"];
+var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR", "SistemaOperativo_RDP", "Fecha", "SistemaOperativo_SMB", "Nombre-PC", "Camara"];
 
 fields.forEach(function (field) {
     var row = table.insertRow();
@@ -878,7 +878,6 @@ function toggleDarkMode() {
     const puertoFilter = document.getElementById("puertoFilter");
     puertoFilter.classList.toggle('dark-mode-select'); // Add or remove the 'dark-mode-select' class to the filter options box
 
-    // You can add more logic here to save the user's preference in a cookie or localStorage
 }
 
 // Display all results when the page loads
