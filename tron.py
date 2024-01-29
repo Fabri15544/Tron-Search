@@ -697,6 +697,7 @@ def check(ip, port=445):
     try:
         # Conectar usando SMBv3
         smb_client = smb3.SMB3(ip, ip, sess_port=port)
+        time.sleep(5)
         resp_token = request_SMBv23(smb_client)
         return parse_challenge(resp_token)
     except Exception as e:
