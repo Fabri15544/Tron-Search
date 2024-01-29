@@ -39,7 +39,7 @@ def actualizar_datos():
 
         for dato in datos_filtrados:
             banner = dato["Banner"]
-
+            
             if "Webs" in banner and "ETag:" in banner:
                 dato["Camara"] = "Camara-Hikvision/DVR"
             elif "IPCAM" in banner:
