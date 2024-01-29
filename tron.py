@@ -124,14 +124,12 @@ def is_camera(ip, port):
         sock.close()
 
         # Buscar la cadena "ETag:" en el banner
-        if "ETag:" in banner and "X-UA-Compatible" in banner:
+        if "Webs" in banner and "ETag:" in banner:
             return(f"Camara-Hikvision/DVR")
         if "IPCAM" in banner:
-            return(f"Camara")
+            return(f"Camara-IPCAM")
         if 'WWW-Authenticate: Basic realm="index.html"' in banner:
             return(f"Camara-Auntenticacion-401")
-        if "ID:" in banner:
-            return(f"Camara-Found")
         if "Camera:" in banner:
             return(f"Camara-Found")
         if "camera:" in banner:
@@ -139,7 +137,7 @@ def is_camera(ip, port):
         if "Model:" in banner:
             return(f"Camara-Found")
         if "HTTP/1.0 302 Found" in banner:
-            return(f"Camara-Found")
+            return(f"Camara[?]")
         if "WWW-Authenticate: Basic realm=\"index.html\"" in banner:
             return(f"Camara-Hikvision/DVR")
         if "/doc/page/login.asp?_" in banner:
@@ -148,16 +146,16 @@ def is_camera(ip, port):
             return(f"Camara-Auntenticacion-401")
         if "Server: Hipcam RealServer/V1.0" in banner:
             return(f"Camara-Hipcam")
-        if "Server: Network Camera with Pan/Tilt" in banner:
+        if "Network Camera with Pan/Tilt" in banner:
             return(f"Camara-Network")
-        if "Server: Boa/0.94.14rc21" in banner:
+        if "Boa/0.94.14rc21" in banner:
             return(f"Camara-Found")
         if "Plugin:" in banner:
             return(f"Camara-Found")
         if "Expires:" in banner:
             return(f"Camara-Found")
         if "unknown" in banner:
-            return(f"Camara-Found")
+            return(f"unkown")
 
 
         # Buscar palabras clave en el banner
@@ -897,6 +895,33 @@ def scan(ip, ports):
 
                         #VARIABLE INICIADA EN NULL
                         credentials_found = "NULL"
+                        #CHEQUEO DE CAMARAS
+                        Camara_check = is_camera(ip, port)
+                        # Detecta el sistema por RDP
+                        os_detected = os_detection(ip, port) if port == 3389 and Camara_check == "N/A" else "N/A"
+
+                        if args.has_screenshot == 'all':
+                            capture_screenshot(ip, port)
+
+                        if Camara_check and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
+                            if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
+                                capture_screenshot(ip, port, usuario=None, contraseña=None)
+                            if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
+                                cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
+                            print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
+                            hikvision_vulnerable = check_vuln_hikvision(ip, port)
+                            if hikvision_vulnerable:
+                                avtech_vulnerable = check_vuln_avtech(ip, port)
+                                tvt_vulnerable = check_vuln_tvt(ip, port)
+                        else:
+                            print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
+                            
+                        if "HTTP/1.0 302 Found" in banner:
+                            if args.has_screenshot == 'cam':
+                                capture_screenshot(ip, port)
+                            credentials_found = scan_dvr_credentials(ip, port)
+                            
+                        #TERMINA EL CHEQUEO DE CAMARAS
 
 
                         data = {
@@ -915,38 +940,9 @@ def scan(ip, ports):
                                 "video.mjpg-Vulnerable": cam
                             },
                             "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
+                            "SistemaOperativo_RDP": os_detected,
+                            "Camara_check":Camara_check,
                         }
-
-                        
-                        #CHEQUEO DE CAMARAS
-
-                        if args.has_screenshot == 'all':
-                            capture_screenshot(ip, port)
-
-                        if is_camera(ip, port) and not "HTTP/1.0 302 Found" in banner and not "unknown" in banner:
-                            if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
-                                capture_screenshot(ip, port, usuario=None, contraseña=None)
-                            if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
-                                cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
-                            print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
-                            data["Camara_check"] = is_camera(ip, port)
-                            hikvision_vulnerable = check_vuln_hikvision(ip, port)
-                            if hikvision_vulnerable:
-                                avtech_vulnerable = check_vuln_avtech(ip, port)
-                                tvt_vulnerable = check_vuln_tvt(ip, port)
-                        else:
-                            print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
-                            # Detecta el sistema por RDP
-                            os_detected = os_detection(ip, port) if port == 3389 else "N/A"
-                            data["SistemaOperativo_RDP"] = os_detected
-
-                        if "HTTP/1.0 302 Found" in banner:
-                            if args.has_screenshot == 'cam':
-                                capture_screenshot(ip, port)
-                            credentials_found = scan_dvr_credentials(ip, port)
-                            
-                        #TERMINA EL CHEQUEO DE CAMARAS
-                        data["Separador"] = "-" * 50
 
                         #CHEQUEO SMB INTENTA OBTENER INFO DEL SMB
                         if port == 445:
