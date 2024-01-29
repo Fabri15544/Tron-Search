@@ -895,15 +895,15 @@ def scan(ip, ports):
 
                         #VARIABLE INICIADA EN NULL
                         credentials_found = "NULL"
-                        #CHEQUEO DE CAMARAS
-                        Camara_check = is_camera(ip, port)
                         # Detecta el sistema por RDP
                         os_detected = os_detection(ip, port) if port == 3389 and Camara_check == "N/A" else "N/A"
+
+                        #CHEQUEO DE CAMARAS
 
                         if args.has_screenshot == 'all':
                             capture_screenshot(ip, port)
 
-                        if Camara_check and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
+                        if is_camera(ip, port) and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
                             if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
                                 capture_screenshot(ip, port, usuario=None, contraseña=None)
                             if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
@@ -941,7 +941,6 @@ def scan(ip, ports):
                             },
                             "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
                             "SistemaOperativo_RDP": os_detected,
-                            "Camara_check":Camara_check,
                         }
 
                         #CHEQUEO SMB INTENTA OBTENER INFO DEL SMB
@@ -1111,10 +1110,10 @@ def search_and_display_titles(query, max_pages=10):
     #input("Presiona Enter para continuar...")
 
     for ip in unique_ips:
-        print(f"{PURPLE}IP Address: {ip}\033[0m")
+        return(f"{PURPLE}IP Address: {ip}\033[0m")
         urls_for_ip = ip_url_mapping[ip]
         for url in urls_for_ip:
-            print(f"{WHITE}URL: {url}{RESET}")
+            return(f"{WHITE}URL: {url}{RESET}")
 
             # Check for robots.txt and display disallowed URLs
             robots_url = f"{url.rstrip('/')}/robots.txt"
@@ -1124,9 +1123,9 @@ def search_and_display_titles(query, max_pages=10):
                     robots_content = robots_response.text
                     disallowed_urls = extract_disallowed_urls(robots_content)
                     if disallowed_urls:
-                        print(f"{ORANGE}Disallowed URLs for {url}:{RESET}")
+                        return(f"{ORANGE}Disallowed URLs for {url}:{RESET}")
                         for disallowed_url in disallowed_urls:
-                            print(f"{url}/{ORANGE}{disallowed_url}{RESET}")
+                            return(f"{url}/{ORANGE}{disallowed_url}{RESET}")
 
             except requests.exceptions.RequestException as e:
                 continue
