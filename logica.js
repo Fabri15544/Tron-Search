@@ -263,7 +263,7 @@ function getFlagEmoji(region) {
 }
 
 const countries = [
-        { name: "USA", results: 0, lat: 37.0902, lng: -95.7129 },
+        { name: "United States", results: 0, lat: 37.0902, lng: -95.7129 },
         { name: "Canada", results: 0, lat: 56.1304, lng: -106.3468 },
         { name: "Turkey", results: 0, lat: 38.9637, lng: 35.2433 },
         { name: "Türkiye", results: 0, lat: 38.9637, lng: 35.2433 },
@@ -878,6 +878,7 @@ function toggleDarkMode() {
     const puertoFilter = document.getElementById("puertoFilter");
     puertoFilter.classList.toggle('dark-mode-select'); // Add or remove the 'dark-mode-select' class to the filter options box
 
+    // You can add more logic here to save the user's preference in a cookie or localStorage
 }
 
 // Display all results when the page loads
