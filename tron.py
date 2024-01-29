@@ -892,7 +892,7 @@ def scan(ip, ports):
                         #VARIABLE INICIADA EN NULL
                         credentials_found = "NULL"
                         # Detecta el sistema por RDP
-                        os_detected = os_detection(ip, port) if port == 3389 and Camara_check == "N/A" else "N/A"
+                        os_detected = os_detection(ip, port) if port == 3389 else "N/A"
 
                         #CHEQUEO DE CAMARAS
 
