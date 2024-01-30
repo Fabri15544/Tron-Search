@@ -481,7 +481,7 @@ def capture_screenshot(ip, port, usuario=None, contraseña=None):
         response = session.get(url, auth=auth, timeout=5)
 
         if not response.ok and response.status_code != 401:
-            return
+            pass
 
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--headless')
@@ -497,6 +497,7 @@ def capture_screenshot(ip, port, usuario=None, contraseña=None):
 
         screenshot_filename = f"screenshot/{ip}-{port}.png"
         driver.save_screenshot(screenshot_filename)
+        return("has_screenshot:true")
 
     except requests.RequestException as e:
         pass
@@ -897,7 +898,7 @@ def scan(ip, ports):
                         #CHEQUEO DE CAMARAS
 
                         if args.has_screenshot == 'all':
-                            capture_screenshot(ip, port)
+                            screenshot = capture_screenshot(ip, port)
 
                         if is_camera(ip, port, banner) and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
                             if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
@@ -914,7 +915,7 @@ def scan(ip, ports):
                             
                         if "HTTP/1.0 302 Found" in banner:
                             if args.has_screenshot == 'cam':
-                                capture_screenshot(ip, port)
+                                screenshotCam = capture_screenshot(ip, port)
                             credentials_found = scan_dvr_credentials(ip, port)
                             
                         #TERMINA EL CHEQUEO DE CAMARAS
@@ -937,6 +938,7 @@ def scan(ip, ports):
                             },
                             "CredencialesDVR": credentials_found,  # Agrega los datos del escaneo de credenciales del DVR
                             "SistemaOperativo_RDP": os_detected,
+                            "Preview": screenshot,
                         }
 
                         #CHEQUEO SMB INTENTA OBTENER INFO DEL SMB
