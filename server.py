@@ -21,14 +21,14 @@ def cargar_datos():
         return []
 
 def eliminar_duplicados(datos):
-    combinaciones_unicas = set()
     datos_filtrados = []
+    diccionario_combinaciones = {}
 
     for dato in datos:
         combinacion = (dato["IP"], dato["Puerto"])
-        if combinacion not in combinaciones_unicas:
-            combinaciones_unicas.add(combinacion)
-            datos_filtrados.append(dato)
+        diccionario_combinaciones[combinacion] = dato
+
+    datos_filtrados = list(diccionario_combinaciones.values())
 
     return datos_filtrados
 
