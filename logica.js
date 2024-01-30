@@ -669,6 +669,9 @@ function mostrarResultados(resultados) {
         var table = document.createElement("table");
         table.classList.add("result-table");
 
+// Create a row for each field
+var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR", "SistemaOperativo_RDP", "Fecha", "SistemaOperativo_SMB", "Nombre-PC", "Camara", "Preview"];
+
 // Función para crear una celda de imagen con la captura web
 function createImageCell(ip, puerto) {
     var imageCell = document.createElement("td");
@@ -677,16 +680,16 @@ function createImageCell(ip, puerto) {
     // Verifica si la imagen existe antes de crear la celda
     var img = new Image();
     img.src = imagePath;
-    img.onload = function() {
+
+    img.onload = function () {
         // La imagen existe, entonces crea la celda de imagen
-        imageCell.innerHTML = `<img src="${imagePath}" alt="Screenshot" style="max-width: 512px;">`;
+        imageCell.innerHTML = `<div style="text-align: center;"><img src="${imagePath}" alt="Screenshot" style="max-width: 512px;"><p>has_screenshot:true</p></div>`;
+        resultado["Preview"] = "has_screenshot:true";
+        
     };
 
     return imageCell;
 }
-
-// Create a row for each field
-var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR", "SistemaOperativo_RDP", "Fecha", "SistemaOperativo_SMB", "Nombre-PC", "Camara"];
 
 fields.forEach(function (field) {
     var row = table.insertRow();
