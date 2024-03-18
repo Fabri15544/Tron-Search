@@ -692,26 +692,29 @@ function createImageCell(ip, puerto) {
 }
 
 fields.forEach(function (field) {
-    var row = table.insertRow();
-    var cell1 = row.insertCell(0);
-    var cell2 = row.insertCell(1);
+    var fieldValue = resultado[field];
+    if ((typeof fieldValue === 'string' && fieldValue.trim() !== '') && fieldValue !== "N/A" && fieldValue !== "[31munknown[0m" && fieldValue !== "NULL" && fieldValue !== "unknown") {
+        var row = table.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
 
-    cell1.textContent = field;
+        cell1.textContent = field;
 
-    if (field === "IP") {
-        // Add the flag emoji next to the IP based on the region
-        const flagEmoji = getFlagEmoji(resultado["Región"]);
-        cell2.textContent = resultado[field] + " " + flagEmoji;
-    } else if (field === "Banner") {
-        // If the field is "Banner", add the value to the cell
-        cell2.textContent = resultado[field] || '';
+        if (field === "IP") {
+            // Add the flag emoji next to the IP based on the region
+            const flagEmoji = getFlagEmoji(resultado["Región"]);
+            cell2.textContent = resultado[field] + " " + flagEmoji;
+        } else if (field === "Banner") {
+            // If the field is "Banner", add the value to the cell
+            cell2.textContent = resultado[field];
 
-        // Add image cell for CredencialesDVR field next to the Banner
-        if (resultado["CredencialesDVR"]) {
-            row.appendChild(createImageCell(resultado["IP"], resultado["Puerto"]));
+            // Add image cell for CredencialesDVR field next to the Banner
+            if (resultado["CredencialesDVR"]) {
+                row.appendChild(createImageCell(resultado["IP"], resultado["Puerto"]));
+            }
+        } else {
+            cell2.textContent = fieldValue; // Display field value
         }
-    } else {
-        cell2.textContent = resultado[field] || ''; // Display field value, or empty string if it's missing
     }
 });
 
