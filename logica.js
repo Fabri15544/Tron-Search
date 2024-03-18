@@ -693,7 +693,7 @@ function createImageCell(ip, puerto) {
 
 fields.forEach(function (field) {
     var fieldValue = resultado[field];
-    if ((typeof fieldValue === 'string' && fieldValue.trim() !== '') && fieldValue !== "N/A" && fieldValue !== "[31munknown[0m" && fieldValue !== "NULL" && fieldValue !== "unknown") {
+    if ((typeof fieldValue === 'string' && fieldValue.trim() !== '') && fieldValue !== "N/A" && fieldValue !== "NULL" && fieldValue !== "unknown") {
         var row = table.insertRow();
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
