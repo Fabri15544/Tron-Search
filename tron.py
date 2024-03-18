@@ -48,7 +48,7 @@ parser.add_argument('--ciudad', help='Filtrar por ciudad')
 parser.add_argument('--w', help='Ruta del archivo de texto con el wordlist (usuarios y contraseñas)')
 parser.add_argument('--s', default=0.5, type=float, help='Tiempo de espera entre conexiones[SOCKET] (valor predeterminado: 0.5 segundos)')
 parser.add_argument('--bn', default=2, type=float, help='Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)')
-parser.add_argument('--has_screenshot', choices=['all', 'cam'], help='Captura de pantalla [--has_screenshot all (todas las urls)] [--has_screenshot cam (todas las que se reconocen como camaras)]')
+parser.add_argument('--has_screenshot', choices=['all', 'cam'], default=None, help='Captura de pantalla [--has_screenshot all (todas las urls)] [--has_screenshot cam (todas las que se reconocen como camaras)]')
 parser.add_argument('--reanudar', help='IP a partir de la cual se reanudará el escaneo EJ: --search 144.88.*.* --reanudar 144.88.92.63')
 parser.add_argument('--fast', default=0, type=int, const=50, nargs='?', help='Salto de IPS para búsqueda rápida')
 parser.add_argument('--time', default=30, type=int, help='Valor de tiempo para la opción --fast')
@@ -892,16 +892,17 @@ def scan(ip, ports):
 
                         #VARIABLE INICIADA EN NULL
                         credentials_found = "NULL"
+                        screenshot = "NULL"
                         # Detecta el sistema por RDP
                         os_detected = os_detection(ip, port) if port == 3389 else "N/A"
 
                         #CHEQUEO DE CAMARAS
 
-                        if args.has_screenshot == 'all':
+                        if args.has_screenshot == 'all' and args.has_screenshot is not None:
                             screenshot = capture_screenshot(ip, port)
 
                         if is_camera(ip, port, banner) and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
-                            if args.has_screenshot == 'cam' and "HTTP/1.1 401 Unauthorized" not in banner:
+                            if args.has_screenshot == 'cam' and args.has_screenshot is not None and "HTTP/1.1 401 Unauthorized" not in banner:
                                 capture_screenshot(ip, port, usuario=None, contraseña=None)
                             if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
                                 cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
@@ -914,7 +915,7 @@ def scan(ip, ports):
                             print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
                             
                         if "HTTP/1.0 302 Found" in banner:
-                            if args.has_screenshot == 'cam':
+                            if args.has_screenshot == 'cam' and args.has_screenshot is not None:
                                 screenshotCam = capture_screenshot(ip, port)
                             credentials_found = scan_dvr_credentials(ip, port)
                             
