@@ -108,9 +108,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Agrega detección de sistema Operativo Linux/Unix [Agregar-Argumento]
 
-   Modificar js/ para no mostrar datos nulos.
+   Modificar js/ para no mostrar datos nulos. //LISTO.
 
-   Agregar volcado de ips:ports especificos para pasar a Metasploit.
+   Agregar volcado de ips:ports especificos para pasar a Metasploit. //INTEGRACION-WEB
 
    Agregar WebTechnologies check.
-
