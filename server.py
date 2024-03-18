@@ -32,6 +32,32 @@ def eliminar_duplicados(datos):
 
     return datos_filtrados
 
+def buscar_palabra(banner, servicio):
+    banner_lower = banner.lower()
+    servicios = servicio.lower().split()
+    
+    # Palabras que hacen que la función devuelva "NULL"
+    palabras_no_camara_found = ["Apache2","apache","Ubuntu","microsoft-iis","routeros","unix"]
+    
+    
+    for palabra in palabras_no_camara_found:
+        if palabra in banner_lower:
+            return "NULL"
+    
+    for palabra in banner_lower.split():
+        if not any(sv in palabra for sv in servicios):
+            if any(keyword in palabra for keyword in ["camera:", "model:", "etag:"]):
+                if "www-authenticate: basic realm=\"index.html\"" in banner_lower or "/doc/page/login.asp?_" in banner_lower:
+                    return "Camara-Hikvision/DVR"
+                elif "ipcam" in banner_lower:
+                    return "Camara-IPCAM"
+                else:
+                    return "Camara-Found"
+            elif 'www-authenticate: basic realm="index.html"' in banner_lower:
+                return "Camara-Authentication-401"
+    
+    return "NULL"
+
 def actualizar_datos():
     while True:
         datos_previos = cargar_datos()
@@ -39,27 +65,9 @@ def actualizar_datos():
 
         for dato in datos_filtrados:
             banner = dato["Banner"]
-            
-            if "Webs" in banner and "ETag:" in banner:
-                dato["Camara"] = "Camara-Hikvision/DVR"
-            elif "IPCAM" in banner:
-                dato["Camara"] = "Camara-IPCAM"
-            elif 'WWW-Authenticate: Basic realm="index.html"' in banner:
-                dato["Camara"] = "Camara-Auntenticacion-401"
-            elif "Camera:" in banner or "camera:" in banner or "Model:" in banner:
-                dato["Camara"] = "Camara-Found"
-            elif "HTTP/1.0 302 Found" in banner:
-                dato["Camara"] = "Camara[?]"
-            elif "WWW-Authenticate: Basic realm=\"index.html\"" in banner or "/doc/page/login.asp?_" in banner:
-                dato["Camara"] = "Camara-Hikvision/DVR"
-            elif "WWW-Authenticate: Basic realm=\"streaming_server\"" in banner:
-                dato["Camara"] = "Camara-Auntenticacion-401"
-            elif "Server: Hipcam RealServer/V1.0" in banner:
-                dato["Camara"] = "Camara-Hipcam"
-            elif "Network Camera with Pan/Tilt" in banner or "Boa/0.94.14rc21" in banner or "Plugin:" in banner or "Expires:" in banner:
-                dato["Camara"] = "Camara-Found"
-            elif "unknown" in banner:
-                dato["Camara"] = "unknown"
+            servicio = dato["Servicio"]  # Obtener la lista de servicios (de donde sea que la obtengas)
+            camara = buscar_palabra(banner,servicio)  # Llamada a la función buscar_palabra
+            dato["Camara"] = camara  # Asignación del resultado a la clave "Camara"
 
         try:
             with open('datos.json', 'w') as file:
