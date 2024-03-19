@@ -84,12 +84,6 @@ def GenerarPuertos():
     
     return ports
 
-# Obtener los puertos generados
-puertos = GenerarPuertos()
-
-# Imprimir la variable 'puertos'
-print(f"Puertos seleccionados: {puertos}")
-
 # Acceder a los argumentos en el código
 ip_pattern = args.search
 FiltroRegion = args.region
@@ -1202,6 +1196,9 @@ def get_location(ip):
     except:
         return format_unknown("unknown"), format_unknown("unknown"), format_unknown("unknown")
 
+# Definir el número máximo de subprocesos
+max_workers = 100  # Cambiar este número según sea necesario
+
 # Crear una barra de progreso con el número total de direcciones IP a escanear
 bar = tqdm(total=ip_queue.qsize(), desc="Escaneando direcciones IP")
 clear()
@@ -1209,12 +1206,9 @@ print(f"Buscando {ip_pattern}")
 
 ip_pattern_list = []
 
-# Obtener el número de direcciones IP en la cola
-num_ips = ip_queue.qsize()
-
 # Crear un ThreadPoolExecutor con el número máximo de hilos
 try:
-    with concurrent.futures.ThreadPoolExecutor(max_workers=num_ips) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         while not ip_queue.empty():
             ip = ip_queue.get()
             ip_pattern_list.append(ip)
@@ -1226,6 +1220,8 @@ try:
                 time.sleep(0.1)  # velocidad rápida
             else:
                 time.sleep(1)  # velocidad normal
+            
+            bar.update(1)  # Actualizar la barra de progreso después de procesar una dirección IP
 
 except KeyboardInterrupt:
     print("Programa interrumpido por el usuario. Cerrando...")
