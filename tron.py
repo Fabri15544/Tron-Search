@@ -37,12 +37,13 @@ def clear():
 
 
 # Definir el puerto a escanear (por ejemplo, 80)
+ports_todos = list(range(1, 65536))
 ports = [80, 90, 100, 443, 445, 8080, 81, 82, 83, 84, 88, 8010, 1813, 8181, 8000, 8001, 9000, 21, 23, 22, 25, 53, 161, 101, 137, 138, 139, 2002, 2082, 2083, 5000, 5001, 6001, 6002 ,6003, 5002, 37777, 5540, 5900, 3306, 3389, 2051, 8002, 8554, 8002, 8200, 8280, 8834, 88, 8002, 9000, 7000, 8500, 6200, 9200, 9876, 10000, 123, 143, 465, 587, 995, 993, 6660, 6661, 6662, 6663, 6664, 6665, 6666, 6667, 6668, 6669, 49152, 49153, 49154, 49155, 49156, 49157, 27017, 27018, 27019, 34567, 4567, 5432, 666, 667, 668, 669, 177, 186, 2200, 6881, 6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6890, 6891, 6892, 6893, 6894, 6895, 6896, 6897, 6898, 6899, 6880, 7001, 7002, 7003, 7004, 7005, 7006, 7007, 7008, 7009, 7010]
 
 parser = argparse.ArgumentParser(description='Escaneo de puertos en direcciones IP')
 
 parser.add_argument('--search', required=True, help='Patrón de direcciones IP a escanear con el * como comodín (ejemplo: 192.168.*.*) busqueda avanzada con google:https://www.exploit-db.com/google-hacking-database')
-parser.add_argument('--port', nargs='+', type=int, help='Puerto o puertos a escanear. Presiona Enter para usar los puertos predeterminados.')
+parser.add_argument('--port', nargs='+', type=str, help='Puerto o puertos a escanear. Presiona Enter para usar los puertos predeterminados o "all" para escanear todos los puertos.')
 parser.add_argument('--region', help='Filtrar por región ej US,AR,MX')
 parser.add_argument('--ciudad', help='Filtrar por ciudad')
 parser.add_argument('--w', help='Ruta del archivo de texto con el wordlist (usuarios y contraseñas)')
@@ -56,8 +57,13 @@ parser.add_argument('--time', default=30, type=int, help='Valor de tiempo para l
 # Analizar los argumentos proporcionados al script
 args = parser.parse_args()
 
-# Actualizar los puertos si se proporciona un valor a través de --port, de lo contrario, usar los predeterminados
-ports = args.port if args.port else ports
+# Actualizar los puertos según los argumentos proporcionados
+if args.port and "all" in args.port:
+    ports = ports_todos
+elif args.port:
+    ports = [int(port) for port in args.port]
+else:
+    ports = ports
 
 # Imprimir la variable 'ports'
 print(f"Puertos seleccionados: {ports}")
@@ -1188,21 +1194,25 @@ print(f"Buscando {ip_pattern}")
 
 ip_pattern_list = []
 
-while not ip_queue.empty():
-    ip = ip_queue.get()
-    ip_pattern_list.append(ip)
-    processed_ips += 1
+# Obtener el número de direcciones IP en la cola
+num_ips = ip_queue.qsize()
 
-    hilo = threading.Thread(target=scan, args=(ip, ports))
-    threads.append(hilo)
-    hilo.start()
+# Crear un ThreadPoolExecutor con el número máximo de hilos
+try:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_ips) as executor:
+        while not ip_queue.empty():
+            ip = ip_queue.get()
+            ip_pattern_list.append(ip)
+            processed_ips += 1
 
-    if salto is not None and salto != 0:
-        time.sleep(0.1) #velocidad rapida
-    else:
-        time.sleep(1) #velocidad normal
+            future = executor.submit(scan, ip, ports)
 
-for hilo in threads:
-    hilo.join()
+            if salto is not None and salto != 0:
+                time.sleep(0.1)  # velocidad rápida
+            else:
+                time.sleep(1)  # velocidad normal
+
+except KeyboardInterrupt:
+    print("Programa interrumpido por el usuario. Cerrando...")
 
 bar.close()
