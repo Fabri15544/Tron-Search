@@ -59,7 +59,7 @@ trozos_puerto = []  # Variable global para almacenar los trozos de puertos
 def GenerarPuertos():
     global trozos_puerto
     puertos_todos = range(1, 65536)
-    tamanio_trozo = len(puertos_todos)  # Tamaño del trozo ajustable según la memoria disponible
+    tamanio_trozo = 1024  # Tamaño del trozo ajustable según la memoria disponible
     trozos_puerto = [list(puertos_todos[i:i+tamanio_trozo]) for i in range(0, len(puertos_todos), tamanio_trozo)]
     
     # Limpia los trozos de puerto dentro de GenerarPuertos
