@@ -35,9 +35,6 @@ def clear():
     else:
         os.system('clear')
 
-
-# Definir el puerto a escanear (por ejemplo, 80)
-ports_todos = list(range(1, 65536))
 ports = [80, 90, 100, 443, 445, 8080, 81, 82, 83, 84, 88, 8010, 1813, 8181, 8000, 8001, 9000, 21, 23, 22, 25, 53, 161, 101, 137, 138, 139, 2002, 2082, 2083, 5000, 5001, 6001, 6002 ,6003, 5002, 37777, 5540, 5900, 3306, 3389, 2051, 8002, 8554, 8002, 8200, 8280, 8834, 88, 8002, 9000, 7000, 8500, 6200, 9200, 9876, 10000, 123, 143, 465, 587, 995, 993, 6660, 6661, 6662, 6663, 6664, 6665, 6666, 6667, 6668, 6669, 49152, 49153, 49154, 49155, 49156, 49157, 27017, 27018, 27019, 34567, 4567, 5432, 666, 667, 668, 669, 177, 186, 2200, 6881, 6882, 6883, 6884, 6885, 6886, 6887, 6888, 6889, 6890, 6891, 6892, 6893, 6894, 6895, 6896, 6897, 6898, 6899, 6880, 7001, 7002, 7003, 7004, 7005, 7006, 7007, 7008, 7009, 7010]
 
 parser = argparse.ArgumentParser(description='Escaneo de puertos en direcciones IP')
@@ -57,16 +54,41 @@ parser.add_argument('--time', default=30, type=int, help='Valor de tiempo para l
 # Analizar los argumentos proporcionados al script
 args = parser.parse_args()
 
-# Actualizar los puertos según los argumentos proporcionados
-if args.port and "all" in args.port:
-    ports = ports_todos
-elif args.port:
-    ports = [int(port) for port in args.port]
-else:
-    ports = ports
+trozos_puerto = []  # Variable global para almacenar los trozos de puertos
 
-# Imprimir la variable 'ports'
-print(f"Puertos seleccionados: {ports}")
+def GenerarPuertos():
+    global trozos_puerto
+    puertos_todos = range(1, 65536)
+    tamanio_trozo = len(puertos_todos)  # Tamaño del trozo ajustable según la memoria disponible
+    trozos_puerto = [list(puertos_todos[i:i+tamanio_trozo]) for i in range(0, len(puertos_todos), tamanio_trozo)]
+    
+    # Limpia los trozos de puerto dentro de GenerarPuertos
+    def LimpiarTrozosPuerto():
+        global trozos_puerto
+        while True:
+            time.sleep(1)
+            trozos_puerto = []
+    
+    # Iniciar el hilo de limpieza
+    limpiar_thread = threading.Thread(target=LimpiarTrozosPuerto)
+    limpiar_thread.daemon = True
+    limpiar_thread.start()
+    
+    # Actualizar los puertos según los argumentos proporcionados
+    if args.port and "all" in args.port:
+        ports = list(puertos_todos)
+    elif args.port:
+        ports = [int(puerto) for puerto in args.port]
+    else:
+        ports = list(puertos_todos)
+    
+    return ports
+
+# Obtener los puertos generados
+puertos = GenerarPuertos()
+
+# Imprimir la variable 'puertos'
+print(f"Puertos seleccionados: {puertos}")
 
 # Acceder a los argumentos en el código
 ip_pattern = args.search
@@ -843,6 +865,7 @@ def parse_challenge(challenge_message):
   }
 
 lock = threading.Lock()
+ports = GenerarPuertos()
 
 def scan(ip, ports):
     PURPLE = "\033[35m"
@@ -987,6 +1010,8 @@ def scan(ip, ports):
 
         # El executor.shutdown(wait=True) debe ir aquí, fuera del bucle for
         executor.shutdown(wait=True)
+
+
         
 # Crea una instancia de UserAgent
 ua = UserAgent()
@@ -1138,16 +1163,6 @@ def search_and_display_titles(query, max_pages=10):
         # Check if ports_to_scan is specified and scan the IP
         if ports:
             scan(ip, ports)
-
-def main():
-    list_of_links = []  # Populate this list with IP addresses
-    ports_to_scan = ports  # Define the ports you want to scan
-
-    for link in list_of_links:
-        scan(link, ports_to_scan)
-
-if __name__ == "__main__":
-    main()
 
 def format_unknown(value):
     return f"{Fore.RED}{value}{Style.RESET_ALL}"
