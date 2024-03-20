@@ -145,6 +145,8 @@ def is_camera(ip, port, banner):
             return(f"Camara-Hikvision/DVR")
         if "IPCAM" in banner:
             return(f"Camara-IPCAM")
+        if "HTTP/1.0 401 Unauthorized" in banner:
+            return(f"401-Probando_BruteForce")
         if 'WWW-Authenticate: Basic realm="index.html"' in banner:
             return(f"Camara-Auntenticacion-401")
         if "Camera:" in banner:
@@ -928,7 +930,7 @@ def scan(ip, ports):
                         if is_camera(ip, port, banner) and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
                             if args.has_screenshot == 'cam' and args.has_screenshot is not None and "HTTP/1.1 401 Unauthorized" not in banner:
                                 capture_screenshot(ip, port, usuario=None, contraseña=None)
-                            if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner:
+                            if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.0 401 Unauthorized" in banner or "HTTP/1.1 401 Unauthorized" in banner:
                                 cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
                             print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
                             hikvision_vulnerable = check_vuln_hikvision(ip, port)
