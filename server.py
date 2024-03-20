@@ -88,6 +88,10 @@ def actualizar_datos():
 
             # Buscar la entrada correspondiente en los datos filtrados
             for dato in datos_filtrados:
+                banner = dato["Banner"]
+                servicio = dato["Servicio"]  # Obtener la lista de servicios (de donde sea que la obtengas)
+                camara = buscar_palabra(banner,servicio)  # Llamada a la función buscar_palabra
+                dato["Camara"] = camara  # Asignación del resultado a la clave "Camara"
                 if (dato["IP"] == ip and str(dato["Puerto"]) == puerto) and dato["Banner"] == "\u001b[31munknown\u001b[0m":
                     ruta_imagen = os.path.join(ruta_capturas, archivo)
                     if os.path.exists(ruta_imagen):
