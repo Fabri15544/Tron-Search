@@ -1207,7 +1207,10 @@ ip_pattern_list = []
 
 # Definir el número máximo de subprocesos
 num_ips = ip_queue.qsize()
-max_workers = num_ips  # Cambiar este número según sea necesario
+if args.port == 'all':
+    max_workers = None  # Cambiar este número según sea necesario
+else:
+    max_workers = num_ips
 
 # Crear un ThreadPoolExecutor con el número máximo de hilos
 try:
