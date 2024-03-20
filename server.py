@@ -1,6 +1,10 @@
-from http.server import SimpleHTTPRequestHandler, HTTPServer
+import pytesseract
+from PIL import Image
+import os
 import json
 import time
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+import threading
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -20,6 +24,14 @@ def cargar_datos():
     except FileNotFoundError:
         return []
 
+def guardar_datos(datos):
+    try:
+        with open('datos.json', 'w') as file:
+            json.dump(datos, file, indent=2)
+        print("Datos guardados correctamente.")
+    except Exception as e:
+        print(f"Error al guardar datos: {e}")
+
 def eliminar_duplicados(datos):
     datos_filtrados = []
     diccionario_combinaciones = {}
@@ -36,9 +48,7 @@ def buscar_palabra(banner, servicio):
     banner_lower = banner.lower()
     servicios = servicio.lower().split()
     
-    # Palabras que hacen que la función devuelva "NULL"
-    palabras_no_camara_found = ["Apache2","apache","Ubuntu","microsoft-iis","routeros","unix"]
-    
+    palabras_no_camara_found = ["Apache2", "apache", "ubuntu", "microsoft-iis", "routeros", "unix"]
     
     for palabra in palabras_no_camara_found:
         if palabra in banner_lower:
@@ -46,8 +56,8 @@ def buscar_palabra(banner, servicio):
     
     for palabra in banner_lower.split():
         if not any(sv in palabra for sv in servicios):
-            if any(keyword in palabra for keyword in ["camera", "model:", "etag:","Webs X-Frame-Options:","iemobile","homepa","nvr"]):
-                if "www-authenticate: basic realm=\"index.html\"" in banner_lower or "./doc/page/login.asp?_" in banner_lower or "DNVRS-Webs" in banner_lower or "web X-Frame-Options: SAMEORIGIN ETag" in banner_lower or "iemobile" in banner_lower or "homepa" in banner_lower or "NVR" in banner_lower:
+            if any(keyword in palabra for keyword in ["camera", "model:", "etag:", "webs x-frame-options:", "iemobile", "homepa", "nvr"]):
+                if "www-authenticate: basic realm=\"index.html\"" in banner_lower or "./doc/page/login.asp?_" in banner_lower or "dnvrs-webs" in banner_lower or "web x-frame-options: sameorigin etag" in banner_lower or "iemobile" in banner_lower or "homepa" in banner_lower or "nvr" in banner_lower:
                     return "Camara-Hikvision/DVR"
                 elif "ipcam" in banner_lower:
                     return "Camara-IPCAM"
@@ -58,34 +68,46 @@ def buscar_palabra(banner, servicio):
     
     return "NULL"
 
+def extraer_texto_desde_imagen(ruta_imagen):
+    try:
+        return pytesseract.image_to_string(Image.open(ruta_imagen))
+    except Exception as e:
+        return ""
+
 def actualizar_datos():
-    while True:
-        datos_previos = cargar_datos()
-        datos_filtrados = eliminar_duplicados(datos_previos)
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    ruta_capturas = "screenshot/"
+    datos_filtrados = eliminar_duplicados(cargar_datos())
 
-        for dato in datos_filtrados:
-            banner = dato["Banner"]
-            servicio = dato["Servicio"]  # Obtener la lista de servicios (de donde sea que la obtengas)
-            camara = buscar_palabra(banner,servicio)  # Llamada a la función buscar_palabra
-            dato["Camara"] = camara  # Asignación del resultado a la clave "Camara"
+    archivos = os.listdir(ruta_capturas)
+    for archivo in archivos:
+        if archivo.endswith(".png"):
+            ip, puerto = archivo.split('-')
+            puerto = puerto.split('.')[0]  # Eliminar la extensión .png
 
-        try:
-            with open('datos.json', 'w') as file:
-                json.dump(datos_filtrados, file, indent=2)
-            with open('respaldo.json', 'w') as file:
-                json.dump(datos_filtrados, file, indent=2)
+            # Buscar la entrada correspondiente en los datos filtrados
+            for dato in datos_filtrados:
+                if dato["IP"] == ip and str(dato["Puerto"]) == puerto:
+                    ruta_imagen = os.path.join(ruta_capturas, archivo)
+                    if os.path.exists(ruta_imagen):
+                        texto = extraer_texto_desde_imagen(ruta_imagen)
+                        if texto:
+                            dato["Banner"] = texto
+                            dato["Camara"] = buscar_palabra(texto, dato["Servicio"])
+                            print(f"Texto extraído de la imagen {ruta_imagen}:")
+                        else:
+                            print(f"No se pudo extraer texto de la imagen {ruta_imagen}")
+                    else:
+                        print(f"No se encontró la imagen {ruta_imagen}")
+    try:
+        guardar_datos(datos_filtrados)
+    except Exception as e:
+        print(f"Error al guardar datos: {e}")
 
-            print("Datos actualizados.")
-        except Exception as e:
-            print(f"Error: {e}")
-            continue
-        time.sleep(10)  # Pausa la ejecución durante 10 segundos
-
-
+    time.sleep(10)  # Pausa la ejecución durante 10 segundos
 
 if __name__ == '__main__':
     # Iniciar un hilo para actualizar los datos cada 10 segundos
-    import threading
     threading.Thread(target=actualizar_datos, daemon=True).start()
 
     # Iniciar el servidor HTTP
