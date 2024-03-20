@@ -84,6 +84,8 @@ def GenerarPuertos():
     
     return ports
 
+ports = GenerarPuertos()
+
 # Acceder a los argumentos en el código
 ip_pattern = args.search
 FiltroRegion = args.region
@@ -859,7 +861,6 @@ def parse_challenge(challenge_message):
   }
 
 lock = threading.Lock()
-ports = GenerarPuertos()
 
 def scan(ip, ports):
     PURPLE = "\033[35m"
@@ -1196,8 +1197,6 @@ def get_location(ip):
     except:
         return format_unknown("unknown"), format_unknown("unknown"), format_unknown("unknown")
 
-# Definir el número máximo de subprocesos
-max_workers = 100  # Cambiar este número según sea necesario
 
 # Crear una barra de progreso con el número total de direcciones IP a escanear
 bar = tqdm(total=ip_queue.qsize(), desc="Escaneando direcciones IP")
@@ -1205,6 +1204,10 @@ clear()
 print(f"Buscando {ip_pattern}")
 
 ip_pattern_list = []
+
+# Definir el número máximo de subprocesos
+num_ips = ip_queue.qsize()
+max_workers = num_ips  # Cambiar este número según sea necesario
 
 # Crear un ThreadPoolExecutor con el número máximo de hilos
 try:
