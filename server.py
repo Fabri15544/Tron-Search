@@ -29,6 +29,7 @@ def guardar_datos(datos):
         with open('datos.json', 'w') as file:
             json.dump(datos, file, indent=2)
         print("Datos guardados correctamente.")
+        threading.Timer(10, actualizar_datos).start()
     except Exception as e:
         print(f"Error al guardar datos: {e}")
 
@@ -72,7 +73,7 @@ def extraer_texto_desde_imagen(ruta_imagen):
     try:
         return pytesseract.image_to_string(Image.open(ruta_imagen))
     except Exception as e:
-        return ""
+        pass
 
 def actualizar_datos():
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -87,23 +88,21 @@ def actualizar_datos():
 
             # Buscar la entrada correspondiente en los datos filtrados
             for dato in datos_filtrados:
-                if dato["IP"] == ip and str(dato["Puerto"]) == puerto and dato["Banner"] != "\u001b[31munknown\u001b[0m":
+                if (dato["IP"] == ip and str(dato["Puerto"]) == puerto) and dato["Banner"] == "\u001b[31munknown\u001b[0m":
                     ruta_imagen = os.path.join(ruta_capturas, archivo)
                     if os.path.exists(ruta_imagen):
                         texto = extraer_texto_desde_imagen(ruta_imagen)
                         if texto:
+                            print(f"El banner para {dato['IP']}:{dato['Puerto']} fue reemplazado.")
                             dato["Banner"] = texto
-                            print(f"Texto extraído de la imagen {ruta_imagen}:")
                         else:
-                            print(f"El banner para {dato['IP']}:{dato['Puerto']} no necesita ser reemplazado.")
+                            pass
                     else:
                         print(f"No se pudo extraer texto de la imagen {ruta_imagen}")
     try:
         guardar_datos(datos_filtrados)
     except Exception as e:
         print(f"Error al guardar datos: {e}")
-
-    time.sleep(10)  # Pausa la ejecución durante 10 segundos
 
 if __name__ == '__main__':
     # Iniciar un hilo para actualizar los datos cada 10 segundos
