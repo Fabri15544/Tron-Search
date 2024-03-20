@@ -22,6 +22,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    ```bash
    pip install -r requirements.txt
 
+   !!![REQUIERE DE CHROME INSTALADO https://www.google.com/intl/es-419/chrome/]!!!
+
    python tron.py --search <patrón de direcciones IP> [--region <código de región>] [--ciudad <nombre de la ciudad>] [--port 80 443 21] [--port 80] [--w diccionario.txt]
    python tron.py --search <Nombre a buscar ej : google> [--region <código de región>] [--ciudad <nombre de la ciudad>] [--w diccionario.txt]
 
