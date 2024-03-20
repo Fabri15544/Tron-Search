@@ -46,8 +46,8 @@ def buscar_palabra(banner, servicio):
     
     for palabra in banner_lower.split():
         if not any(sv in palabra for sv in servicios):
-            if any(keyword in palabra for keyword in ["camera", "model:", "etag:","Webs X-Frame-Options:"]):
-                if "www-authenticate: basic realm=\"index.html\"" in banner_lower or "/doc/page/login.asp?_" in banner_lower or "DNVRS-Webs" in banner_lower or "web X-Frame-Options: SAMEORIGIN ETag" in banner_lower:
+            if any(keyword in palabra for keyword in ["camera", "model:", "etag:","Webs X-Frame-Options:","iemobile"]):
+                if "www-authenticate: basic realm=\"index.html\"" in banner_lower or "/doc/page/login.asp?_" in banner_lower or "DNVRS-Webs" in banner_lower or "web X-Frame-Options: SAMEORIGIN ETag" in banner_lower or "iemobile" in banner_lower:
                     return "Camara-Hikvision/DVR"
                 elif "ipcam" in banner_lower:
                     return "Camara-IPCAM"
