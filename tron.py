@@ -1117,7 +1117,7 @@ def search_and_display_titles(query, max_pages=10):
                         if url.startswith("http"):
                             domain = urlsplit(url).netloc
                             try:
-                                ip_address = extract_domain(domain)
+                                ip_address = socket.gethostbyname(domain)
                                 if ip_address != '0.0.0.0':
                                     if ip_address not in ip_url_mapping:
                                         ip_url_mapping[ip_address] = set()  # Use a set to store unique URLs
@@ -1137,10 +1137,10 @@ def search_and_display_titles(query, max_pages=10):
     #input("Presiona Enter para continuar...")
 
     for ip in unique_ips:
-        return(f"{PURPLE}IP Address: {ip}\033[0m")
+        print(f"{PURPLE}IP Address: {ip}\033[0m")
         urls_for_ip = ip_url_mapping[ip]
         for url in urls_for_ip:
-            return(f"{WHITE}URL: {url}{RESET}")
+            print(f"{WHITE}URL: {url}{RESET}")
 
             # Check for robots.txt and display disallowed URLs
             robots_url = f"{url.rstrip('/')}/robots.txt"
@@ -1150,9 +1150,9 @@ def search_and_display_titles(query, max_pages=10):
                     robots_content = robots_response.text
                     disallowed_urls = extract_disallowed_urls(robots_content)
                     if disallowed_urls:
-                        return(f"{ORANGE}Disallowed URLs for {url}:{RESET}")
+                        print(f"{ORANGE}Disallowed URLs for {url}:{RESET}")
                         for disallowed_url in disallowed_urls:
-                            return(f"{url}/{ORANGE}{disallowed_url}{RESET}")
+                            print(f"{url}/{ORANGE}{disallowed_url}{RESET}")
 
             except requests.exceptions.RequestException as e:
                 continue
@@ -1160,6 +1160,16 @@ def search_and_display_titles(query, max_pages=10):
         # Check if ports_to_scan is specified and scan the IP
         if ports:
             scan(ip, ports)
+
+def main():
+    list_of_links = []  # Populate this list with IP addresses
+    ports_to_scan = ports  # Define the ports you want to scan
+
+    for link in list_of_links:
+        scan(link, ports_to_scan)
+
+if __name__ == "__main__":
+    main()
 
 def format_unknown(value):
     return f"{Fore.RED}{value}{Style.RESET_ALL}"
