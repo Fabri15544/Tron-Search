@@ -110,7 +110,7 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Agregar SMB Detect.
    
-   Agregar exploits RDP.
+   Agregar volcado de ips:ports especificos para pasar a Metasploit. //INTEGRACION-WEB
    
    Agregar consultas rtsp/wordlist[Port:554].
 
@@ -121,7 +121,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Agregar CVE-CHECK  via SMB como Nmap. [Pasivo-Scan]
 
    Agrega detección de sistema Operativo Linux/Unix [Agregar-Argumento]
-
-   Agregar volcado de ips:ports especificos para pasar a Metasploit. //INTEGRACION-WEB
 
    Agregar WebTechnologies check.
