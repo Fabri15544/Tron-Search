@@ -110,7 +110,7 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    
    Agregar volcado de ips:ports especificos para pasar a Metasploit. //INTEGRACION-WEB
    
-   Agregar consultas rtsp/wordlist[Port:554].
+   Agregar consultas rtsp/wordlist[Port:554]. //Directamente volcado de ips:ports para Metasploit.
 
    Hacer funcionar los botones[Unir todo en un solo boton de (Buscar), indicar busqueda sino existe la informacion]
 
