@@ -24,6 +24,7 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    pip install -r requirements.txt
 
    !!![REQUIERE DE CHROME INSTALADO https://www.google.com/intl/es-419/chrome/]!!!
+   !!![REQUIERE DE WINCAP INSTALADO https://www.winpcap.org/install/]!!!
    !!![REQUIERE DE TESSERACT OCR INSTALADO EN TU SISTEMA https://github.com/UB-Mannheim/tesseract/wiki]!!! TRANSFORMA IMAGENES A TEXTO PARA EL BANNER, EN CASO DE NO OBTENERSE POR EL SOCK.
 
    python tron.py --search <patrón de direcciones IP> [--region <código de región>] [--ciudad <nombre de la ciudad>] [--port 80 443 21] [--port 80] [--w diccionario.txt]
