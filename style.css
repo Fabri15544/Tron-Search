@@ -5,7 +5,7 @@ body, body.dark-mode * {
 
 h1 {
     font-family: 'Courier New', monospace;
-    font-size: 36px;
+    font-size: 36px; /* Puedes ajustar el tamaño según tus preferencias */
     text-align: center; /* Centrar el texto */
 }
 
@@ -25,13 +25,12 @@ h1, h1.dark-mode {
 }
 
 /* Contenedor principal */
-.container {
+.container, #resultados li {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     border: 1px solid #ddd;
     max-width: auto;
     margin: 0 auto;
     padding: 20px;
-    text-align: center; /* Centrar el contenido del contenedor */
 }
 
 #resultados {
@@ -45,7 +44,7 @@ h1, h1.dark-mode {
     padding: 10px;
 }
 
-/* Busqueda Avanzada */
+/* Búsqueda Avanzada */
 #busqueda {
     width: 40%;
     margin-bottom: 10px;
@@ -67,14 +66,14 @@ select.dark-mode {
     color: #fff;
 }
 
-/* Efecto de escala al pasar el mouse sobre el boton */
+/* Efecto de escala al pasar el mouse sobre el botón */
 hover, #resultados li:hover {
     background-color: rgba(0, 0, 0, 0.1);
     transform: scale(1.02);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Efecto al hacer clic en el boton */
+/* Efecto al hacer clic en el botón */
 button:active, #resultados li:active {
     background-color: rgba(0, 0, 0, 0.1);
 }
@@ -90,10 +89,9 @@ button,#servicioFilter,#puertoFilter, button.dark-mode {
     cursor: pointer;
     margin-right: 10px;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    display: inline-block;
 }
 
-/* Boton de modo oscuro */
+/* Botón de modo oscuro */
 .dark-mode-toggle {
     position: fixed;
     top: 10px;
@@ -173,30 +171,23 @@ th, td {
     width: 100%;
     height: 50px;
     max-height: 300px;
-    transition: height 0.8s, transform 0.8s, box-shadow 0.8s;  
+    transition: height 0.8s, transform 0.8s, box-shadow 0.8s;  /* Agrega transiciones suaves para la altura, el efecto de pliegue y la sombra */
     border-radius: 15px;
-    overflow: hidden; 
-    transform-origin: top; 
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); 
+    overflow: hidden; /* Asegura que el contenido dentro del mapa no se desborde durante la transformación */
+    transform-origin: top; /* Establece el punto de origen de la transformación en la parte superior */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Ajusta el valor según la sombra deseada */
 }
 
 #map.expandido {
-    height: 300px; 
-    transform: scaleY(3); 
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5); 
+    height: 300px; /* Asegura que la altura esté configurada en el estado "expandido" */
+    transform: scaleY(3); /* Ajusta el valor para controlar el grado de pliegue al expandir */
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5); /* Ajusta el valor según la sombra deseada */
 }
 
 #map:hover {
-    height: 500px;  /* Altura aumenta al pasar el ratÃ³n */
+    height: 500px;  /* Altura aumenta al pasar el ratón */
 }
 
-/* Estilo para los contenedores de checkbox */
-.checkbox-container {
-    display: flex; /* Utiliza flexbox para alinear elementos internos */
-    align-items: center; /* Alinea verticalmente los elementos */
-}
-
-/* Estilo para los iconos */
 .icon {
     width: 40px;
     height: 30px;
