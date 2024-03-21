@@ -33,7 +33,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    --search SEARCH       Patrón de direcciones IP a escanear con el * como comodín (ejemplo: 192.168.*.*) busqueda
                         avanzada con google:https://www.exploit-db.com/google-hacking-database
    --port PORT [PORT ...]
-                        Puerto o puertos a escanear. Presiona Enter para usar los puertos predeterminados.
+                        Puerto o puertos a escanear. Presiona Enter para usar los puertos predeterminados o "all" para
+                        escanear todos los puertos.
    --region REGION       Filtrar por región ej US,AR,MX
    --ciudad CIUDAD       Filtrar por ciudad
    --w W                 Ruta del archivo de texto con el wordlist (usuarios y contraseñas)
