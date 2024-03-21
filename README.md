@@ -121,3 +121,5 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Agrega detección de sistema Operativo Linux/Unix [Agregar-Argumento]
 
    Agregar WebTechnologies check.
+
+   Agregar Smap para buscar, y en paralelo usar escaneo en tiempo real.(Probando)
