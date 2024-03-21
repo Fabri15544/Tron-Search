@@ -107,6 +107,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Agregar combinación de archivos json. 
    
    Agregar conexion proxy.
+
+   Agregar SMB Detect.
    
    Agregar exploits RDP.
    
