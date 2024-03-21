@@ -90,6 +90,10 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
   https://github.com/ezelf/CVE-2018-9995_dvr_credentials. Una de ellas
   
   Iré agregando más a la lista próximamente.
+
+   Detección del sistema operativo (SO) en el Puerto [3389] en desarrollo.
+
+   Agregue detección de sistema Operativo SMB en el Puerto[445]: https://github.com/nopfor/ntlm_challenger/tree/master
   
 4. **PUNTOS A MEJORAR:**
 
@@ -106,10 +110,6 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Hacer funcionar los botones[Iniciar Script/Detener Script].
 
    Mostrar capturas de camaras vulnerables a Wordlist/Link.
-
-   Detección del sistema operativo (SO) en el Puerto [3389] en desarrollo.
-
-   Agregue detección de sistema Operativo SMB en el Puerto[445]: https://github.com/nopfor/ntlm_challenger/tree/master [Agregar-Argumento]
 
    Agregar CVE-CHECK  via SMB como Nmap. [Pasivo-Scan]
 
