@@ -693,27 +693,34 @@ function createImageCell(ip, puerto) {
 
 fields.forEach(function (field) {
     var fieldValue = resultado[field];
-    if ((typeof fieldValue === 'string' && fieldValue.trim() !== '') && fieldValue !== "N/A" && fieldValue !== "NULL" && fieldValue !== "unknown") {
-        var row = table.insertRow();
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
+    if (field === "CredencialesDVR") {
+        if (Array.isArray(fieldValue) && fieldValue.length > 0) {
+            // Si fieldValue es un arreglo no vacío, mostrar las credenciales
+            var row = table.insertRow();
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            cell1.textContent = field;
+            cell2.textContent = fieldValue.join(', '); // Mostrar las credenciales como una cadena
+        }
+    } else {
+        if (((typeof fieldValue === 'string' && fieldValue.trim() !== '') && fieldValue.trim().length !== 1) && fieldValue !== "N/A" && fieldValue !== "NULL" && fieldValue !== "unknown") {
+            var row = table.insertRow();
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            cell1.textContent = field;
 
-        cell1.textContent = field;
-
-        if (field === "IP") {
-            // Add the flag emoji next to the IP based on the region
-            const flagEmoji = getFlagEmoji(resultado["Región"]);
-            cell2.textContent = resultado[field] + " " + flagEmoji;
-        } else if (field === "Banner") {
-            // If the field is "Banner", add the value to the cell
-            cell2.textContent = resultado[field];
-
-            // Add image cell for CredencialesDVR field next to the Banner
-            if (resultado["CredencialesDVR"]) {
+            if (field === "IP") {
+                // Agregar el emoji de la bandera junto a la IP según la región
+                const flagEmoji = getFlagEmoji(resultado["Región"]);
+                cell2.textContent = resultado[field] + " " + flagEmoji;
+            } else if (field === "Banner") {
+                // Si el campo es "Banner", agregar el valor a la celda
+                cell2.textContent = resultado[field];
                 row.appendChild(createImageCell(resultado["IP"], resultado["Puerto"]));
+
+            } else {
+                cell2.textContent = fieldValue; // Mostrar el valor del campo
             }
-        } else {
-            cell2.textContent = fieldValue; // Display field value
         }
     }
 });
