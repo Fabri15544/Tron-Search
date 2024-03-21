@@ -81,6 +81,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    Chequeo de IP para no repetir las que ya estan.
 
+   obtencion del banner por medio de imagen, si el banner no esta pero tiene una captura la imagen se transforma a texto para completar el banner
+
    Camara-Check en localhost para saber que camara es.[Agregar Icon de la camara correspondientes automatico]
 
    Capturas Webs.
@@ -90,6 +92,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
   Iré agregando más a la lista próximamente.
   
 4. **PUNTOS A MEJORAR:**
+
+   agregar actualizacion de ips escaneadas para refrescar informacion.
 
    Agregar combinación de archivos json. 
    
