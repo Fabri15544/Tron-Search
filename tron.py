@@ -884,12 +884,18 @@ def scan(ip, ports):
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                     sock.settimeout(args.s)
-
-                    result = sock.connect_ex((ip, port))
-                    if result != 0:
-                        futures.append(executor.submit(ip, ports[0]))
-                        continue
                     
+                    # Intenta conectar con TCP
+                    result = sock.connect_ex((ip, port))
+                    
+                    # Si la conexión TCP falla, intenta con UDP
+                    if result != 0:
+                        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_sock:
+                            udp_sock.settimeout(args.s)
+                            udp_result = udp_sock.sendto(b"", (ip, port))
+                            if udp_result != 0:
+                                futures.append(executor.submit(ip, ports[0]))
+                                continue
                     banner = get_banner(ip, port)
 
                     try:
