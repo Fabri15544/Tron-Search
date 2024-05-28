@@ -496,26 +496,21 @@ cargarDatos(function (datos) {
 });
 
 
-// Function to filter results
 function filtrarResultados() {
     cargarDatos(function (datos) {
         var puertoSeleccionado = document.getElementById("puertoFilter").value;
         var servicioSeleccionado = document.getElementById("servicioFilter").value;
-        var busquedaTexto = document.getElementById("busqueda").value.toLowerCase(); // Convert to lowercase for case-insensitive search
+        var busquedaTexto = document.getElementById("busqueda").value.toLowerCase();
 
-        // Split the search query by '&&' to handle multiple conditions
         var busquedaCondiciones = busquedaTexto.split('&&').map(function (condition) {
             return condition.trim();
         });
 
         var resultadosFiltrados = datos.filter(function (resultado) {
-            // Filter by port and service
             var coincidePuerto = puertoSeleccionado === "" || resultado.Puerto.toString() === puertoSeleccionado;
             var coincideServicio = servicioSeleccionado === "" || resultado.Servicio === servicioSeleccionado;
 
-            // Advanced Search
             var cumpleTodasLasCondiciones = busquedaCondiciones.every(function (condicion) {
-                // Check for OR operator (||)
                 if (condicion.includes('||')) {
                     var condicionesOR = condicion.split('||').map(function (condition) {
                         return condition.trim();
@@ -524,23 +519,21 @@ function filtrarResultados() {
                     return condicionesOR.some(function (condition) {
                         return condition === "" || Object.values(resultado).some(function (campo) {
                             if (campo && typeof campo === "string") {
-                                return campo.toLowerCase().includes(condition); // Case-insensitive search
+                                return campo.toLowerCase().includes(condition);
                             }
                             return false;
                         });
                     });
                 } else {
-                    // Check for Exclude operator (!)
                     if (condicion.startsWith('!')) {
                         condicion = condicion.substring(1).trim();
                         return !Object.values(resultado).some(function (campo) {
                             if (campo && typeof campo === "string") {
-                                return campo.toLowerCase().includes(condicion); // Case-insensitive search
+                                return campo.toLowerCase().includes(condicion);
                             }
                             return false;
                         });
                     } else if (condicion.includes('>')) {
-                        // Check for Greater Than operator (>)
                         var parts = condicion.split('>');
                         var field = parts[0].trim();
                         var value = parseFloat(parts[1].trim());
@@ -548,7 +541,6 @@ function filtrarResultados() {
                             return true;
                         }
                     } else if (condicion.includes('<')) {
-                        // Check for Less Than operator (<)
                         var parts = condicion.split('<');
                         var field = parts[0].trim();
                         var value = parseFloat(parts[1].trim());
@@ -558,7 +550,7 @@ function filtrarResultados() {
                     } else {
                         return condicion === "" || Object.values(resultado).some(function (campo) {
                             if (campo && typeof campo === "string") {
-                                return campo.toLowerCase().includes(condicion); // Case-insensitive search
+                                return campo.toLowerCase().includes(condicion);
                             }
                             return false;
                         });
@@ -570,32 +562,28 @@ function filtrarResultados() {
         });
 
         var listaResultados = document.getElementById("resultados");
-        listaResultados.innerHTML = ""; // Clear previous results
+        listaResultados.innerHTML = "";
 
         if (resultadosFiltrados.length === 0) {
-            // No results found, display only the image
             var notFoundImageContainer = document.createElement("div");
-            notFoundImageContainer.classList.add("not-found-image-container"); // Add a CSS class for centering
+            notFoundImageContainer.classList.add("not-found-image-container");
 
             var image = document.createElement("img");
             image.src = "404.png";
-            image.width = "750";
+            image.width = 750;
             image.alt = "Not Found";
-            image.classList.add("not-found-image"); // Add a CSS class for styling
+            image.classList.add("not-found-image");
 
             notFoundImageContainer.appendChild(image);
-
             listaResultados.appendChild(notFoundImageContainer);
             enviarPalabraBusquedaAlServidor(busquedaTexto);
         } else {
-            // Display the filtered results
             mostrarResultados(resultadosFiltrados);
         }
     });
 }
 
 function enviarPalabraBusquedaAlServidor(palabraBusqueda) {
-    // Realiza una solicitud POST al servidor debugger
     fetch('/debugger', {
         method: 'POST',
         body: JSON.stringify({ palabraBusqueda: palabraBusqueda }),
@@ -603,47 +591,50 @@ function enviarPalabraBusquedaAlServidor(palabraBusqueda) {
             'Content-Type': 'application/json'
         }
     })
-    .then(function(response) {
-        if (response.ok) {
-            console.log('Palabra de búsqueda enviada al servidor debugger.');
-        } else {
-            console.error('Error al enviar la palabra de búsqueda al servidor debugger.');
-        }
-    })
-    .catch(function(error) {
-        console.error('Error de red al enviar la palabra de búsqueda al servidor debugger:', error);
-    });
+        .then(function (response) {
+            if (response.ok) {
+                console.log('Palabra de búsqueda enviada al servidor debugger.');
+            } else {
+                console.error('Error al enviar la palabra de búsqueda al servidor debugger.');
+            }
+        })
+        .catch(function (error) {
+            console.error('Error de red al enviar la palabra de búsqueda al servidor debugger:', error);
+        });
 }
 
-// Define global variables for pagination
 var currentPage = 1;
 var resultsPerPage = 10;
 var totalResults = 0;
-var resultados = []; // Store all results
+var resultados = [];
 
-// Function to display filtered results with dynamic pagination
 function mostrarResultados(resultados) {
     var listaResultados = document.getElementById("resultados");
 
-    // Update the global results array
-    this.resultados = resultados;
-    this.totalResults = resultados.length;
+    var resultadosUnicosPorIP = [];
+    var ips = new Set();
 
-    // Calculate the start and end indices for the current page
+    resultados.forEach(function (resultado) {
+        if (!ips.has(resultado.IP)) {
+            ips.add(resultado.IP);
+            resultadosUnicosPorIP.push(resultado);
+        }
+    });
+
+    this.resultados = resultadosUnicosPorIP;
+    this.totalResults = resultadosUnicosPorIP.length;
+
     var startIndex = (currentPage - 1) * resultsPerPage;
     var endIndex = startIndex + resultsPerPage;
 
-    // Slice the results array to get only the results for the current page
-    var resultsToDisplay = resultados.slice(startIndex, endIndex);
+    var resultsToDisplay = resultadosUnicosPorIP.slice(startIndex, endIndex);
 
-    // Clear previous results
     listaResultados.innerHTML = "";
 
     resultsToDisplay.forEach(function (resultado) {
         var item = document.createElement("li");
         item.classList.add("result-item");
 
-        // Create a checkbox-like element
         var checkboxContainer = document.createElement("label");
         checkboxContainer.classList.add("checkbox-container");
 
@@ -651,7 +642,6 @@ function mostrarResultados(resultados) {
         checkboxInput.setAttribute("type", "checkbox");
         item.appendChild(checkboxInput);
         checkboxInput.addEventListener("click", function () {
-            // Open the link in a new tab or window when clicked
             window.open("http://" + resultado.IP + ":" + resultado.Puerto, "_blank");
         });
 
@@ -665,72 +655,75 @@ function mostrarResultados(resultados) {
         item.appendChild(checkboxContainer);
         item.appendChild(checkboxContainer);
 
-        // Create a table for better formatting
         var table = document.createElement("table");
         table.classList.add("result-table");
 
-// Create a row for each field
-var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR", "SistemaOperativo_RDP", "Fecha", "SistemaOperativo_SMB", "Nombre-PC", "Camara", "Preview"];
+        var fields = ["IP", "Puerto", "Servicio", "Región", "Banner", "Ciudad", "Dominio", "CredencialesDVR", "SistemaOperativo_RDP", "Fecha", "SistemaOperativo_SMB", "Nombre-PC", "Camara", "Preview"];
 
-// Función para crear una celda de imagen con la captura web
-function createImageCell(ip, puerto) {
-    var imageCell = document.createElement("td");
-    var imagePath = `screenshot/${ip}-${puerto}.png`;
+        function createImageCell(ip, puerto) {
+            var imageCell = document.createElement("td");
+            var imagePath = `screenshot/${ip}-${puerto}.png`;
 
-    // Verifica si la imagen existe antes de crear la celda
-    var img = new Image();
-    img.src = imagePath;
+            var img = new Image();
+            img.src = imagePath;
 
-    img.onload = function () {
-        // La imagen existe, entonces crea la celda de imagen
-        imageCell.innerHTML = `<div style="text-align: center;"><img src="${imagePath}" alt="Screenshot" style="max-width: 512px;"><p>has_screenshot:true</p></div>`;
-        resultado["Preview"] = "has_screenshot:true";
-        
-    };
+            img.onload = function () {
+                imageCell.innerHTML = `<div style="text-align: center;"><img src="${imagePath}" alt="Screenshot" style="max-width: 512px;"><p>has_screenshot:true</p></div>`;
+                resultado["Preview"] = "has_screenshot:true";
+            };
 
-    return imageCell;
-}
-
-fields.forEach(function (field) {
-    var fieldValue = resultado[field];
-    if (field === "CredencialesDVR") {
-        if (Array.isArray(fieldValue) && fieldValue.length > 0) {
-            // Si fieldValue es un arreglo no vacío, mostrar las credenciales
-            var row = table.insertRow();
-            var cell1 = row.insertCell(0);
-            var cell2 = row.insertCell(1);
-            cell1.textContent = field;
-            cell2.textContent = fieldValue.join(', '); // Mostrar las credenciales como una cadena
+            return imageCell;
         }
-    } else {
-        if (((typeof fieldValue === 'string' && fieldValue.trim() !== '') && fieldValue.trim().length !== 1) && fieldValue !== "N/A" && fieldValue !== "NULL" && fieldValue !== "unknown") {
-            var row = table.insertRow();
-            var cell1 = row.insertCell(0);
-            var cell2 = row.insertCell(1);
-            cell1.textContent = field;
 
-            if (field === "IP") {
-                // Agregar el emoji de la bandera junto a la IP según la región
-                const flagEmoji = getFlagEmoji(resultado["Región"]);
-                cell2.textContent = resultado[field] + " " + flagEmoji;
-            } else if (field === "Banner") {
-                // Si el campo es "Banner", agregar el valor a la celda
-                cell2.textContent = resultado[field];
-                row.appendChild(createImageCell(resultado["IP"], resultado["Puerto"]));
-
+        fields.forEach(function (field) {
+            var fieldValue = resultado[field];
+            if (field === "CredencialesDVR") {
+                if (Array.isArray(fieldValue) && fieldValue.length > 0) {
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    cell1.textContent = field;
+                    cell2.textContent = fieldValue.join(', ');
+                }
             } else {
-                cell2.textContent = fieldValue; // Mostrar el valor del campo
-            }
-        }
-    }
-});
+                if (((typeof fieldValue === 'string' && fieldValue.trim() !== '') && fieldValue.trim().length !== 1) && fieldValue !== "N/A" && fieldValue !== "NULL" && fieldValue !== "unknown") {
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    cell1.textContent = field;
 
-        // Append the table to the result item
+                    if (field === "IP") {
+                        // Create a row for Port
+                        var portRow = table.insertRow();
+                        var portCellLabel = portRow.insertCell();
+                        portCellLabel.textContent = "Puerto";
+                        var portCell = portRow.insertCell();
+                        portCell.textContent = resultado.Puerto;
+                        const flagEmoji = getFlagEmoji(resultado["Región"]);
+                        cell2.textContent = resultado[field] + " " + flagEmoji;
+                    } else if (field === "Banner") {
+                        cell2.textContent = resultado[field];
+                        row.appendChild(createImageCell(resultado["IP"], resultado["Puerto"]));
+                    } else {
+                        cell2.textContent = fieldValue;
+                    }
+                }
+            }
+        });
+
+
+
+        var masInfoButton = document.createElement("button");
+        masInfoButton.textContent = "Más información";
+        masInfoButton.addEventListener("click", function () {
+            window.location.href = `detalle.html?ip=${resultado.IP}`;
+        });
+
         item.appendChild(table);
+        item.appendChild(masInfoButton);
         listaResultados.appendChild(item);
     });
 
-    // Update pagination controls
     updatePaginationControls();
 }
 
@@ -800,6 +793,43 @@ function iniciarScriptConBusqueda(searchQuery) {
     startScriptXhr.open("GET", "/start_script?query=" + encodeURIComponent(searchQuery), true);
     startScriptXhr.send();
 }
+
+function extraerIPsFiltradas() {
+    var listaResultados = document.getElementById("resultados");
+    var items = listaResultados.getElementsByTagName("li");
+    var ipsFiltradas = "";
+    for (var i = 0; i < items.length; i++) {
+        var ipElement = getCellByText(items[i], "IP");
+        var puertoElement = getCellByText(items[i], "Puerto");
+
+        if (ipElement && puertoElement) {
+            var ipText = ipElement.nextElementSibling.textContent.trim();
+            // Extraer solo los números y puntos de la dirección IP
+            var ip = ipText.match(/\d+\.\d+\.\d+\.\d+/)[0];
+            var puerto = puertoElement.nextElementSibling.textContent.trim();
+            ipsFiltradas += ip + ":" + puerto + "\n";
+        }
+    }
+    var blob = new Blob([ipsFiltradas], { type: "text/plain" });
+    var enlaceDescarga = document.createElement("a");
+    enlaceDescarga.href = URL.createObjectURL(blob);
+    enlaceDescarga.download = "ips_extraidas.txt";
+    enlaceDescarga.click();
+}
+
+function getCellByText(item, text) {
+    var cells = item.getElementsByTagName("td");
+    for (var i = 0; i < cells.length; i++) {
+        if (cells[i].textContent.trim() === text) {
+            return cells[i];
+        }
+    }
+    return null;
+}
+
+
+
+
 
 // Show all results when the page loads
 cargarDatos(function (datos) {
