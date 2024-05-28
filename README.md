@@ -99,6 +99,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Agregue detección de sistema Operativo SMB en el Puerto[445]: https://github.com/nopfor/ntlm_challenger/tree/master
 
    Modificar js/ para no mostrar datos nulos. //LISTO.
+
+   Agregado volcado de ips:ports especificos para pasar a Metasploit. //INTEGRACION-WEB
   
 4. **PUNTOS A MEJORAR:**
 
@@ -107,16 +109,10 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Agregar combinación de archivos json. 
    
    Agregar conexion proxy.
-   
-   Agregar volcado de ips:ports especificos para pasar a Metasploit. //INTEGRACION-WEB
-   
-   Agregar consultas rtsp/wordlist[Port:554]. //Directamente volcado de ips:ports para Metasploit.
 
    Hacer funcionar los botones[Unir todo en un solo boton de (Buscar), indicar busqueda sino existe la informacion]
 
    Mostrar capturas de camaras vulnerables a Wordlist/Link.
-
-   Agregar CVE-CHECK  via SMB como Nmap. [Pasivo-Scan]
 
    Agrega detección de sistema Operativo Linux/Unix [Agregar-Argumento]
 
