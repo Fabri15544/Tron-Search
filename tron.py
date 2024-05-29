@@ -884,14 +884,12 @@ def scan(ip, ports):
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                     sock.settimeout(args.s)
-                    
-                    # Intenta conectar con TCP
+
                     result = sock.connect_ex((ip, port))
-                    
-                    # Si la conexión TCP falla, intenta con UDP
                     if result != 0:
                         futures.append(executor.submit(ip, ports[0]))
                         continue
+                    
                     banner = get_banner(ip, port)
 
                     try:
@@ -1178,12 +1176,13 @@ def format_unknown(value):
 
 def get_banner(ip, port):
     try:
-        # Si la conexión TCP falla, intenta enviar el comando "status" a través de UDP
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_sock:
-            udp_sock.settimeout(args.bn)
-            udp_sock.sendto(b"name", (ip, port))
-            banner, _ = udp_sock.recvfrom(1024)
-            return banner.decode().strip() if banner != "unknown" else format_unknown(banner)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(args.bn)
+        sock.connect((ip, port))
+        sock.send(b"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n")
+        banner = sock.recv(1024).decode().strip()
+        sock.close()
+        return banner if banner != "unknown" else format_unknown(banner)
     except:
         return format_unknown("unknown")
 
