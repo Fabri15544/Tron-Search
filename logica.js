@@ -616,6 +616,15 @@ function mostrarResultados(resultados) {
     var listaResultados = document.getElementById("resultados");
     listaResultados.innerHTML = "";
 
+    var ipsConPuertosMultiples = {}; // Objeto para almacenar las IPs con más de un puerto
+
+    resultados.forEach(function (resultado) {
+        if (!ipsConPuertosMultiples[resultado.IP]) {
+            ipsConPuertosMultiples[resultado.IP] = [];
+        }
+        ipsConPuertosMultiples[resultado.IP].push(resultado.Puerto);
+    });
+
     var resultadosUnicosPorIP = [];
     var ips = new Set();
 
@@ -696,14 +705,20 @@ function mostrarResultados(resultados) {
                     cell1.textContent = field;
 
                     if (field === "IP") {
-                        // Create a row for Port
                         var portRow = table.insertRow();
                         var portCellLabel = portRow.insertCell();
                         portCellLabel.textContent = "Puerto";
-                        var portCell = portRow.insertCell();
-                        portCell.textContent = resultado.Puerto;
-                        const flagEmoji = getFlagEmoji(resultado["Región"]);
-                        cell2.textContent = resultado[field] + " " + flagEmoji;
+
+                        // Verificar si la IP tiene múltiples puertos asociados
+                        if (ipsConPuertosMultiples[resultado.IP].length > 1) {
+                            var portCell = portRow.insertCell();
+                            portCell.textContent = ipsConPuertosMultiples[resultado.IP].join(', '); // Mostrar todos los puertos separados por comas
+                        } else {
+                            var portCell = portRow.insertCell();
+                            portCell.textContent = resultado.Puerto; // Mostrar un solo puerto si no hay múltiples puertos
+                            const flagEmoji = getFlagEmoji(resultado["Región"]);
+                            cell2.textContent = resultado[field] + " " + flagEmoji;
+                        }
                     } else if (field === "Banner") {
                         cell2.textContent = resultado[field];
                         row.appendChild(createImageCell(resultado["IP"], resultado["Puerto"]));
@@ -714,20 +729,25 @@ function mostrarResultados(resultados) {
             }
         });
 
-        var masInfoButton = document.createElement("button");
-        masInfoButton.id = "masInfoButton";
-        masInfoButton.textContent = "Más información";
-        masInfoButton.addEventListener("click", function () {
-            window.location.href = `detalle.html?ip=${resultado.IP}`;
-        });
+        // Añadir el botón "Más información" solo si hay más de un puerto en esta IP
+        if (ipsConPuertosMultiples[resultado.IP].length > 1) {
+            var masInfoButton = document.createElement("button");
+            masInfoButton.id = "masInfoButton";
+            masInfoButton.textContent = "Más información";
+            masInfoButton.addEventListener("click", function () {
+                window.location.href = `detalle.html?ip=${resultado.IP}`;
+            });
+
+            item.appendChild(masInfoButton);
+        }
 
         item.appendChild(table);
-        item.appendChild(masInfoButton);
         listaResultados.appendChild(item);
     });
 
     updatePaginationControls();
 }
+
 
 // Function to update pagination controls
 function updatePaginationControls() {
