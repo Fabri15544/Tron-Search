@@ -752,6 +752,17 @@ function mostrarResultados(resultados) {
 
 
 // Function to update pagination controls
+var currentPage = getPageFromURL() || 1;
+var resultsPerPage = 10;
+var totalResults = 100; // Esto debería ser dinámico según tus datos
+var resultados = []; // Este array debe contener los resultados a mostrar
+
+// Función para obtener el número de página desde la URL
+function getPageFromURL() {
+    var urlParams = new URLSearchParams(window.location.search);
+    return parseInt(urlParams.get('page')) || 1;
+}
+
 function updatePaginationControls() {
     var paginationContainer = document.getElementById("pagination");
     paginationContainer.innerHTML = "";
@@ -767,7 +778,9 @@ function updatePaginationControls() {
         startButton.addEventListener("click", function () {
             currentPage = 1;
             mostrarResultados(resultados);
+            updateURL(currentPage);
         });
+
         paginationContainer.appendChild(startButton);
     }
 
@@ -777,6 +790,7 @@ function updatePaginationControls() {
         pageButton.addEventListener("click", function () {
             currentPage = parseInt(this.textContent);
             mostrarResultados(resultados);
+            updateURL(currentPage);
         });
 
         paginationContainer.appendChild(pageButton);
@@ -789,10 +803,33 @@ function updatePaginationControls() {
         finalButton.addEventListener("click", function () {
             currentPage = totalPages;
             mostrarResultados(resultados);
+            updateURL(currentPage);
         });
         paginationContainer.appendChild(finalButton);
     }
+
 }
+
+function updateURL(page) {
+    var url = new URL(window.location);
+    var params = new URLSearchParams(url.search);
+    params.set('page', page);
+    window.history.replaceState({}, '', `${url.pathname}?${params.toString()}`);
+    simularClicEnFiltrarButton()
+}
+
+// Función para Actualizar Lista
+function simularClicEnFiltrarButton() {
+    // Obtener el botón de filtrar
+    var filtrarButton = document.getElementById("filtrarButton");
+
+    // Verificar si el botón de filtrar existe antes de intentar hacer clic en él
+    if (filtrarButton) {
+        // Simular un clic en el botón de filtrar
+        filtrarButton.click();
+    }
+}
+
 
 function loadMoreResults() {
     currentPage++;
