@@ -208,5 +208,5 @@ th, td {
     float: right; /* Alinear el botón a la izquierda */
     margin-right: 10px; /* Añadir espacio a la derecha del botón */
     position: relative; /* Permitir ajuste de posición */
-    top: -50px; /* Mover hacia arriba 50 píxeles */
+    top: -10px; /* Mover hacia arriba 50 píxeles */
 }
