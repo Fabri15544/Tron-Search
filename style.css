@@ -202,3 +202,11 @@ th, td {
     height: 30px;
     margin-right: 5px;
 }
+
+/* Estilo para botón de "Más información" */
+#masInfoButton {
+    float: right; /* Alinear el botón a la izquierda */
+    margin-right: 10px; /* Añadir espacio a la derecha del botón */
+    position: relative; /* Permitir ajuste de posición */
+    top: -50px; /* Mover hacia arriba 50 píxeles */
+}
