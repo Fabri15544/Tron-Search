@@ -607,9 +607,14 @@ var currentPage = 1;
 var resultsPerPage = 10;
 var totalResults = 0;
 var resultados = [];
+var todosResultados = [];
 
 function mostrarResultados(resultados) {
+    // Almacenar todos los resultados en la variable global
+    todosResultados = resultados;
+
     var listaResultados = document.getElementById("resultados");
+    listaResultados.innerHTML = "";
 
     var resultadosUnicosPorIP = [];
     var ips = new Set();
@@ -628,8 +633,6 @@ function mostrarResultados(resultados) {
     var endIndex = startIndex + resultsPerPage;
 
     var resultsToDisplay = resultadosUnicosPorIP.slice(startIndex, endIndex);
-
-    listaResultados.innerHTML = "";
 
     resultsToDisplay.forEach(function (resultado) {
         var item = document.createElement("li");
@@ -711,9 +714,8 @@ function mostrarResultados(resultados) {
             }
         });
 
-
-
         var masInfoButton = document.createElement("button");
+        masInfoButton.id = "masInfoButton";
         masInfoButton.textContent = "Más información";
         masInfoButton.addEventListener("click", function () {
             window.location.href = `detalle.html?ip=${resultado.IP}`;
@@ -795,39 +797,19 @@ function iniciarScriptConBusqueda(searchQuery) {
 }
 
 function extraerIPsFiltradas() {
-    var listaResultados = document.getElementById("resultados");
-    var items = listaResultados.getElementsByTagName("li");
     var ipsFiltradas = "";
-    for (var i = 0; i < items.length; i++) {
-        var ipElement = getCellByText(items[i], "IP");
-        var puertoElement = getCellByText(items[i], "Puerto");
+    todosResultados.forEach(function (resultado) {
+        var ip = resultado.IP;
+        var puerto = resultado.Puerto;
+        ipsFiltradas += ip + ":" + puerto + "\n";
+    });
 
-        if (ipElement && puertoElement) {
-            var ipText = ipElement.nextElementSibling.textContent.trim();
-            // Extraer solo los números y puntos de la dirección IP
-            var ip = ipText.match(/\d+\.\d+\.\d+\.\d+/)[0];
-            var puerto = puertoElement.nextElementSibling.textContent.trim();
-            ipsFiltradas += ip + ":" + puerto + "\n";
-        }
-    }
     var blob = new Blob([ipsFiltradas], { type: "text/plain" });
     var enlaceDescarga = document.createElement("a");
     enlaceDescarga.href = URL.createObjectURL(blob);
     enlaceDescarga.download = "ips_extraidas.txt";
     enlaceDescarga.click();
 }
-
-function getCellByText(item, text) {
-    var cells = item.getElementsByTagName("td");
-    for (var i = 0; i < cells.length; i++) {
-        if (cells[i].textContent.trim() === text) {
-            return cells[i];
-        }
-    }
-    return null;
-}
-
-
 
 
 
