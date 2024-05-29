@@ -713,6 +713,8 @@ function mostrarResultados(resultados) {
                         if (ipsConPuertosMultiples[resultado.IP].length > 1) {
                             var portCell = portRow.insertCell();
                             portCell.textContent = ipsConPuertosMultiples[resultado.IP].join(', '); // Mostrar todos los puertos separados por comas
+                            const flagEmoji = getFlagEmoji(resultado["Región"]);
+                            cell2.textContent = resultado[field] + " " + flagEmoji;
                         } else {
                             var portCell = portRow.insertCell();
                             portCell.textContent = resultado.Puerto; // Mostrar un solo puerto si no hay múltiples puertos
