@@ -49,6 +49,14 @@ class RtspBrute:
     def brute_force(self):
         while not self.q.empty():
             target = self.q.get()
+            ip, port = target
+            datos_filtrados = cargar_datos()
+            for dato in datos_filtrados:
+                if dato["IP"] == ip and dato["Puerto"] == port:
+                    if dato["Banner"] and dato["Banner"] != "\u001b[31munknown\u001b[0m":
+##                        print(f"Skip {ip}:{port}")
+                        return
+                    break
             data = self.rtsp_request(target)
             if data and "401 Unauthorized" in data:
                 for credential in self.dictionary:
