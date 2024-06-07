@@ -104,6 +104,8 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
   
 4. **PUNTOS A MEJORAR:**
 
+   Rtsp no es optimo es muy lento. tengo que agregar un nuevo valor al json para indicar que ya a sido scaneado para no volver a scanear el mismo.
+
    agregar actualizacion de ips escaneadas para refrescar informacion.
 
    Agregar combinación de archivos json. 
