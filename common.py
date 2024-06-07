@@ -6,6 +6,7 @@ from PIL import Image
 import pytesseract
 
 
+
 def extraer_texto_desde_imagen(ruta_imagen):
     try:
         return pytesseract.image_to_string(Image.open(ruta_imagen))
@@ -46,18 +47,22 @@ def actualizar_datos():
         print(f"Error al guardar datos: {e}")
 
 def cargar_datos():
-    try:
-        with open('datos.json', 'r') as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return []
+    while True:
+        try:
+            with open('datos.json', 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return []
+        except json.decoder.JSONDecodeError as e:
+            print(f"Error al cargar datos: {e}. Reintentando en 2 segundos...")
+            time.sleep(2)
 
 def guardar_datos(datos):
     try:
         with open('datos.json', 'w') as file:
             json.dump(datos, file, indent=2)
         print("Datos guardados correctamente.")
-        threading.Timer(10, actualizar_datos).start()
+        threading.Timer(1, actualizar_datos).start()
     except Exception as e:
         print(f"Error al guardar datos: {e}")
 
