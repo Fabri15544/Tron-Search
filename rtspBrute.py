@@ -61,7 +61,7 @@ class RTSPBruteModule:
     def generate_queue(self):
         queue_instance = queue.Queue()
 
-        # Cargamos las IPs ya vistas desde el archivo
+        # Cargar las IPs ya vistas desde el archivo
         if os.path.exists("RTSPCONECT.txt"):
             with open("RTSPCONECT.txt", "r") as file:
                 lines = file.readlines()
@@ -73,12 +73,16 @@ class RTSPBruteModule:
             ip, port = target
             if ip not in self.seen_ips:
                 # Verificar si la IP ya está en el archivo RTSPCONECT.txt
-                with open("RTSPCONECT.txt", "r") as file:
-                    if any(ip in line for line in file):
-                        self.seen_ips.add(ip)
-                    else:
-                        for credential in self.credentials:
-                            queue_instance.put((target, credential))
+                if os.path.exists("RTSPCONECT.txt"):
+                    with open("RTSPCONECT.txt", "r") as file:
+                        if any(ip in line for line in file):
+                            self.seen_ips.add(ip)
+                        else:
+                            for credential in self.credentials:
+                                queue_instance.put((target, credential))
+                else:
+                    for credential in self.credentials:
+                        queue_instance.put((target, credential))
 
         return queue_instance
 
