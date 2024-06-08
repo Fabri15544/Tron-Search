@@ -7,6 +7,7 @@ import time
 import cv2
 import os
 import queue
+from tqdm import tqdm
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -17,6 +18,8 @@ class RTSPBruteModule:
         self.pause_duration = 1
         self.max_threads = 50
         self.timeout = 5
+        self.total_combinations = 0
+        self.completed_combinations = 0
         self.seen_ips = set()
 
     def setup(self, targets, dictionary_file, pause_duration=1, max_threads=50, timeout=5):
@@ -25,6 +28,7 @@ class RTSPBruteModule:
         self.pause_duration = pause_duration
         self.max_threads = max_threads
         self.timeout = timeout
+        self.total_combinations = len(targets) * len(self.credentials)
 
     def load_credentials(self, dictionary_file):
         try:
@@ -39,10 +43,18 @@ class RTSPBruteModule:
         logging.info(f"[*] Total targets: {total_targets}")
 
         queue_instance = self.generate_queue()
+        tasks = []
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_threads) as executor:
-            while not queue_instance.empty():
-                executor.submit(self.brute_force, queue_instance.get())
+            with tqdm(total=self.total_combinations, desc="Progress", position=0, leave=True) as pbar:
+                while not queue_instance.empty():
+                    task = queue_instance.get()
+                    future = executor.submit(self.brute_force, task)
+                    future.add_done_callback(lambda _: pbar.update())
+                    tasks.append(future)
+                
+                # Esperar a que todas las tareas se completen
+                concurrent.futures.wait(tasks)
 
         logging.info("[*] Finished all threads")
 
@@ -60,8 +72,13 @@ class RTSPBruteModule:
         for target in self.targets:
             ip, port = target
             if ip not in self.seen_ips:
-                for credential in self.credentials:
-                    queue_instance.put((target, credential))
+                # Verificar si la IP ya está en el archivo RTSPCONECT.txt
+                with open("RTSPCONECT.txt", "r") as file:
+                    if any(ip in line for line in file):
+                        self.seen_ips.add(ip)
+                    else:
+                        for credential in self.credentials:
+                            queue_instance.put((target, credential))
 
         return queue_instance
 
