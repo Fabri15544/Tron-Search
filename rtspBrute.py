@@ -72,7 +72,7 @@ class RTSPBruteModule:
             response = data.decode('ascii')
             s.close()
 
-            if "401 Unauthorized" not in response and "404 Not Found" not in response:
+            if "404 Not Found" not in response:
                 #logging.info(f"Found credentials for {ip}:{port} - {credential}")
                 url = f"rtsp://{credential}@{ip}:{port}/"
                 return self.display_camera(url)
