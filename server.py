@@ -56,7 +56,7 @@ if __name__ == '__main__':
     targets = [(entry['IP'], 554) for entry in data if entry['Puerto'] == 554]
 
     # Crear e iniciar el objeto RtspBrute con todas las direcciones IP filtradas
-    brute = RtspBrute(targets=targets, dictionary_file="diccionario.txt")
+    brute = RTSPBruteModule(targets=targets, dictionary_file="diccionario.txt")
     brute.run()
 
     # Esperar a que el hilo del servidor HTTP termine antes de cerrar el programa principal
