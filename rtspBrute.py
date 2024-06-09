@@ -116,10 +116,8 @@ class RTSPBruteModule:
                 data = s.recv(1024)
                 response = data.decode('ascii')
                 s.close()
-
-                if "200 OK" in response:
-                    url = f"rtsp://{credential}@{ip}:{port}/"
-                    return self.display_camera(url)
+                url = f"rtsp://{credential}@{ip}:{port}/"
+                return self.display_camera(url)
             except socket.error as e:
                 continue
 
