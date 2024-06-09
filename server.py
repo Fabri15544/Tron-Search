@@ -5,7 +5,7 @@ from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
 from queue import Queue
 
-from rtspBrute import RtspBrute
+from rtspBrute import RTSPBruteModule
 from common import cargar_datos, guardar_datos, eliminar_duplicados, buscar_palabra, actualizar_datos, extraer_texto_desde_imagen
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
@@ -42,21 +42,20 @@ def brute_force_worker(q, dictionary_file):
         q.task_done()
 
 if __name__ == '__main__':
-
+    # Iniciar la actualización de datos en un hilo separado
     threading.Thread(target=actualizar_datos, daemon=True).start()
 
     # Iniciar el servidor HTTP en un hilo separado
     server_thread = threading.Thread(target=start_http_server)
     server_thread.start()
 
-    # Filtrar las entradas para obtener solo las que usan el puerto 554
+    # Cargar y filtrar los datos
     data = cargar_datos()
-
-    # Filtrar las IPs y puertos que utilizan el puerto 554
     targets = [(entry['IP'], 554) for entry in data if entry['Puerto'] == 554]
 
-    # Crear e iniciar el objeto RtspBrute con todas las direcciones IP filtradas
-    brute = RtspBrute(targets=targets, dictionary_file="diccionario.txt")
+    # Crear e iniciar el objeto RTSPBruteModule con todas las direcciones IP filtradas
+    brute = RTSPBruteModule()
+    brute.setup(targets, dictionary_file="diccionario.txt", extra_file="extra.txt")
     brute.run()
 
     # Esperar a que el hilo del servidor HTTP termine antes de cerrar el programa principal
