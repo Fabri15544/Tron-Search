@@ -53,7 +53,7 @@ if __name__ == '__main__':
     data = cargar_datos()
 
     # Filtrar las entradas para obtener solo las que usan el puerto 554
-    targets = [(entry['IP'], entry['Puerto']) for entry in data if 'RTSP' in entry['Banner']]
+    targets = [(entry['IP'], entry['Puerto']) for entry in data if 'RTSP' in entry['Banner'] or entry['Puerto'] == 554]
 
     # Crear e iniciar el objeto RTSPBruteModule con todas las direcciones IP filtradas
     brute = RTSPBruteModule()
