@@ -5,7 +5,7 @@ from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
 from queue import Queue
 
-from rtspBrute import RtspBrute
+from rtspBrute import RTSPBruteModule
 from common import cargar_datos, guardar_datos, eliminar_duplicados, buscar_palabra, actualizar_datos, extraer_texto_desde_imagen
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
