@@ -42,21 +42,22 @@ def brute_force_worker(q, dictionary_file):
         q.task_done()
 
 if __name__ == '__main__':
-
+    # Iniciar el hilo para actualizar datos
     threading.Thread(target=actualizar_datos, daemon=True).start()
 
     # Iniciar el servidor HTTP en un hilo separado
     server_thread = threading.Thread(target=start_http_server)
     server_thread.start()
 
-    # Filtrar las entradas para obtener solo las que usan el puerto 554
+    # Cargar los datos
     data = cargar_datos()
 
-    # Filtrar las IPs y puertos que utilizan el puerto 554
+    # Filtrar las entradas para obtener solo las que usan el puerto 554
     targets = [(entry['IP'], 554) for entry in data if entry['Puerto'] == 554]
 
-    # Crear e iniciar el objeto RtspBrute con todas las direcciones IP filtradas
-    brute = RTSPBruteModule(targets=targets, dictionary_file="diccionario.txt")
+    # Crear e iniciar el objeto RTSPBruteModule con todas las direcciones IP filtradas
+    brute = RTSPBruteModule()
+    brute.setup(targets=targets, dictionary_file="diccionario.txt")
     brute.run()
 
     # Esperar a que el hilo del servidor HTTP termine antes de cerrar el programa principal
