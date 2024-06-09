@@ -57,22 +57,40 @@ for ip in modified_ips:
         ip_queue.put(ip)
         processed_ips.add(ip)  # Agrega la IP al conjunto de IPs procesadas
 
+# Semáforo para limitar el número de subprocesos concurrentes
+num_threads = 1  # Número de subprocesos concurrentes
+max_subprocesses = 2  # Número máximo de subprocesos en total
+semaphore = threading.Semaphore(num_threads)
+
+# Contador de subprocesos
+subprocess_count = 0
+
+# Bloqueo para el contador de subprocesos
+counter_lock = threading.Lock()
+
 # Función para procesar las IPs
 def process_ips():
+    global subprocess_count
     while not ip_queue.empty():
         ip = ip_queue.get()
         command = f'python tron.py --search {ip} {extra_command}'
+        with counter_lock:
+            if subprocess_count >= max_subprocesses:
+                ip_queue.task_done()
+                continue
+            subprocess_count += 1
+
         try:
-            proc = subprocess.Popen(command, shell=True)
-            proc.wait(timeout=2)  # Establece un timeout de 2 segundos
+            with semaphore:
+                proc = subprocess.Popen(command, shell=True)
+                proc.wait(timeout=2)  # Establece un timeout de 2 segundos
         except subprocess.TimeoutExpired:
             proc.kill()
             print(f"El proceso para la IP {ip} ha sido cerrado automáticamente después de 2 segundos.")
         finally:
+            with counter_lock:
+                subprocess_count -= 1
             ip_queue.task_done()
-
-# Número de hilos a utilizar
-num_threads = 1  # Puedes ajustar este número según tus necesidades
 
 # Crear y lanzar los hilos
 threads = []
