@@ -28,6 +28,7 @@ from impacket import smb3, ntlm
 from collections import OrderedDict
 import datetime
 import command
+from bypass_camara import SolicitudHandler
 
 def clear():
     if os.name == 'nt':
