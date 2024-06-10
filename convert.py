@@ -1,4 +1,5 @@
 import subprocess
+from multiprocessing import Pool
 
 # Pregunta al usuario si quiere eliminar un número de la última fila o reemplazarla con asteriscos
 choice = input("¿Quieres eliminar un número de la última fila (E) o reemplazarla con asteriscos (A)? (E/A): ")
@@ -32,15 +33,14 @@ for ip in ips:
         ip_parts[-1] = '*' * num_asterisks
     modified_ips.append('.'.join(ip_parts))
 
-# Conjunto para almacenar IPs ya procesadas
-processed_ips = set()
+def process_ip(ip):
+    command = 'python tron.py --search ' + ip + ' ' + extra_command
+    try:
+        subprocess.run(command, shell=True, timeout=2)  # Establece un timeout de 2 segundos
+    except subprocess.TimeoutExpired:
+        print("El proceso para la IP", ip, "ha sido cerrado automáticamente después de 2 segundos.")
 
-# Ejecuta tron.py para cada IP modificada
-for ip in modified_ips:
-    if ip not in processed_ips:  # Verifica si la IP ya ha sido procesada
-        command = 'python tron.py --search ' + ip + ' ' + extra_command
-        try:
-            subprocess.run(command, shell=True, timeout=2)  # Establece un timeout de 2 segundos
-        except subprocess.TimeoutExpired:
-            print("El proceso para la IP", ip, "ha sido cerrado automáticamente después de 2 segundos.")
-        processed_ips.add(ip)  # Agrega la IP al conjunto de IPs procesadas
+if __name__ == '__main__':
+    # Procesar IPs en paralelo con un pool de procesos
+    with Pool(processes=5) as pool:  # Puedes ajustar el número de procesos según tus necesidades
+        pool.map(process_ip, modified_ips)
