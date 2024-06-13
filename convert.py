@@ -48,7 +48,7 @@ def modify_ips(ips, choice, num_digits, num_asterisks):
 def process_ip(ip, extra_command):
     command = f'python tron.py --search {ip} {extra_command}'
     try:
-        subprocess.run(command, shell=True, timeout=2)
+        subprocess.run(command, shell=True, timeout=10)
     except subprocess.TimeoutExpired:
         print(f"El proceso para la IP {ip} ha sido cerrado automáticamente después de 2 segundos.")
     except Exception as e:
