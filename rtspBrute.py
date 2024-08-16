@@ -133,7 +133,7 @@ class RTSPBruteModule:
 
     def display_camera(self, url):
         ip = url.split('@')[1].split(':')[0]
-        logging.info(f"Intentando conectarse a {url}")
+        #logging.info(f"Intentando conectarse a {url}")
 
         cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
         if cap.isOpened():
@@ -150,7 +150,7 @@ class RTSPBruteModule:
             self.save_url(url)
             return True
         else:
-            logging.error(f"No se pudo abrir la transmisión de video desde {url}")
+            #logging.error(f"No se pudo abrir la transmisión de video desde {url}")
             return False
 
     def save_url(self, url):
@@ -183,5 +183,6 @@ class RTSPBruteModule:
         target, credential = task
         ip, port = target
         if not self.rtsp_request(target, credential):
-            logging.info(f"Inicio de sesión fallido para {ip}:{port} con {credential}")
+            #logging.info(f"Inicio de sesión fallido para {ip}:{port} con {credential}")
+            pass
         time.sleep(self.pause_duration)
