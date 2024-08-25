@@ -4,8 +4,7 @@ import base64
 import concurrent.futures
 import argparse
 import time
-import imageio
-import imageio_ffmpeg
+import vlc
 import logging
 import os
 import queue
@@ -134,20 +133,25 @@ class RTSPBruteModule:
         return False
 
     def display_camera(self, url):
-        ip = url.split('@')[1].split(':')[0]
         logging.info(f"Intentando conectarse a {url}")
 
+        # Crear el reproductor VLC
+        player = vlc.MediaPlayer(url)
+        
+        # Intentar conectar y reproducir
         try:
-            reader = imageio.get_reader(url, 'ffmpeg')
+            player.play()
             logging.info(f"Visualización de la transmisión de la cámara desde {url}")
             start_time = time.time()
-            for frame in reader:
-                if time.time() - start_time > 10:
+
+            while time.time() - start_time < 10:
+                # Revisa si la reproducción está en curso
+                if player.get_state() == vlc.State.Ended:
                     break
-                imageio.show(frame)  # Muestra el frame en una ventana
-                if cv2.waitKey(1) & 0xFF == ord('q'):  # Si usas imageio, puedes ignorar esto.
-                    break
-            reader.close()
+                time.sleep(1)  # Espera un segundo antes de revisar nuevamente
+
+            # Detener la reproducción y liberar recursos
+            player.stop()
             self.save_url(url)
             return True
         except Exception as e:
