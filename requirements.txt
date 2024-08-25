@@ -17,7 +17,4 @@ chromedriver-autoinstaller
 scapy
 pytesseract
 fire==0.2.1
-opencv-python
-
-pip install imageio
-pip install imageio-ffmpeg
+python-vlc
