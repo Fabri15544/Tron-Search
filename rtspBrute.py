@@ -4,7 +4,9 @@ import base64
 import concurrent.futures
 import argparse
 import time
-import cv2
+import imageio
+import imageio_ffmpeg
+import logging
 import os
 import queue
 from tqdm import tqdm
@@ -133,24 +135,23 @@ class RTSPBruteModule:
 
     def display_camera(self, url):
         ip = url.split('@')[1].split(':')[0]
-        #logging.info(f"Intentando conectarse a {url}")
+        logging.info(f"Intentando conectarse a {url}")
 
-        cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
-        if cap.isOpened():
+        try:
+            reader = imageio.get_reader(url, 'ffmpeg')
             logging.info(f"Visualización de la transmisión de la cámara desde {url}")
             start_time = time.time()
-            while time.time() - start_time < 10:
-                ret, frame = cap.read()
-                if not ret:
+            for frame in reader:
+                if time.time() - start_time > 10:
                     break
-                if cv2.waitKey(1) & 0xFF == ord('q'):
+                imageio.show(frame)  # Muestra el frame en una ventana
+                if cv2.waitKey(1) & 0xFF == ord('q'):  # Si usas imageio, puedes ignorar esto.
                     break
-            cap.release()
-            cv2.destroyAllWindows()
+            reader.close()
             self.save_url(url)
             return True
-        else:
-            #logging.error(f"No se pudo abrir la transmisión de video desde {url}")
+        except Exception as e:
+            logging.error(f"No se pudo abrir la transmisión de video desde {url}: {e}")
             return False
 
     def save_url(self, url):
@@ -183,6 +184,5 @@ class RTSPBruteModule:
         target, credential = task
         ip, port = target
         if not self.rtsp_request(target, credential):
-            #logging.info(f"Inicio de sesión fallido para {ip}:{port} con {credential}")
-            pass
+            logging.info(f"Inicio de sesión fallido para {ip}:{port} con {credential}")
         time.sleep(self.pause_duration)
