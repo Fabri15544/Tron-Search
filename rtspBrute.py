@@ -132,28 +132,48 @@ class RTSPBruteModule:
             retries -= 1
         return False
 
-    def display_camera(self, url):
+    def display_camera(self, url, timeout=15):
+
         logging.info(f"Intentando conectarse a {url}")
 
         # Crear el reproductor VLC
         player = vlc.MediaPlayer(url)
-        
-        # Intentar conectar y reproducir
+    
         try:
+            # Intentar conectar y reproducir
             player.play()
             logging.info(f"Visualización de la transmisión de la cámara desde {url}")
             start_time = time.time()
+            success = False
 
-            while time.time() - start_time < 10:
+            while time.time() - start_time < timeout:
                 # Revisa si la reproducción está en curso
-                if player.get_state() == vlc.State.Ended:
+                state = player.get_state()
+                if state == vlc.State.Playing:
+                    logging.info("Reproducción en curso...")
+                    success = True
+                    break
+                elif state in [vlc.State.Error, vlc.State.Ended]:
+                    logging.warning(f"Estado del reproductor: {state}")
                     break
                 time.sleep(1)  # Espera un segundo antes de revisar nuevamente
 
             # Detener la reproducción y liberar recursos
             player.stop()
-            self.save_url(url)
-            return True
+            player.release()  # Liberar recursos del reproductor
+            logging.info(f"Reproductor VLC liberado para {url}")
+
+            # Guardar la URL solo si la reproducción fue exitosa
+            if success:
+                self.save_url(url)
+                logging.info(f"URL guardada exitosamente: {url}")
+            else:
+                logging.error(f"No se pudo guardar la URL debido a problemas de conexión o reproducción: {url}")
+
+            return success
+
+        except vlc.VLCException as e:
+            logging.error(f"Error de VLC al intentar abrir la transmisión desde {url}: {e}")
         except Exception as e:
             logging.error(f"No se pudo abrir la transmisión de video desde {url}: {e}")
             return False
