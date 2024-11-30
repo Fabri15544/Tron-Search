@@ -36,14 +36,6 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    --time TIME           Valor de tiempo para la opción --fast, esta opcion controla el tiempo de espera entre saltos.
    
 
-[![Captura de pantalla 9](https://i.postimg.cc/V6qby6Rp/Paypal-2014-logo-removebg-preview.png)](https://postimg.cc/7GLL0qjn)
-[![Captura de pantalla 9](https://i.postimg.cc/mZFVpNC6/PaypalQR.png)](https://postimg.cc/fkDxJdHx)
-
-[![Captura de pantalla 9](https://i.postimg.cc/pX6mBNzD/Donate.png)](https://postimg.cc/Tpn2R4kw)
-[![Captura de pantalla 9](https://i.postimg.cc/XYS2qPqg/frame.png)](https://postimg.cc/RNd1bXc3)
-
-[![Captura de pantalla 9](https://i.postimg.cc/7L6Kbsjs/uala-preview-removebg-preview.png)](https://postimg.cc/BjrTVgSH)
-[![Captura de pantalla 9](https://i.postimg.cc/cJf9YgX2/frame-1.png)](https://postimg.cc/cK4BGHqB)
 
 <a href="https://www.buymeacoffee.com/fabriciolou" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
