@@ -1,16 +1,4 @@
 
-[![Imagen1](https://i.postimg.cc/5NY4hR7p/Captura-de-pantalla-21-3-2024-54050-127-0-0-1.jpg)](https://i.postimg.cc/5NY4hR7)
-[![Imagen1](https://i.postimg.cc/TPpvbyz0/Captura-de-pantalla-21-3-2024-54357-127-0-0-1.jpg)](https://postimg.cc/LqKWKs6g)
-[![Imagen1](https://i.postimg.cc/jL3ZjGcL/Captura-de-pantalla-10.png)](https://postimg.cc/jL3ZjGc)
-[![Imagen1](https://i.postimg.cc/KR80xZn6/Captura-de-pantalla-11.png)](https://postimg.cc/KR80xZn6)
-[![Imagen1](https://i.postimg.cc/06Dfcrsw/Captura-de-pantalla-12.png)](https://postimg.cc/06Dfcrsw)
-[![Imagen1](https://i.postimg.cc/dhz62rzF/Captura-de-pantalla-13.png)](https://postimg.cc/dhz62rzF)
-[![Captura de pantalla 14](https://i.postimg.cc/xJQP7YfF/Captura-de-pantalla-14.png)](https://postimg.cc/xJQP7YfF)
-[![Captura de pantalla 15](https://i.postimg.cc/G4BzTqgz/Captura-de-pantalla-15.png)](https://postimg.cc/G4BzTqgz)
-[![Captura de pantalla 8](https://i.postimg.cc/DmFCpQmy/Captura-de-pantalla-8.png)](https://postimg.cc/DmFCpQmy)
-[![Captura de pantalla 9](https://i.postimg.cc/pyZsw9nQ/Captura-de-pantalla-9.png)](https://postimg.cc/pyZsw9nQ)
-
-
 # Escáner de Puertos en Direcciones IP
 
 Este script en Python te permite escanear puertos en un rango de direcciones IP utilizando hilos de ejecución para mejorar la velocidad del escaneo. Además, proporciona opciones para filtrar por región y ciudad, y te permite personalizar los puertos a escanear.
