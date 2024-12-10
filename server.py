@@ -4,7 +4,7 @@ import time
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
 from queue import Queue
-from torrentool.api import Torrent
+#from torrentool.api import Torrent
 
 from rtspBrute import RTSPBruteModule
 from common import cargar_datos, actualizar_datos
@@ -14,7 +14,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         try:
             super().do_GET()
         except ConnectionAbortedError:
-            print("Se ha producido una conexión abortada por el cliente.")
+            print("Se ha producido una conexiÃ³n abortada por el cliente.")
 
     def end_headers(self):
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
@@ -32,17 +32,17 @@ def start_http_server():
         print("Servidor detenido.")
         httpd.server_close()
 
-def create_torrent(file_path, output_dir):
+#def create_torrent(file_path, output_dir):
     # Crear un nuevo torrent a partir de un archivo o directorio
-    torrent = Torrent.create_from(file_path)  
-    torrent.announce_urls = ['udp://tracker.openbittorrent.com:80']
-    torrent_path = os.path.join(output_dir, 'datos.torrent')
-    torrent.to_file(torrent_path)  # Guardar el torrent
+#    torrent = Torrent.create_from(file_path)  
+#    torrent.announce_urls = ['udp://tracker.openbittorrent.com:80']
+#    torrent_path = os.path.join(output_dir, 'datos.torrent')
+#    torrent.to_file(torrent_path)  # Guardar el torrent
 
-    print(f"Torrent creado y guardado en {torrent_path}")
+#    print(f"Torrent creado y guardado en {torrent_path}")
 
-def seed_torrent(torrent_path):
-    print(f"Sembrando: {torrent_path}")
+#def seed_torrent(torrent_path):
+#    print(f"Sembrando: {torrent_path}")
 
 def brute_force_worker(q, dictionary_file):
     while True:
@@ -65,12 +65,12 @@ if __name__ == '__main__':
 
     
     json_file = 'datos.json'
-    if not os.path.exists('datos.torrent'):
-        create_torrent(json_file, '.')
+#    if not os.path.exists('datos.torrent'):
+#        create_torrent(json_file, '.')
 
-    # Iniciar el semillero del torrent
-    seed_thread = threading.Thread(target=seed_torrent, args=('datos.torrent',), daemon=True)
-    seed_thread.start()
+#    # Iniciar el semillero del torrent
+#    seed_thread = threading.Thread(target=seed_torrent, args=('datos.torrent',), daemon=True)
+#    seed_thread.start()
 
     # Cargar los datos
     data = cargar_datos()
@@ -86,8 +86,8 @@ if __name__ == '__main__':
         q.put(target)
 
     # Crear e iniciar los hilos de brute force
-    dictionary_file = "diccionario.txt"  # Asegúrate de que este archivo exista
-    num_worker_threads = 4  # Ajusta el número de hilos según sea necesario
+    dictionary_file = "diccionario.txt"  # AsegÃºrate de que este archivo exista
+    num_worker_threads = 4  # Ajusta el nÃºmero de hilos segÃºn sea necesario
     for _ in range(num_worker_threads):
         threading.Thread(target=brute_force_worker, args=(q, dictionary_file), daemon=True).start()
 
