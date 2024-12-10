@@ -12,6 +12,7 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    pip install -r requirements.txt
 
    !!![REQUIERE DE CHROME INSTALADO https://www.google.com/intl/es-419/chrome/]!!!
+   !!![REQUIERE DE VLC INSTALADO https://www.videolan.org/vlc/index.es.html]!!!
    !!![REQUIERE DE WINCAP INSTALADO https://www.winpcap.org/install/]!!!
    !!![REQUIERE DE TESSERACT OCR INSTALADO https://github.com/UB-Mannheim/tesseract/wiki]!!! TRANSFORMA IMAGENES A TEXTO PARA EL BANNER, EN CASO DE NO OBTENERSE POR EL SOCK.
 
