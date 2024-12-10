@@ -46,23 +46,38 @@ def actualizar_datos():
     except Exception as e:
         print(f"Error al guardar datos: {e}")
 
-def cargar_datos():
-    while True:
+def cargar_datos(max_intentos=5):
+    intentos = 0
+    while intentos < max_intentos:
         try:
             with open('datos.json', 'r') as file:
                 return json.load(file)
         except FileNotFoundError:
-            return []
+            print("Archivo 'datos.json' no encontrado. Intentando nuevamente...")
+            return []  # Retorna una lista vacía si no se encuentra el archivo
         except json.decoder.JSONDecodeError as e:
             print(f"Error al cargar datos: {e}. Reintentando en 2 segundos...")
-            time.sleep(2)
+            intentos += 1
+            time.sleep(2)  # Espera antes de intentar nuevamente
+        except Exception as e:
+            print(f"Error inesperado al cargar datos: {e}")
+            break  # Rompe el bucle si ocurre un error inesperado
+    print("No se pudo cargar 'datos.json' después de varios intentos.")
+    return []  # Devuelve una lista vacía si no se pudo cargar después de varios intentos
 
 def guardar_datos(datos):
     try:
         with open('datos.json', 'w') as file:
             json.dump(datos, file, indent=2)
         print("Datos guardados correctamente.")
+        # Asegúrate de que actualizar_datos no interfiera con la escritura
         threading.Timer(1, actualizar_datos).start()
+    except PermissionError:
+        print("Error de permisos al guardar datos en 'datos.json'.")
+    except FileNotFoundError:
+        print("El archivo 'datos.json' no fue encontrado.")
+    except json.JSONDecodeError:
+        print("Error al decodificar el contenido del archivo JSON.")
     except Exception as e:
         print(f"Error al guardar datos: {e}")
 
