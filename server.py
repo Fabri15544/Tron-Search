@@ -14,7 +14,7 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
         try:
             super().do_GET()
         except ConnectionAbortedError:
-            print("Se ha producido una conexiÃ³n abortada por el cliente.")
+            print("Se ha producido una conexión abortada por el cliente.")
 
     def end_headers(self):
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
@@ -86,8 +86,8 @@ if __name__ == '__main__':
         q.put(target)
 
     # Crear e iniciar los hilos de brute force
-    dictionary_file = "diccionario.txt"  # AsegÃºrate de que este archivo exista
-    num_worker_threads = 4  # Ajusta el nÃºmero de hilos segÃºn sea necesario
+    dictionary_file = "diccionario.txt"  # Asegúrate de que este archivo exista
+    num_worker_threads = 4  # Ajusta el número de hilos según sea necesario
     for _ in range(num_worker_threads):
         threading.Thread(target=brute_force_worker, args=(q, dictionary_file), daemon=True).start()
 
