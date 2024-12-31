@@ -49,13 +49,28 @@ def actualizar_datos():
 
 def validar_json(filepath):
     try:
-        # Redirige la salida a /dev/null o nul (Windows)
-        with open(os.devnull, 'w') as devnull:
-            subprocess.run(['python', '-m', 'json.tool', filepath], stdout=devnull, stderr=devnull, check=True)
+        # Validar el archivo usando json.tool
+        subprocess.run(['python', '-m', 'json.tool', filepath], check=True)
         return True
-    except subprocess.CalledProcessError:
-        print(f"El archivo '{filepath}' no es un JSON válido.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error al validar '{filepath}' con json.tool: {e}")
         return False
+
+def reparar_json(archivo):
+    """Intenta reparar un archivo JSON con errores comunes de formato."""
+    with open(archivo, 'r') as file:
+        contenido = file.read()
+
+    # Eliminar comas al final de los objetos y arrays
+    contenido = re.sub(r',\s*}', '}', contenido)  # Comas antes de '}'
+    contenido = re.sub(r',\s*\]', ']', contenido)  # Comas antes de ']'
+
+    # Intentar cargar el contenido reparado
+    try:
+        return json.loads(contenido)
+    except json.decoder.JSONDecodeError as e:
+        print(f"Error al intentar reparar el JSON: {e}")
+        return None
 
 def cargar_datos(max_intentos=3):
     intentos = 0
@@ -74,9 +89,18 @@ def cargar_datos(max_intentos=3):
                 with open('datos.json', 'r') as file:
                     return json.load(file)
             except json.decoder.JSONDecodeError as e:
-                print(f"Error al cargar 'datos.json': {e}. Reintentando en 2 segundos...")
-                intentos += 1
-                time.sleep(2)
+                print(f"Error al cargar 'datos.json': {e}. Intentando reparar el archivo...")
+                # Intentar reparar el archivo
+                datos_reparados = reparar_json('datos.json')
+                if datos_reparados:
+                    print("Archivo reparado correctamente.")
+                    with open('datos.json', 'w') as file:
+                        json.dump(datos_reparados, file)
+                    return datos_reparados
+                else:
+                    print("No se pudo reparar el archivo 'datos.json'. Reintentando en 2 segundos...")
+                    intentos += 1
+                    time.sleep(2)
             except Exception as e:
                 print(f"Error inesperado al cargar 'datos.json': {e}")
                 break
