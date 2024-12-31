@@ -171,8 +171,6 @@ if __name__ == '__main__':
     stop_event = threading.Event()
     server_thread = threading.Thread(target=start_http_server, args=(stop_event,), daemon=True)
     server_thread.start()
-    # Actualizar los datos
-    actualizar_datos()
 
     # Descargar el archivo desde GitHub si es necesario
     download_from_github()
