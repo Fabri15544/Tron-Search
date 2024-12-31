@@ -165,7 +165,8 @@ def start_http_server():
 
 if __name__ == '__main__':
     # Iniciar el servidor HTTP en un hilo para que funcione en paralelo
-    server_thread = threading.Thread(target=start_http_server, daemon=True)
+    stop_event = threading.Event()
+    server_thread = threading.Thread(target=start_http_server, args=(stop_event,), daemon=True)
     server_thread.start()
 
     # Descargar el archivo desde GitHub si es necesario
@@ -199,3 +200,6 @@ if __name__ == '__main__':
         threading.Thread(target=brute_force_worker, args=(q, dictionary_file), daemon=True).start()
 
     q.join()
+
+    # Mantener el servidor activo
+    stop_event.wait()  # Esto mantiene el hilo del servidor activo
