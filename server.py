@@ -151,17 +151,19 @@ def brute_force_worker(q, dictionary_file):
         brute.run()
         q.task_done()
 
-def start_http_server():
+def start_http_server(stop_event):
     port = 8080
     server_address = ('', port)
     httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
     print(f'Servidor iniciado en http://127.0.0.1:{port}')
 
     try:
-        httpd.serve_forever()
+        while not stop_event.is_set():
+            httpd.handle_request()  # Procesa una solicitud HTTP sin bloquear el hilo principal
     except KeyboardInterrupt:
         print("Servidor detenido.")
         httpd.server_close()
+
 
 if __name__ == '__main__':
     # Iniciar el servidor HTTP en un hilo para que funcione en paralelo
