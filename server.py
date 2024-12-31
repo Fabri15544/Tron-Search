@@ -9,7 +9,7 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from rtspBrute import RTSPBruteModule
-from common import cargar_datos, actualizar_datos
+from common import cargar_datos, guardar_datos, eliminar_duplicados, buscar_palabra, actualizar_datos, extraer_texto_desde_imagen
 import re
 
 # Configuración de GitHub
@@ -64,6 +64,7 @@ def reparar_json_malformado(file_path):
         except Exception as e:
             print(f"Ocurrió un error al reparar el JSON: {e}")
             break
+            
 
 def download_from_github():
     """Descargar el archivo datos.json desde GitHub si es más grande que el archivo local."""
@@ -170,6 +171,8 @@ if __name__ == '__main__':
     stop_event = threading.Event()
     server_thread = threading.Thread(target=start_http_server, args=(stop_event,), daemon=True)
     server_thread.start()
+    # Actualizar los datos
+    actualizar_datos()
 
     # Descargar el archivo desde GitHub si es necesario
     download_from_github()
