@@ -18,5 +18,4 @@ scapy
 pytesseract
 fire==0.2.1
 python-vlc
-torrentool
 watchdog
