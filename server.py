@@ -12,11 +12,11 @@ from rtspBrute import RTSPBruteModule
 from common import cargar_datos, actualizar_datos
 
 # GitHub API configuration
-GITHUB_TOKEN = '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'  # Reemplaza con tu token de acceso personal
-REPO_OWNER = 'TreonSearch'         # Reemplaza con tu nombre de usuario de GitHub
-REPO_NAME = 'Tron_Json'      # Reemplaza con el nombre de tu repositorio
-FILE_PATH = 'datos.json'          # Ruta al archivo JSON que deseas subir
-FILE_NAME = 'datos.json'          # Nombre del archivo en GitHub
+GITHUB_TOKEN = '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'
+REPO_OWNER = 'TreonSearch'
+REPO_NAME = 'Tron_Json'
+FILE_PATH = 'datos.json'
+FILE_NAME = 'datos.json'
 
 def download_from_github():
     """Descargar el archivo datos.json desde GitHub si es más grande que el archivo local."""
