@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import subprocess
 import threading
 from PIL import Image
 import pytesseract
@@ -46,24 +47,50 @@ def actualizar_datos():
     except Exception as e:
         print(f"Error al guardar datos: {e}")
 
-def cargar_datos(max_intentos=5):
+def validar_json(filepath):
+    try:
+        # Redirige la salida a /dev/null o nul (Windows)
+        with open(os.devnull, 'w') as devnull:
+            subprocess.run(['python', '-m', 'json.tool', filepath], stdout=devnull, stderr=devnull, check=True)
+        return True
+    except subprocess.CalledProcessError:
+        print(f"El archivo '{filepath}' no es un JSON válido.")
+        return False
+
+def cargar_datos(max_intentos=3):
     intentos = 0
     while intentos < max_intentos:
-        try:
-            with open('datos.json', 'r') as file:
-                return json.load(file)
-        except FileNotFoundError:
-            print("Archivo 'datos.json' no encontrado. Intentando nuevamente...")
-            return []  # Retorna una lista vacía si no se encuentra el archivo
-        except json.decoder.JSONDecodeError as e:
-            print(f"Error al cargar datos: {e}. Reintentando en 2 segundos...")
-            intentos += 1
-            time.sleep(2)  # Espera antes de intentar nuevamente
-        except Exception as e:
-            print(f"Error inesperado al cargar datos: {e}")
-            break  # Rompe el bucle si ocurre un error inesperado
-    print("No se pudo cargar 'datos.json' después de varios intentos.")
-    return []  # Devuelve una lista vacía si no se pudo cargar después de varios intentos
+        if not os.path.exists('datos.json'):
+            print("Archivo 'datos.json' no encontrado. Intentando cargar 'respaldo.json'...")
+            if os.path.exists('respaldo.json') and validar_json('respaldo.json'):
+                with open('respaldo.json', 'r') as respaldo:
+                    return json.load(respaldo)
+            print("Archivo 'respaldo.json' no encontrado o inválido.")
+            break
+
+        # Validar y cargar 'datos.json'
+        if validar_json('datos.json'):
+            try:
+                with open('datos.json', 'r') as file:
+                    return json.load(file)
+            except json.decoder.JSONDecodeError as e:
+                print(f"Error al cargar 'datos.json': {e}. Reintentando en 2 segundos...")
+                intentos += 1
+                time.sleep(2)
+            except Exception as e:
+                print(f"Error inesperado al cargar 'datos.json': {e}")
+                break
+        else:
+            print("Archivo 'datos.json' no válido. Intentando cargar 'respaldo.json'...")
+            if os.path.exists('respaldo.json') and validar_json('respaldo.json'):
+                with open('respaldo.json', 'r') as respaldo:
+                    return json.load(respaldo)
+            print("Archivo 'respaldo.json' no encontrado o inválido.")
+            break
+
+    print("No se pudo cargar 'datos.json' ni 'respaldo.json' después de varios intentos.")
+    return None
+
 
 def guardar_datos(datos):
     try:
