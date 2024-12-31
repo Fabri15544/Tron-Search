@@ -199,15 +199,3 @@ if __name__ == '__main__':
         threading.Thread(target=brute_force_worker, args=(q, dictionary_file), daemon=True).start()
 
     q.join()
-
-    observer = Observer()
-    observer.schedule(ChangeHandler(), path=os.path.dirname(FILE_PATH), recursive=False)
-    observer.start()
-
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-
-    observer.join()
