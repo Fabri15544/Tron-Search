@@ -19,51 +19,68 @@ REPO_NAME = 'Tron_Json'            # Nombre del repositorio
 FILE_PATH = 'datos.json'           # Ruta al archivo JSON
 FILE_NAME = 'datos.json'           # Nombre del archivo en GitHub
 
-def reparar_json_malformado(file_path):
-    """Reparar el archivo JSON eliminando líneas hasta encontrar el cierre de un objeto, 
-       y luego agregar el corchete de cierre ']'."""
-    while True:
+import os
+import re
+import json
+
+def reparar_json_por_campos(file_path):
+    """Repara un archivo JSON asegurando datos únicos y válidos sin aumentar el tamaño."""
+    try:
+        if not os.path.exists(file_path):
+            print(f"El archivo {file_path} no existe. Se creará un archivo vacío.")
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write("[]\n")
+            print(f"El archivo vacío ha sido creado en {file_path}.")
+            return
+
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read().strip()
+
+        # Verificar si el contenido del archivo es un JSON válido
+        if not content or not content.startswith('[') or not content.endswith(']'):
+            print("El archivo no contiene un JSON válido. Se reparará como lista vacía.")
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write("[]\n")
+            return
+
+        # Limpiar caracteres no válidos
+        content = re.sub(r'[\x00-\x1F\x7F]', '', content)
+
+        # Intentar cargar los datos como JSON
         try:
-            if not os.path.exists(file_path):
-                print(f"El archivo {file_path} no existe. Se creará un archivo vacío.")
-                with open(file_path, 'w', encoding='utf-8') as file:
-                    file.write("[]\n")
-                print(f"El archivo vacío ha sido creado en {file_path}.")
-                return
-            elif os.path.getsize(file_path) < 5:
-                print(f"El archivo {file_path} parece estar vacío o con tamaño muy pequeño, será reparado.")
-                with open(file_path, 'w', encoding='utf-8') as file:
-                    file.write("[]\n")
-                print(f"El archivo vacío ha sido creado en {file_path}.")
-                return
-
-            with open(file_path, 'r', encoding='utf-8') as file:
-                lines = file.readlines()
-
-            found_preview = False
-            while lines:
-                if '"Preview": null' in lines[-1]:
-                    found_preview = True
-                    break
-                lines.pop()
-
-            if found_preview:
-                if not lines[-1].strip().endswith('}'):
-                    lines.append("}\n")
-                lines.append("]\n")
-
-                with open(file_path, 'w', encoding='utf-8') as file:
-                    file.writelines(lines)
-
-                print(f"Archivo JSON reparado y guardado en {file_path}.")
-                break
-
+            datos_existentes = json.loads(content)
         except json.JSONDecodeError:
-            print(f"Error al analizar el JSON en {file_path}. Intentando reparar línea por línea...")
-            time.sleep(1)
-        except Exception as e:
-            print(f"Ocurrió un error al reparar el JSON: {e}")
-            break
+            print("Error al decodificar el archivo JSON. Se reparará como lista vacía.")
+            datos_existentes = []
+
+        # Asegurar que los datos existentes son una lista
+        if not isinstance(datos_existentes, list):
+            print("El contenido del archivo no es una lista válida. Se reparará como lista vacía.")
+            datos_existentes = []
+
+        # Extraer y procesar cada objeto
+        objetos_validos = []
+        for obj in datos_existentes:
+            try:
+                if isinstance(obj, dict):
+                    # Verificar los campos requeridos
+                    if "IP" in obj and "Puerto" in obj and "Servicio" in obj:
+                        objetos_validos.append(obj)
+            except Exception as e:
+                print(f"Error al procesar objeto: {e}. El objeto será eliminado.")
+
+        # Eliminar duplicados basados en 'IP' y 'Puerto'
+        objetos_unicos = {f"{obj['IP']}:{obj['Puerto']}": obj for obj in objetos_validos}
+        objetos_validos = list(objetos_unicos.values())
+
+        # Sobrescribir el archivo con datos únicos y válidos
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(objetos_validos, file, ensure_ascii=False, indent=2)
+        print(f"Archivo reparado y guardado en {file_path}. Total de objetos válidos: {len(objetos_validos)}.")
+
+    except Exception as e:
+        print(f"Error al reparar el archivo JSON: {e}")
+
             
 
 def download_from_github():
@@ -86,7 +103,7 @@ def download_from_github():
                 print("El archivo remoto es más grande, descargando...")
 
                 download_response = requests.get(download_url)
-                with open(FILE_PATH, 'wb') as file:
+                with open(FILE_PATH, 'r', encoding='utf-8') as file:
                     file.write(download_response.content)
                 print("Archivo descargado exitosamente desde GitHub.")
         else:
@@ -96,12 +113,18 @@ def download_from_github():
             with open(FILE_PATH, 'wb') as file:
                 file.write(download_response.content)
             print("Archivo descargado exitosamente desde GitHub.")
+        
+
+        # Subir el archivo reparado a GitHub
+        upload_to_github()
+        
     else:
         print(f"Error al obtener el archivo de GitHub: {response.content}")
 
+
 def upload_to_github():
     """Subir el archivo datos.json a GitHub."""
-    with open(FILE_PATH, 'r') as file:
+    with open(FILE_PATH, 'r', encoding='utf-8') as file:
         content = file.read()
 
     encoded_content = base64.b64encode(content.encode()).decode()
@@ -174,9 +197,8 @@ if __name__ == '__main__':
 
     # Descargar el archivo desde GitHub si es necesario
     download_from_github()
-
-    # Reparar el archivo JSON
-    reparar_json_malformado(FILE_PATH)
+    
+    reparar_json_por_campos("datos.json")
 
     # Subir el archivo a GitHub
     upload_to_github()
