@@ -140,6 +140,8 @@ if __name__ == '__main__':
 
     # Subir el archivo a GitHub
     upload_to_github()
+    
+    actualizar_datos()
 
     with open(FILE_PATH, 'r', encoding='utf-8') as file:
         json_data = file.read()
