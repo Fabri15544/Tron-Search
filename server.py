@@ -10,7 +10,6 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from rtspBrute import RTSPBruteModule
 from common import cargar_datos, guardar_datos, buscar_palabra, actualizar_datos, extraer_texto_desde_imagen
-import re
 
 # Configuración de GitHub
 GITHUB_TOKEN = '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'  # Token de acceso personal de GitHub
@@ -42,7 +41,7 @@ def download_from_github():
                 print("El archivo remoto es más grande, descargando...")
 
                 download_response = requests.get(download_url)
-                with open(FILE_PATH, 'r', encoding='utf-8') as file:
+                with open(FILE_PATH, 'wb') as file:
                     file.write(download_response.content)
                 print("Archivo descargado exitosamente desde GitHub.")
         else:
@@ -126,6 +125,7 @@ def start_http_server(stop_event):
     except KeyboardInterrupt:
         print("Servidor detenido.")
         httpd.server_close()
+        
 
 
 if __name__ == '__main__':
