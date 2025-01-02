@@ -24,7 +24,7 @@ import re
 import json
 
 def reparar_json_por_campos(file_path):
-    """Repara un archivo JSON asegurando datos únicos y válidos sin aumentar el tamaño."""
+    """Repara un archivo JSON asegurando que cada combinación de IP y Puerto sea única."""
     try:
         if not os.path.exists(file_path):
             print(f"El archivo {file_path} no existe. Se creará un archivo vacío.")
@@ -69,14 +69,19 @@ def reparar_json_por_campos(file_path):
             except Exception as e:
                 print(f"Error al procesar objeto: {e}. El objeto será eliminado.")
 
-        # Eliminar duplicados basados en 'IP' y 'Puerto'
-        objetos_unicos = {f"{obj['IP']}:{obj['Puerto']}": obj for obj in objetos_validos}
-        objetos_validos = list(objetos_unicos.values())
+        # Mantener objetos únicos según IP y Puerto
+        combinaciones_vistas = set()
+        objetos_finales = []
+        for obj in objetos_validos:
+            clave = (obj["IP"], obj["Puerto"])
+            if clave not in combinaciones_vistas:
+                combinaciones_vistas.add(clave)
+                objetos_finales.append(obj)
 
         # Sobrescribir el archivo con datos únicos y válidos
         with open(file_path, 'w', encoding='utf-8') as file:
-            json.dump(objetos_validos, file, ensure_ascii=False, indent=2)
-        print(f"Archivo reparado y guardado en {file_path}. Total de objetos válidos: {len(objetos_validos)}.")
+            json.dump(objetos_finales, file, ensure_ascii=False, indent=2)
+        print(f"Archivo reparado y guardado en {file_path}. Total de objetos válidos: {len(objetos_finales)}.")
 
     except Exception as e:
         print(f"Error al reparar el archivo JSON: {e}")
