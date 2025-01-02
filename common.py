@@ -17,34 +17,42 @@ def actualizar_datos():
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     ruta_capturas = "screenshot/"
     datos_filtrados = reparar_json_por_campos("datos.json")
+    if not datos_filtrados:
+        print("No se pudieron reparar los datos del archivo JSON. Operación abortada.")
+        return
 
     archivos = os.listdir(ruta_capturas)
     for archivo in archivos:
         if archivo.endswith(".png"):
-            ip, puerto = archivo.split('-')
-            puerto = puerto.split('.')[0]  # Eliminar la extensión .png
+            try:
+                ip, puerto = archivo.split('-')
+                puerto = puerto.split('.')[0]
 
-            # Buscar la entrada correspondiente en los datos filtrados
-            for dato in datos_filtrados:
-                banner = dato["Banner"]
-                servicio = dato["Servicio"]  # Obtener la lista de servicios (de donde sea que la obtengas)
-                camara = buscar_palabra(banner,servicio)  # Llamada a la función buscar_palabra
-                dato["Camara"] = camara  # Asignación del resultado a la clave "Camara"
-                if (dato["IP"] == ip and str(dato["Puerto"]) == puerto) and dato["Banner"] == "\u001b[31munknown\u001b[0m":
-                    ruta_imagen = os.path.join(ruta_capturas, archivo)
-                    if os.path.exists(ruta_imagen):
-                        texto = extraer_texto_desde_imagen(ruta_imagen)
-                        if texto:
-                            print(f"El banner para {dato['IP']}:{dato['Puerto']} fue reemplazado.")
-                            dato["Banner"] = texto
-                        else:
-                            pass
-                    else:
-                        print(f"No se pudo extraer texto de la imagen {ruta_imagen}")
+                for dato in datos_filtrados:
+                    if dato["IP"] == ip and str(dato["Puerto"]) == puerto:
+                        banner = dato.get("Banner", "")
+                        servicio = dato.get("Servicio", "")
+                        camara = buscar_palabra(banner, servicio)
+                        dato["Camara"] = camara
+
+                        if banner == "\u001b[31munknown\u001b[0m":
+                            ruta_imagen = os.path.join(ruta_capturas, archivo)
+                            if os.path.exists(ruta_imagen):
+                                texto = extraer_texto_desde_imagen(ruta_imagen)
+                                if texto:
+                                    print(f"El banner para {dato['IP']}:{dato['Puerto']} fue reemplazado.")
+                                    dato["Banner"] = texto
+                            else:
+                                print(f"La imagen {ruta_imagen} no existe.")
+            except ValueError:
+                print(f"El archivo {archivo} no tiene el formato esperado (IP-Puerto.png).")
+
     try:
         guardar_datos(datos_filtrados)
+        print("Datos actualizados y guardados exitosamente.")
     except Exception as e:
         print(f"Error al guardar datos: {e}")
+
 
 def cargar_datos():
     while True:
