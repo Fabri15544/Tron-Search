@@ -502,7 +502,7 @@ def GuardarDatos(data):
 
         if os.path.isfile("datos.json"):
             tamanio_actual = os.path.getsize("datos.json")
-            with open("datos.json", "r") as file:
+            with open("datos.json", 'r', encoding='utf-8') as file:
                 existing_data = json.load(file)
 
         existing_data.append(data)
@@ -510,14 +510,14 @@ def GuardarDatos(data):
 
         #respaldo
         try:
-            with open("respaldo.json", "w") as backup_file:
+            with open("respaldo.json", "w", encoding='utf-8') as backup_file:
                 backup_file.write(json_data)
         except Exception as backup_exception:
             print(f"Error al realizar respaldo: {backup_exception}")
 
         #Guarda en "datos.json"
         try:
-            with open("datos.json", "w") as file:
+            with open("datos.json", "w", encoding='utf-8') as file:
                 file.write(json_data)
         except Exception as write_exception:
             print(f"Error al escribir en datos.json: {write_exception}")
@@ -525,10 +525,10 @@ def GuardarDatos(data):
     except Exception as e:
         print(f"Error general: {e}")
         try:
-            with open("respaldo.json", "r") as backup_file:
+            with open("respaldo.json", "r", encoding='utf-8') as backup_file:
                 restored_data = json.load(backup_file)
                 
-            with open("datos.json", "w") as file:
+            with open("datos.json", "w", encoding='utf-8') as file:
                 file.write(json.dumps(restored_data, indent=4))
                 
             print("Datos restaurados desde el respaldo.")
