@@ -4,6 +4,7 @@ import json
 import threading
 from PIL import Image
 import pytesseract
+import re
 
 
 
