@@ -16,7 +16,7 @@ def extraer_texto_desde_imagen(ruta_imagen):
 def actualizar_datos():
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     ruta_capturas = "screenshot/"
-    datos_filtrados = eliminar_duplicados(cargar_datos())
+    datos_filtrados = reparar_json_por_campos("datos.json")
 
     archivos = os.listdir(ruta_capturas)
     for archivo in archivos:
@@ -66,17 +66,68 @@ def guardar_datos(datos):
     except Exception as e:
         print(f"Error al guardar datos: {e}")
 
-def eliminar_duplicados(datos):
-    datos_filtrados = []
-    diccionario_combinaciones = {}
+def reparar_json_por_campos(file_path):
+    """Repara un archivo JSON asegurando que cada combinación de IP y Puerto sea única."""
+    try:
+        if not os.path.exists(file_path):
+            print(f"El archivo {file_path} no existe. Se creará un archivo vacío.")
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write("[]\n")
+            print(f"El archivo vacío ha sido creado en {file_path}.")
+            return
 
-    for dato in datos:
-        combinacion = (dato["IP"], dato["Puerto"])
-        diccionario_combinaciones[combinacion] = dato
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read().strip()
 
-    datos_filtrados = list(diccionario_combinaciones.values())
+        # Verificar si el contenido del archivo es un JSON válido
+        if not content or not content.startswith('[') or not content.endswith(']'):
+            print("El archivo no contiene un JSON válido. Se reparará como lista vacía.")
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write("[]\n")
+            return
 
-    return datos_filtrados
+        # Limpiar caracteres no válidos
+        content = re.sub(r'[\x00-\x1F\x7F]', '', content)
+
+        # Intentar cargar los datos como JSON
+        try:
+            datos_existentes = json.loads(content)
+        except json.JSONDecodeError:
+            print("Error al decodificar el archivo JSON. Se reparará como lista vacía.")
+            datos_existentes = []
+
+        # Asegurar que los datos existentes son una lista
+        if not isinstance(datos_existentes, list):
+            print("El contenido del archivo no es una lista válida. Se reparará como lista vacía.")
+            datos_existentes = []
+
+        # Extraer y procesar cada objeto
+        objetos_validos = []
+        for obj in datos_existentes:
+            try:
+                if isinstance(obj, dict):
+                    # Verificar los campos requeridos
+                    if "IP" in obj and "Puerto" in obj and "Servicio" in obj:
+                        objetos_validos.append(obj)
+            except Exception as e:
+                print(f"Error al procesar objeto: {e}. El objeto será eliminado.")
+
+        # Mantener objetos únicos según IP y Puerto
+        combinaciones_vistas = set()
+        objetos_finales = []
+        for obj in objetos_validos:
+            clave = (obj["IP"], obj["Puerto"])
+            if clave not in combinaciones_vistas:
+                combinaciones_vistas.add(clave)
+                objetos_finales.append(obj)
+
+        # Sobrescribir el archivo con datos únicos y válidos
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(objetos_finales, file, ensure_ascii=False, indent=2)
+        print(f"Archivo reparado y guardado en {file_path}. Total de objetos válidos: {len(objetos_finales)}.")
+
+    except Exception as e:
+        print(f"Error al reparar el archivo JSON: {e}")
 
 def buscar_palabra(banner, servicio):
     banner_lower = banner.lower()
