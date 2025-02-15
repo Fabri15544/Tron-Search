@@ -9,6 +9,18 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
    Antes de ejecutar el script, asegúrate de tener instaladas las dependencias necesarias. Puedes instalarlas ejecutando el siguiente comando:
 
    ```bash
+   ----------------------------------
+   Para Linux/mac-os/windows si tienen problemas:
+
+   sudo apt install python3
+   
+   python3 -m venv myenv
+   source myenv/bin/activate
+
+   pip install -r requirements.txt
+   
+   ---------------------------------
+   
    pip install -r requirements.txt
 
    !!![REQUIERE DE CHROME INSTALADO https://www.google.com/intl/es-419/chrome/]!!!
