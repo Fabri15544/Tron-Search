@@ -10,7 +10,7 @@ Este script en Python te permite escanear puertos en un rango de direcciones IP 
 
    ```bash
    ----------------------------------
-   Para Linux/mac-os/windows si tienen problemas:
+   Para Linux si tienen problemas:
 
    sudo apt install python3
    
