@@ -1199,15 +1199,14 @@ def get_location(ip):
         )
     except:
         return format_unknown("unknown"), format_unknown("unknown"), format_unknown("unknown")
+        
+
+##Iniciar Servidor
+subprocess.Popen(["cmd.exe", "/c", "start", "python", "server.py"])
 
 
 # Crear una barra de progreso con el número total de direcciones IP a escanear
 bar = tqdm(total=ip_queue.qsize(), desc="Escaneando direcciones IP")
-while True:
-    proceso = subprocess.Popen(["python", "server.py"])
-    time.sleep(600)  # Espera 10 minutos
-    proceso.terminate()  # Mata el proceso antes de reiniciarlo
-    proceso.wait()  # Asegura que se cierre completamente antes de continuar
 clear()
 print(f"Buscando {command.ip_pattern}")
 
