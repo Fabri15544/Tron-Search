@@ -58,7 +58,7 @@ def actualizar_datos():
 def cargar_datos():
     while True:
         try:
-            with open('datos.json', 'r') as file:
+            with open("datos.json", "r", encoding="utf-8") as file:
                 return json.load(file)
         except FileNotFoundError:
             return []
@@ -75,65 +75,71 @@ def guardar_datos(datos):
     except Exception as e:
         print(f"Error al guardar datos: {e}")
 
+def restaurar_respaldo(file_path, backup_path="respaldo.json"):
+    if os.path.exists(backup_path):
+        try:
+            with open(backup_path, 'r', encoding='utf-8') as respaldo:
+                data = respaldo.read()
+            with open(file_path, 'w', encoding='utf-8') as destino:
+                destino.write(data)
+            print(f"Respaldo restaurado desde {backup_path} a {file_path}.")
+        except Exception as e:
+            print(f"Error al restaurar el respaldo: {e}")
+    else:
+        print(f"Archivo de respaldo no encontrado: {backup_path}")
+
 def reparar_json_por_campos(file_path):
     """Repara un archivo JSON asegurando que cada combinación de IP y Puerto sea única."""
     try:
         if not os.path.exists(file_path):
-            print(f"El archivo {file_path} no existe. Se creará un archivo vacío.")
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write("[]\n")
-            print(f"El archivo vacío ha sido creado en {file_path}.")
-            return
-
+            print(f"El archivo {file_path} no existe.")
+            restaurar_respaldo(file_path)
+        
         with open(file_path, 'r', encoding='utf-8') as file:
-            content = file.read().strip()
+            content = file.read()
+        content = re.sub(r'[\x00-\x1F\x7F]', '', content).strip()
 
-        # Verificar si el contenido del archivo es un JSON válido
-        if not content or not content.startswith('[') or not content.endswith(']'):
-            print("El archivo no contiene un JSON válido. Se reparará como lista vacía.")
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write("[]\n")
-            return
-
-        # Limpiar caracteres no válidos
-        content = re.sub(r'[\x00-\x1F\x7F]', '', content)
-
-        # Intentar cargar los datos como JSON
         try:
             datos_existentes = json.loads(content)
         except json.JSONDecodeError:
-            print("Error al decodificar el archivo JSON. Se reparará como lista vacía.")
-            datos_existentes = []
+            print("Error al decodificar el JSON. Restaurando respaldo.")
+            restaurar_respaldo(file_path)
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+            try:
+                datos_existentes = json.loads(content)
+            except json.JSONDecodeError:
+                print("Error persistente tras restaurar respaldo. Se usará lista vacía.")
+                datos_existentes = []
 
-        # Asegurar que los datos existentes son una lista
         if not isinstance(datos_existentes, list):
-            print("El contenido del archivo no es una lista válida. Se reparará como lista vacía.")
-            datos_existentes = []
+            print("El contenido no es una lista. Restaurando respaldo.")
+            restaurar_respaldo(file_path)
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+            try:
+                datos_existentes = json.loads(content)
+            except json.JSONDecodeError:
+                print("Error persistente tras restaurar respaldo. Se usará lista vacía.")
+                datos_existentes = []
+            if not isinstance(datos_existentes, list):
+                datos_existentes = []
 
-        # Extraer y procesar cada objeto
         objetos_validos = []
         for obj in datos_existentes:
-            try:
-                if isinstance(obj, dict):
-                    # Verificar los campos requeridos
-                    if "IP" in obj and "Puerto" in obj and "Servicio" in obj:
-                        objetos_validos.append(obj)
-            except Exception as e:
-                print(f"Error al procesar objeto: {e}. El objeto será eliminado.")
+            if isinstance(obj, dict) and all(k in obj for k in ["IP", "Puerto", "Servicio"]):
+                objetos_validos.append(obj)
 
-        # Mantener objetos únicos según IP y Puerto
-        combinaciones_vistas = set()
-        objetos_finales = []
+        combinaciones = {}
         for obj in objetos_validos:
             clave = (obj["IP"], obj["Puerto"])
-            if clave not in combinaciones_vistas:
-                combinaciones_vistas.add(clave)
-                objetos_finales.append(obj)
+            if clave not in combinaciones:
+                combinaciones[clave] = obj
+        objetos_finales = list(combinaciones.values())
 
-        # Sobrescribir el archivo con datos únicos y válidos
         with open(file_path, 'w', encoding='utf-8') as file:
             json.dump(objetos_finales, file, ensure_ascii=False, indent=2)
-        print(f"Archivo reparado y guardado en {file_path}. Total de objetos válidos: {len(objetos_finales)}.")
+        print(f"Archivo reparado en {file_path}. Total objetos válidos: {len(objetos_finales)}.")
 
     except Exception as e:
         print(f"Error al reparar el archivo JSON: {e}")
