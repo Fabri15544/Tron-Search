@@ -1202,7 +1202,10 @@ def get_location(ip):
         
 
 ##Iniciar Servidor
-subprocess.Popen(["cmd.exe", "/c", "start", "python", "server.py"])
+if os.name == "nt":  # Windows
+    subprocess.Popen(["cmd.exe", "/c", "start", "python", "server.py"])
+else:  # Linux/Mac
+    subprocess.Popen(["python3", "server.py"])
 
 
 # Crear una barra de progreso con el número total de direcciones IP a escanear
