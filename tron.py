@@ -123,9 +123,10 @@ else:
         ip = command.ip_pattern.replace('*', '{}').format(*parts)
         ip_queue.put(ip)
 
-def is_camera(ip, port, banner):
+def is_camera(ip, port, banner, services):
     try:
         banner_lower = banner.lower()  # Convertir solo una vez a minúsculas
+        services_lower = services.lower()  # Convertir solo una vez a minúsculas
 
         # Condiciones específicas
         if "rtsp/1.0 400 method not allowed" in banner_lower and "etag:" in banner_lower:
@@ -157,6 +158,8 @@ def is_camera(ip, port, banner):
         if "boa/0.94.14rc21" in banner_lower:
             return "Camara-Found"
         if any(kw in banner_lower for kw in ["plugin:", "expires:", "activex", "rtsp"]):
+            return "Camara-Found"
+        if "rtsp" in services_lower:
             return "Camara-Found"
         if "unknown" in banner_lower:
             return "unknown"
@@ -911,11 +914,14 @@ def scan(ip, ports):
 						    "RTSP/1.0 400 Method Not Allowed",
 						    "RTSP/1.0 400 Bad Request"
 						}
+                        services_cam = {
+						    "rtsp"
+						}
 
-                        if is_camera(ip, port, banner) and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
+                        if is_camera(ip, port, banner, service_name) and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
                             if command.args.has_screenshot == 'cam' and command.args.has_screenshot is not None and "HTTP/1.1 401 Unauthorized" not in banner:
                                 capture_screenshot(ip, port, usuario=None, contraseña=None)
-                            if any(b.lower() == banner.lower() for b in banners_cam):
+                            if any(b.lower() == banner.lower() for b in banners_cam) or any(b.lower() == service_name.lower() for b in services_cam):
                                 cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
                             print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
                             hikvision_vulnerable = check_vuln_hikvision(ip, port)
@@ -1197,6 +1203,11 @@ def get_location(ip):
 
 # Crear una barra de progreso con el número total de direcciones IP a escanear
 bar = tqdm(total=ip_queue.qsize(), desc="Escaneando direcciones IP")
+while True:
+    proceso = subprocess.Popen(["python", "server.py"])
+    time.sleep(600)  # Espera 10 minutos
+    proceso.terminate()  # Mata el proceso antes de reiniciarlo
+    proceso.wait()  # Asegura que se cierre completamente antes de continuar
 clear()
 print(f"Buscando {command.ip_pattern}")
 
