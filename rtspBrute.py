@@ -4,8 +4,7 @@ import base64
 import concurrent.futures
 import argparse
 import time
-import vlc
-import logging
+import cv2
 import os
 import queue
 from tqdm import tqdm
@@ -48,15 +47,13 @@ class RTSPBruteModule:
         tasks = []
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_threads) as executor:
-            with tqdm(total=self.total_combinations, desc="Progress", position=0, leave=True) as pbar:       
-                while not queue_instance.empty():
+            while not queue_instance.empty():       
                     task = queue_instance.get()
                     future = executor.submit(self.brute_force, task)
-                    future.add_done_callback(lambda _: pbar.update())
                     tasks.append(future)
                 
-                # Esperar a que todas las tareas se completen
-                concurrent.futures.wait(tasks)
+            # Esperar a que todas las tareas se completen
+            concurrent.futures.wait(tasks)
 
         logging.info("[*] Finished all threads")
 
@@ -132,50 +129,26 @@ class RTSPBruteModule:
             retries -= 1
         return False
 
-    def display_camera(self, url, timeout=15):
+    def display_camera(self, url):
+        ip = url.split('@')[1].split(':')[0]
+        #logging.info(f"Intentando conectarse a {url}")
 
-        logging.info(f"Intentando conectarse a {url}")
-
-        # Crear el reproductor VLC
-        player = vlc.MediaPlayer(url)
-    
-        try:
-            # Intentar conectar y reproducir
-            player.play()
+        cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
+        if cap.isOpened():
             logging.info(f"Visualización de la transmisión de la cámara desde {url}")
             start_time = time.time()
-            success = False
-
-            while time.time() - start_time < timeout:
-                # Revisa si la reproducción está en curso
-                state = player.get_state()
-                if state == vlc.State.Playing:
-                    logging.info("Reproducción en curso...")
-                    success = True
+            while time.time() - start_time < 10:
+                ret, frame = cap.read()
+                if not ret:
                     break
-                elif state in [vlc.State.Error, vlc.State.Ended]:
-                    logging.warning(f"Estado del reproductor: {state}")
+                if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
-                time.sleep(1)  # Espera un segundo antes de revisar nuevamente
-
-            # Detener la reproducción y liberar recursos
-            player.stop()
-            player.release()  # Liberar recursos del reproductor
-            logging.info(f"Reproductor VLC liberado para {url}")
-
-            # Guardar la URL solo si la reproducción fue exitosa
-            if success:
-                self.save_url(url)
-                logging.info(f"URL guardada exitosamente: {url}")
-            else:
-                logging.error(f"No se pudo guardar la URL debido a problemas de conexión o reproducción: {url}")
-
-            return success
-
-        except vlc.VLCException as e:
-            logging.error(f"Error de VLC al intentar abrir la transmisión desde {url}: {e}")
-        except Exception as e:
-            logging.error(f"No se pudo abrir la transmisión de video desde {url}: {e}")
+            cap.release()
+            cv2.destroyAllWindows()
+            self.save_url(url)
+            return True
+        else:
+            #logging.error(f"No se pudo abrir la transmisión de video desde {url}")
             return False
 
     def save_url(self, url):
@@ -208,5 +181,6 @@ class RTSPBruteModule:
         target, credential = task
         ip, port = target
         if not self.rtsp_request(target, credential):
-            logging.info(f"Inicio de sesión fallido para {ip}:{port} con {credential}")
+            #logging.info(f"Inicio de sesión fallido para {ip}:{port} con {credential}")
+            pass
         time.sleep(self.pause_duration)
